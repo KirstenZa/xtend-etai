@@ -1,0 +1,30 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+import org.eclipse.xtend.lib.annotation.etai.NoInterfaceExtract
+
+interface Named {
+	
+	def String getName()
+
+}
+
+@ExtractInterface
+class Lion implements Named {
+	
+	String name
+	
+	override void roar() {
+		System.out.println('''Roar! I am «name»!''');
+	}
+	
+	override String getName() {
+		name
+	}
+
+	@NoInterfaceExtract	
+	def String setName(String name) {
+		this.name = name
+	}
+
+}

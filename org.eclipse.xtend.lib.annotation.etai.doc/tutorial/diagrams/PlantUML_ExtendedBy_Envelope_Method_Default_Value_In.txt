@@ -1,0 +1,34 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface DefaultValueProvider<T> <<Interface>> {
+    +getDefaultValue():T
+} 
+
+class StringOkProvider {
+    +getDefaultValue():String
+}
+
+abstract class "XEater\n&#123;abstract&#125;" as XEater <<TraitClass>> {
+	<<EnvelopeMethod(required=false)>> &#009; +eat(prey:String):String
+} 
+
+class Rabbit {
+}
+
+StringOkProvider .up-|> DefaultValueProvider : <<bind>> <T -> String>
+Rabbit .up-|> XEater : <<ExtendedByAuto>>
+
+note "defaultValueProvider" as Provider
+
+XEater::eat . Provider
+Provider .> StringOkProvider
+
+@enduml

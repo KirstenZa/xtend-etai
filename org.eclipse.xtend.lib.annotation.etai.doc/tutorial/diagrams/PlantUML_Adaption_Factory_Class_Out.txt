@@ -1,0 +1,66 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class App {
+	{static} +main(args:String[])
+}
+
+interface IAnimalFactory <<Interface>> {
+	+create(age:int)
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal {
+	-age:int
+	+Animal(age:int)
+}
+
+class AnimalLion {
+    #AnimalLion(age:int)
+}
+
+class AnimalDog {
+    #AnimalDog(age:int)
+}
+
+class "Factory" as FactoryLion <<GeneratedFactoryClass>> {
+    +create(age:int):Lion
+}
+
+class "Factory" as FactoryDog <<GeneratedFactoryClass>> {
+    +create(age:int):Dog
+}
+
+AnimalLion +-- FactoryLion
+AnimalDog +-- FactoryDog
+
+Animal <|-down- AnimalLion
+Animal <|-down- AnimalDog
+IAnimalFactory <|.up. FactoryLion
+IAnimalFactory <|.up. FactoryDog
+
+Animal <-down[hidden]- App
+
+note right of AnimalLion::AnimalLion(age:int)
+  super(age);
+end note
+
+note left of AnimalDog::AnimalDog(age:int)
+  super(age);
+end note
+
+note right of FactoryLion::create(age:int)
+  return new AnimalLion(age);
+end note
+
+note left of FactoryDog::create(age:int)
+  return new AnimalDog(age);
+end note
+
+@enduml

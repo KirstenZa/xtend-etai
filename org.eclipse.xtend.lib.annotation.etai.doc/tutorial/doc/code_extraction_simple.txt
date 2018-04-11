@@ -1,0 +1,17 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+
+@ExtractInterface
+class Lion {
+
+	private def String noise() {
+		"Roar!"
+	}
+	
+	override void roar(intensity : int) {
+		for (i : 0 ..< intensity)
+			System.out.println('''«noise()»''');
+	}
+
+}

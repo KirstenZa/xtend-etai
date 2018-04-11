@@ -1,0 +1,77 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class "Sound\n&#123;abstract&#125;" as Sound {
+}
+class SoundDog {
+}
+class SoundLion {
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal {
+	+Animal(sound:Sound)
+	+getSound():Sound
+}
+
+class AnimalDog {
+    <<AdaptedMethod>> +AnimalDog(sound:SoundDog)
+    <<AdaptedMethod>> +getSound():SoundDog
+}
+
+class AnimalLion {
+    <<AdaptedMethod>> +AnimalLion(sound:SoundLion)
+    <<AdaptedMethod>> +getSound():SoundLion
+}
+
+class AnimalZebra {
+	<<AdaptedMethod>> +AnimalZebra(sound:Sound)
+}
+
+Sound <|-down- SoundDog
+Sound <|-down- SoundLion
+
+Animal <|-down- AnimalDog
+Animal <|-down- AnimalLion
+Animal <|--down-- AnimalZebra
+
+note right of Animal::Animal
+  this.sound = sound;
+end note
+
+note right of Animal::getSound
+  return sound;
+end note
+
+note right of AnimalDog::AnimalDog
+  super(sound);
+end note
+
+note right of AnimalDog::getSound
+  return (SoundDog) super.getSound();
+end note
+
+note left of AnimalLion::AnimalLion
+  super(sound);
+end note
+
+note left of AnimalLion::getSound
+  return (SoundLion) super.getSound();
+end note
+
+note left of AnimalZebra::AnimalZebra
+  super(sound);
+end note
+
+' Layout
+AnimalDog <-down[hidden]- AnimalZebra
+AnimalDog <-down[hidden]- AnimalLion
+AnimalDog <-up[hidden]- Sound
+
+@enduml

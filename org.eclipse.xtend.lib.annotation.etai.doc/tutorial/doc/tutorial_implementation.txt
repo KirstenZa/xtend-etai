@@ -1,0 +1,29 @@
+## Default Implementation
+
+### Overview
+
+The default implementation feature of the ETAI library can be used for **generating default implementations of methods automatically**. This is useful for simplifying the implementation of mock classes in testing scenarios, for example.
+
+In order to use this feature, a non-abstract class is annotated by *@ImplementDefault*. Afterwards, **default methods** are generated in the Java code for all **missing methods**.
+
+Thereby, the term "missing methods" refers methods, that they are declared *abstract* in a parent class or in an implemented interface, and that they are not implemented, yet. On the other side, a "default method" is empty and not doing anything in general. At least an appropriate value will be returned, if the method specifies a return type.
+
+For all numerical return types the returned value is a representation of zero. For *boolean* the value *false* is returned. And finally for all non-primitive types, *null* is returned, e.g. for *String* or even *Integer*.  
+
+### Basic Usage of Default Implementation
+
+The following example shows how to enable default implementation. The class *ElephantMock* does not implement any method. Because of the abstract method in the parent class *AnimalBase* and obligations due to the implemented interface *IElephant*, some methods like *getWeight* must be implemented. However, this is done automatically, so after applying ***@ImplementDefault*** there actually exists a (default) method *getWeight* which returns zero.
+
+Please note, that the automatically implemented default methods are annotated by ***@DefaultImplementation***, which might be available using reflection during runtime. 
+
+##### Input (Code)
+
+[!include_code code_implementation_simple.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ImplementDefault_Simple_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_ImplementDefault_Simple_Out.png)

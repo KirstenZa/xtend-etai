@@ -1,0 +1,30 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+package virtual {
+
+	package intf {
+
+		interface ILion <<Interface>> {
+			+roar()
+		}
+
+	}
+
+	class Lion {
+		-noise() : String
+		+roar(intensity : int)
+	}
+	
+}
+
+Lion .up.|> ILion
+
+@enduml

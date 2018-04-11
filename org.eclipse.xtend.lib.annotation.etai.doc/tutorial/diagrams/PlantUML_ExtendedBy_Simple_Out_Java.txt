@@ -1,0 +1,48 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+	-age:int
+	+getAge():int
+	+setAge(age:int)
+	{abstract} +move() &#009; &#009; &#123;abstract&#125;
+}
+
+interface IXNamed <<Interface>> {
+	+getName():String
+	+setName(name:String)
+}
+
+class XNamed <<TraitClass>> {
+	-name:String
+	+getName():String
+	+setName(name:String)
+}
+
+class Dog {
+	+move()
+	+getName():String
+	+setName(name:String)
+}
+
+Dog .up-|> IXNamed
+XNamed .up-|> IXNamed
+Dog -up-|> Animal
+
+Dog *-> "-delegate$XNamed    " XNamed
+
+note "delegates to" as Delegate
+
+Dog::setName . Delegate
+Dog::getName . Delegate
+Delegate .> XNamed::setName
+Delegate .> XNamed::getName
+
+@enduml

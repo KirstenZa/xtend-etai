@@ -1,0 +1,43 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+
+import virtual.intf.IXFlying
+
+abstract class Bird {
+	int age
+	def protected boolean isHealthy() {true}
+	def int getAge() {age}
+}
+
+@TraitClass
+abstract class XFlying {
+
+	@ExclusiveMethod
+	override void fly() {
+		if (isHealthy && isFledged && flyingSpeedFactor > 0) {/*...*/}
+	}
+
+	@RequiredMethod
+	abstract protected def boolean isHealthy()
+
+	@RequiredMethod
+	abstract protected def boolean isFledged()
+	
+	@RequiredMethod
+	abstract override double getFlyingSpeedFactor()
+
+}
+
+@ExtendedByAuto
+abstract class Raptor extends Bird implements IXFlying {
+}
+
+
+class Eagle extends Raptor {
+	override protected boolean isFledged() { age >= 1 }
+	override double getFlyingSpeedFactor() { 100.0 }
+}

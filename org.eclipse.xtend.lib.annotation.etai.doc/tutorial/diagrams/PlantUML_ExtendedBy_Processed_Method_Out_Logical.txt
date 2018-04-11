@@ -1,0 +1,59 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IAnimal <<Interface>> {
+    +isAdult():boolean
+	+isMale():boolean
+} 
+
+interface IXHunter <<Interface>> {
+    +getHuntingMethods():String
+	+getHunters():String
+	+hunt(prey:String)
+} 
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    -adult:boolean
+    -male:boolean
+	+isAdult():boolean
+	+isMale():boolean
+} 
+
+class Lion {
+	+getHuntingMethods():String
+	+getHunters():String
+	+canHunt():boolean
+	+hunt(prey:String)
+}
+
+note right of Lion::getHuntingMethods
+  return "pursue";
+end note
+
+note right of Lion::getHunters
+  return "pack,lioness";
+end note
+
+note right of Lion::canHunt
+  return isAdult() && !isMale();
+end note
+
+note right of Lion::hunt
+  <u>Output (prey: "Antelope"):</u>
+    Roar!
+    Hunting Antelope...
+end note
+
+Animal .up.|> IAnimal
+IXHunter -up-|> IAnimal
+Lion -up-|> Animal
+Lion .up-|> IXHunter
+
+@enduml

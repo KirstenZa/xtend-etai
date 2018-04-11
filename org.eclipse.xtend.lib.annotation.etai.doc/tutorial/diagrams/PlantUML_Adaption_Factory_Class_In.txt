@@ -1,0 +1,37 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class App {
+	{static} +main(args:String[])
+}
+
+interface IAnimalFactory <<Interface>> {
+	+create(age:int)
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules, FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory)>> {
+	-age:int
+	+Animal(age:int)
+}
+
+class AnimalLion <<ApplyRules>> {
+}
+
+class AnimalDog <<ApplyRules>> {
+}
+
+Animal <|-down- AnimalLion
+Animal <|-down- AnimalDog
+
+Animal <-down[hidden]- App
+AnimalLion <-up[hidden]- IAnimalFactory
+AnimalDog <-up[hidden]- IAnimalFactory
+
+@enduml

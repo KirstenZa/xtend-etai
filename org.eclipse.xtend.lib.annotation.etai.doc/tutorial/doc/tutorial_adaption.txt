@@ -1,0 +1,248 @@
+## Automatic Adaption of Classes
+
+### Overview
+
+The ETAI library supports many options for automatically adapting classes and their methods, especially when deriving them.
+
+A collection of different means is provided in this context. Thereby, the adaption of classes is driven by **rules** which support the following use cases:
+
+- generating **factory methods and classes**,
+- **evolving return types and parameter types** of methods and constructors based on class hierarchies and
+- **evolving the implementation of methods and constructors** based on class hierarchies.
+
+In order to enable the adaption of classes based on rules, it is necessary to attach ***@ApplyRules*** to the class which specifies such rules as well as derived classes which shall be adapted.
+
+The feature for automatized generation of default implementations of methods found in interfaces is also related to the idea of adapting classes. However, these default implementations are not based on rules and do not require *@ApplyRules*, so this topic is described in [Default Implementation](#default-implementation).
+
+##### Important
+
+> Please note, that once *@ApplyRules* is attached to a class all derived classes must also use this annotation. This is also checked during runtime.
+
+### Generate the Implementation of Methods/Constructors
+
+It is possible to generate method or constructor implementations in derived classes based on an adaption rule specified in a parent class. This rule is annotated on an abstract or non-abstract method by using ***@ImplAdaptionRule***. By default, each derived class will implement this method then using this rule.
+
+The adaption rule is given by a string assigned to the ***value*** of *@ImplAdaptionRule*. It must follow the schema described in [Adaption Rule Specification](#adaption-rule-specification). The string will be evaluated during code generation and the evaluation result will be the (Java) code of the generated method's body.
+
+There is also another supported parameter: ***typeExistenceCheck***. With this parameter another adaption rule can be specified. It is also evaluated whenever an implementation shall be generated. However, before the latter actually happens, the result of the evaluation based on *typeExistenceCheck* will be checked. If it does not resolve to an existing (qualified) type, the implementation will not be generated.
+
+A very simple use case is shown in the example below. The methods *getClassName* and *createSoundObject* shall be generated in derived classes of *Animal* based on the name of the derived class. For example, the method *getClassName* of *AnimalDog* will return the string *"virtual.AnimalDog"* while *getClassName* of *AnimalLion* will return *"virtual.AnimalLion"* without the usage of Java Reflection.
+
+The method *createSoundObject* will create a corresponding *Sound* object, e.g. *SoundDog* for *AnimalDog* and *SoundLion* for *AnimalLion*. Within *AnimalZebra* this method is not generated, because the rule also specified an appropriate *typeExistenceCheck*, but the resulting type *virtual.SoundZebra* does not exist.
+ 
+##### Input (Code)
+
+[!include_code code_adaption_implementation.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Implementation_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Implementation_Out.png)
+
+### Adapt Types of Constructor/Method Parameters and Return Types
+
+With type adaption rules it is possible to **adjust the return type of a method** within derived classes. This means that wrapper method with the adapted types are generated, i.e., they are simply calling the method of the super class and returning its result, but they have another return type. For **parameter types the same principle can be used for constructors**.
+
+Usually, the reason for adapting types by such rules is to reflect the limitation of the returned type in the derived class's method or the limitation of a parameter type when constructing an object of the derived class (see [Covariance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science))).
+
+The example below shows such use cases. The method *getSound* in class *Animal* returns the stored *sound* object. The architectural idea is that this object shall have different types based on the concrete animal class, e.g. it has type *SoundDog* for *AnimalDog* or *SoundLion* for *AnimalLion*. Therefore, the method *getSound* shall specify these concrete types in sub classes of *Animal*. This enables simpler code when getting more concrete objects, but would also require boilerplate code in each sub class.
+
+This can be solved by applying the annotation ***@TypeAdaptionRule*** to method *getSound* in class *Animal*. Annotating the method itself means that the return type (and not any parameter type) shall be adapted in derived classes. Because of this annotation *getMethod* is generated automatically with adapted return types in the classes *SoundDog* and *SoundLion*. The generated methods just take the result of the original method and cast it to the adapted type. Of course, the architectural conditions mentioned above must be fulfilled in order to have such casts working for sure.
+
+The name of the adapted return type is actually processed using the ***value*** in *@TypeAdaptionRule*. This value is an [Adaption Rule Specification](#adaption-rule-specification). Please note, that for *AnimalZebra* this rule would result in a type called *virtual.SoundZebra*. Because the generation process actually **searches this type, but cannot find it, the type remains unchanged**. Therefore, there is no need to generate *getMethod* in *AnimalZebra*.
+
+The parameter in the constructor of class *Animal* is annotated by *@TypeAdaptionRule* as well. According to the principles above, the constructor is generated for child classes and the annotated parameter type is adapted. In this case it means that *AnimalDog* can only be constructed by passing a *SoundDog* object and *AnimalLion* by passing a *SoundLion* object. The passed objects are automatically passed to the parent class's constructor, of course.
+
+Please note again, that there is a special behavior for constructors. Although there is no type *SoundZebra* for *AnimalZebra*, which means that there is no type change for the constructor in *AnimalZebra*, it is still generated in order to enable the construction of *AnimalZebra*. Hence, there is **no need for implementing the constructor in *AnimalZebra* manually**.
+
+##### Input (Code)
+
+[!include_code code_adaption_type.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Type_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Type_Out.png)
+
+### Reimplement Constructors
+
+The example in [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types) shows how constructors in derived classes, which basically have no functionality in addition, can be implemented automatically based on constructors in the parent class. This can be triggered by the type adaption rule on a parameter.
+
+However, this use case can be valid even without adapting parameter types. For this, there is the annotation ***CopyConstructorRule***, which can be applied to several constructors in the base class. Each **annotated constructor will be implemented automatically in derived classes**, if there is no other manually implemented constructor.
+
+An example can be found in the following section.
+
+### Deactivate and Change Adaption Rules
+
+Adaption rules are usually applied for each derived class. However, there are several rules to avoid or change automatic adaption and even to stop for further derived classes.
+
+In case of **methods, adaption is affected** (relating to further derivation) as soon as a derived class overrides it, i.e., there is a (manual) implementation. In the class with the overridden method, there will be no adaption, of course. For further derived classes there are three possibilities:
+
+1. Adaption will be **changed**, if the implemented method applies another adaption rule, i.e., the new adaption rule is applied.
+2. Adaption will be **continued** unchanged, if the implemented method applies the annotation ***@AdaptedMethod***.
+3. Adaption will be **stopped** in other cases.
+
+In case of **constructors, adaption is affected** (relating to further derivation) as soon as a derived class implements any constructor. Any adaption rule for constructors is obsolete after that. However, it is possible to attach a new adaption rule to an implemented constructors again. This adaption rule will be considered for further derivation then.
+
+The example below shows some of these cases. Method *getSound* in class *Animal* is annotated by *@TypeAdaptionRule*. It is already overridden in class *AnimalCarnivora*. However, it is annotated by *@AdaptedMethod* there, so adaption is not stopped and the method gets automatically generated in *AnimalFelidae*. The same method is overridden again in *AnimalLion*, but not annotated by *@AdaptedMethod* this time. Therefore, in the derived class *AnimalLionSouthAfrica* it is not generated.
+
+Also the behavior for constructors is shown. Adaption is in place because *@TypeAdaptionRule* and *@CopyConstructorRule* (see [Reimplement Constructors](#reimplement-constructors)) are applied to the two constructors in *Animal*, so both constructors are generated in *AnimalCarnivora* and *AnimalFelidae*. Later, in class *AnimalLion* there is one constructor implemented manually. Therefore, no constructor is generated in *AnimalLionSouthAfrika*, which is why a constructor must be implemented there by hand. 
+
+##### Input (Code)
+
+[!include_code code_adaption_deactivate.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Deactivate_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Deactivate_Out.png)
+
+### Use Adaption Variables
+
+Within adaption rule specifications it is possible to access so-called **adaption variables**, e.g. via function *appendVariable* (see [Adaption Functions](#adaption-functions)). There are predefined adaption variables (see [Predefined Adaption Variables](#predefined-adaption-variables)), but it also possible to define own adaption variables and set values.
+
+In order to set an adaption variable, the annotation ***@SetAdaptionVariable*** must be applied to a class. The variables which are set this way will be available for rule specifications within the annotated class and any derived class. Of course, a derived class can also override the value of the adaption variable using *@SetAdaptionVariable* again.
+
+The following example shows how to set and override the adaption variables *var.cat.female* and *var.cat.striped*. They are also used in an *@ImplAdaptionRule*.
+
+##### Input (Code)
+
+[!include_code code_adaption_variables.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Variables_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Variables_Out.png)
+
+### Generate Factory Methods
+
+The ETAI library supports the **generation of factory methods** (see [Factory Method Pattern](https://en.wikipedia.org/wiki/Factory_method_pattern)).
+
+In order to generate factory methods, a class and derived classes must enable adaption (*@ApplyRules*). Afterwards, the first class in the type hierarchy, which shall get a factory method, must be annotated by a rule represented by ***@FactoryMethodRule***. All derived classes will also get a factory method according to the same rule. However, the rule can be changed by derived classes by annotating it again with other options. It can even be deactivated by annotating *@FactoryMethodRule* to a derived class and setting parameter *factoryMethod* to an empty string.
+
+The annotation *@FactoryMethodRule* supports several parameters, which allow for different patterns, e.g. a naming pattern or if the method shall be generated inside a factory class (see [Generate Factories](#generate-factories)). The name of the generated factory method can be defined by parameter ***factoryMethod***. It supports a special character *%*, which is replaced by the name of the class, in which the factory method is generated.
+
+The generated factory methods will reflect the parameters of the given constructors and factory methods will call them accordingly. This also works in scenarios, where this rule is combined with other rules and concepts of the ETAI library, i.e., it might be that constructors are not present in the Xtend code, because they will be generated as well (cp. [Reimplement Constructors](#reimplement-constructors) or [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)).
+
+As soon as factory methods are generated, **constructors become *protected***, i.e., classes usually can only be created via factory method from outside.
+
+#### Initialization after Object has been Constructed Completely
+
+If there is code, which shall be **executed after the object has been constructed completely**, the parameter ***initMethod*** can help. With this parameter the name of a method can be specified. This method will be called automatically after the complete construction, no matter which factory method has been called. Thereby, the word "complete" is important, because this actually means that it is save to call any method, which is not possible within constructors (cp. [Calling Methods from a Constructor](https://www.javaspecialists.eu/archive/Issue210.html)). However, **the method must not have parameters or a return value (*void*)**.
+
+In the example, class *Animal* specifies a factory method rule, which is why two factory methods are generated based on the two constructors of *Animal*. It also shows method *init*, which is called automatically after the object has been constructed via factory method. 
+
+##### Input (Code)
+
+[!include_code code_adaption_factory_method.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Factory_Method_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Factory_Method_Out.png)
+
+### Generate Factories
+
+Another parameter of *@FactoryMethodRule* (see [Generate Factory Methods](#generate-factory-methods)) is ***factoryInstance***. If it is non-empty, an inner class *Factory* (*private*) will be generated for all adapted classes. This class represents a **factory class** (see [Factory](https://en.wikipedia.org/wiki/Factory_(object-oriented_programming))). A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. In this case, the factory method, which shall be generated, will not be in the adapted class, but inside the factory class.
+
+If generating factory classes, it can also be helpful to provide an interface for them, which allows for supporting the [Abstract Factory Pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern). The type of such an interface can be specified by setting the ***factoryInterface*** parameter.
+
+An alternative to *factoryInterface* is ***factoryInterfaceVariable*** (both must not be used). In case of *factoryInterfaceVariable*, the name of the factory class's interface is not static, but will be equal to the value of an adaption variable (see [Use Adaption Variables](#use-adaption-variables)) in context of the adapted class. The name of the adaption variable is given by *factoryInterfaceVariable*. If the referred adaption variable is not set, an interface will not be applied.
+
+The example below shows the generation of factory classes. The rule specification can be found on *Animal*. Based on this, *AnimalLion* and *AnimalDog* generate two factory classes. Both implement interface *IAnimalFactory*, and both can be referenced by a *static* attribute called *FACTORY*. Finally, method *main* shows how an *AnimalLion* object can be constructed.
+
+##### Input (Code)
+
+[!include_code code_adaption_factory_class.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_Adaption_Factory_Class_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Adaption_Factory_Class_Out.png)
+
+### Adaption Rule Specification
+
+An adaption rule specification is stored in a string, which contains **adaption function calls**. Thereby, each adaption function call looks similar to a regular Java function call. Multiple adaption function calls are separated by ";".
+
+When applying an adaption rule the adaption function calls are executed sequentially and each function manipulates the **current value**, which is a string and starts *empty*. After the last adaption function call, this value represents also the *result*.
+
+The following diagram describes this principle. The basis is this adaption rule specification:
+
+| **apply(Test);append(MyWorld);replace(My,Hello)** |
+|:-------------------------:|
+
+![](images/PlantUML_AdaptionFunctions_Principle.png)
+
+#### Adaption Functions
+
+The following table lists supported *adaption functions*:
+
+| Function                  | Description                                                    |
+| ------------------------- |---------------------------------------------------------------:|
+| ***apply(x)*** | *x* will replace the *current value* |
+| ***append(x)*** | *x* will be appended to the *current value* |
+| ***prepend(x)*** | *x* will be prepended to the *current value* |
+| ***applyVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and replace the *current value* |
+| ***appendVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be appended to the *current value* |
+| ***prependVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be prepended to the *current value* |
+| ***replace(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* |
+| ***replaceAll(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
+| ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions(https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
+| ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* |
+| ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
+| ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
+| ***alternative(x)*** | see [Adaption Function: *alternative*](#adaption-function-alternative) |
+
+#### Predefined Adaption Variables
+
+Within adaption rule specifications it is possible to access the values of **adaption variables**. They can be set and changed freely in context of a class hierarchy (see [Use Adaption Variables](#use-adaption-variables)). However, there are also predefined variables, which are usually automatically set in relation to the current generation context. An example can be found here: [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types).
+
+The following table shows existing predefined adaption variables:
+
+| Adaption Variable         | Value                                                    |
+| ------------------------- |---------------------------------------------------------------:|
+| ***var.package*** | the package name |
+| ***var.class.simple*** | the class name (unqualified) |
+| ***var.class.qualified*** | the fully qualified class name |
+| ***var.class.abstract*** | if the class is abstract "true", otherwise "false" |
+| ***var.class.typeparameter.1*** | the name of type parameter *#1* (if available) |
+| ***var.class.typeparameter.2*** | the name of type parameter *#2* (if available) |
+| *...* | |
+| ***var.class.typeparameter.x*** | the name of type parameter *#x* (if available) |
+| ***const.bracket.round.open*** | round bracket, open, "("<br>(enables workaround to access this character in specific situations) |
+| ***const.bracket.round.close*** | round bracket, closed, "("<br>(enables workaround to access this character in specific situations) |
+
+#### Adaption Function: *alternative*
+
+The adaption function *alternative* can only be applied for type adaption rules (see [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types)) and is special. It **must be the last call** within an adaption rule specification (except other *alternative* calls) and opens an **alternative result path**. In general, within *alternative(x)* another adaption rule specification can be nested.
+
+If the evaluation of the adaption rule until an *alternative* call does not result in a string which represents a valid type, the adaption rule within *alternative* will be evaluated and used as result (if valid).
+
+The following diagram exemplifies this adaption rule specification:
+
+| **apply(X1);alternative(replace(1,2));alternative(replace(2,3))** |
+|:-------------------------:|
+
+![](images/PlantUML_AdaptionFunctions_Alternative.png)
+
+##### Limitations
+
+> The adaption function *alternative* is applicable only on top-level (no further nesting).

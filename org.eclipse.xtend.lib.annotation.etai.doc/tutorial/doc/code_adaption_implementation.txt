@@ -1,0 +1,43 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+
+abstract class Sound {}
+
+class SoundDog extends Sound {}
+
+class SoundLion extends Sound {}
+
+@ApplyRules
+abstract class Animal {
+
+	@ImplAdaptionRule("
+		apply(return \");
+		appendVariable(var.class.qualified);
+		append(\";)")
+	abstract def String getClassName()
+	
+	@ImplAdaptionRule(
+		value="
+			applyVariable(var.class.simple);
+			replaceAll(Animal,);
+			prepend(return new Sound);
+			append(();)
+		",
+		typeExistenceCheck="
+			applyVariable(var.class.qualified);
+			replaceAll(Animal,Sound)
+		")
+	def Sound createSoundObject() { return null; }
+	
+}
+
+@ApplyRules
+class AnimalDog extends Animal {}
+
+@ApplyRules
+class AnimalLion extends Animal {}
+
+@ApplyRules
+class AnimalZebra extends Animal {}

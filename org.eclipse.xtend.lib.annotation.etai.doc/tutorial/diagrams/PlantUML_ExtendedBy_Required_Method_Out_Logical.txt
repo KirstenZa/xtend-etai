@@ -1,0 +1,36 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Bird\n&#123;abstract&#125;" as Bird {
+	-age:int
+	#isHealthy():boolean
+	+getAge():int
+}
+
+interface IXFlying <<Interface>> {
+	+fly()
+	+getFlyingSpeedFactor():double
+} 
+
+abstract class "Raptor\n&#123;abstract&#125;" as Raptor {
+	+fly()
+	{abstract} #isFledged():boolean &#009; &#123;abstract&#125;
+}
+
+class Eagle {
+	#isFledged():boolean
+	+getFlyingSpeedFactor():double
+}
+
+Raptor .up-|> IXFlying
+Raptor -up-|> Bird
+Eagle -up-|> Raptor
+
+@enduml

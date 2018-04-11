@@ -1,0 +1,21 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
+import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
+
+@ApplyRules
+@FactoryMethodRule(factoryMethod="create%", initMethod="init")
+class Animal {
+	
+	int age
+	
+	@CopyConstructorRule
+	new() { this.age = 0 }
+	
+	@CopyConstructorRule
+	new(int age) { this.age  = age }
+	
+	def void init() {}
+	
+}

@@ -1,0 +1,52 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XWithName\n&#123;abstract&#125;" as XWithName <<TraitClass>> {
+	-name:String
+	<<ExclusiveMethod>> +getName():String
+	<<ExclusiveMethod>> +setName(name:String)
+}
+
+abstract class "XWithAge\n&#123;abstract&#125;" as XWithAge <<TraitClass>> {
+	-age:int
+	<<ExclusiveMethod>> +getAge():int
+	<<ExclusiveMethod>> +setAge(age:int)
+}
+
+abstract class "XWithSpeed\n&#123;abstract&#125;" as XWithSpeed <<TraitClass>> {
+	-speed:double
+	<<ExclusiveMethod>> +getSpeed():double
+	<<ExclusiveMethod>> +setSpeed(speed:double)
+}
+
+abstract class "XBasicAttributes\n&#123;abstract&#125;" as XBasicAttributes <<TraitClass>> {
+}
+
+abstract class "XExtendedAttributes\n&#123;abstract&#125;" as XExtendedAttributes <<TraitClass>> {
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+}
+
+class Bird {
+}
+
+Bird -up-|> Animal
+
+XWithSpeed .up-|> XWithAge : <<TraitClassAutoUsing>>
+XBasicAttributes .up-|> XWithName : <<TraitClassAutoUsing>>
+XBasicAttributes .up-|> XWithAge : <<TraitClassAutoUsing>>
+XExtendedAttributes .up-|> XBasicAttributes : <<TraitClassAutoUsing>>
+XExtendedAttributes .up-|> XWithSpeed : <<TraitClassAutoUsing>>
+
+Animal .up-|> XBasicAttributes : <<ExtendedByAuto>>
+Bird .up-|> XExtendedAttributes : <<ExtendedByAuto>>
+
+@enduml

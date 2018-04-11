@@ -1,0 +1,21 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XEater\n&#123;abstract&#125;" as XEater <<TraitClass>> {
+	<<EnvelopeMethod>> &#009; +eat(prey:String):String
+} 
+
+class Frog {
+    +eat(prey:String):String
+}
+
+Frog .up-|> XEater : <<ExtendedByAuto>>
+
+@enduml

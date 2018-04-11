@@ -1,0 +1,73 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class "Sound\n&#123;abstract&#125;" as Sound {
+}
+class SoundDog {
+}
+class SoundLion {
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal {
+	{abstract} +getClassName():String &#009; &#009; &#009; &#123;abstract&#125;
+	+createSoundObject():Sound 
+}
+
+class AnimalDog {
+    <<AdaptedMethod>> +getClassName():String
+    <<AdaptedMethod>> +createSoundObject():Sound 
+}
+
+class AnimalLion {
+    <<AdaptedMethod>> +getClassName():String
+    <<AdaptedMethod>> +createSoundObject():Sound 
+}
+
+class AnimalZebra {
+    <<AdaptedMethod>> +getClassName():String
+}
+
+Sound <|-down- SoundDog
+Sound <|-down- SoundLion
+
+Animal <|-down- AnimalDog
+Animal <|-down- AnimalLion
+Animal <|--down-- AnimalZebra
+
+note right of Animal::createSoundObject
+  return null;
+end note
+
+note right of AnimalDog::getClassName
+  return "virtual.AnimalDog";
+end note
+
+note right of AnimalDog::createSoundObject
+  return new SoundDog();
+end note
+
+note left of AnimalLion::getClassName
+  return "virtual.AnimalLion";
+end note
+
+note left of AnimalLion::createSoundObject
+  return new SoundLion();
+end note
+
+note left of AnimalZebra::getClassName
+  return "virtual.AnimalZebra";
+end note
+
+' Layout
+AnimalDog <-down[hidden]- AnimalZebra
+AnimalDog <-down[hidden]- AnimalLion
+AnimalDog <-up[hidden]- Sound
+
+@enduml

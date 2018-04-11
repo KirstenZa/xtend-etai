@@ -1,0 +1,56 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXMoveLogger <<Interface>> {
+    +move()
+}
+
+interface IXMoveDigger <<Interface>> {
+    +move()
+}
+
+class XMoveLogger <<TraitClass>> {
+	+move()
+}
+
+class XMoveDigger <<TraitClass>> {
+	+move()
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    +move()
+    #moveInternal()
+}
+
+class Mole {
+    #moveInternal()
+}
+
+Animal *-> "-delegate$XMoveLogger    " XMoveLogger
+Mole *-> "-delegate$XMoveDigger" XMoveDigger
+
+Mole -up-|> Animal
+
+XMoveLogger .up-|> IXMoveLogger
+XMoveDigger .up-|> IXMoveDigger
+
+Animal .up-|> IXMoveLogger
+Mole .up-|> IXMoveDigger
+
+note "delegates to" as Delegate1
+note "delegates to" as Delegate2
+
+Animal::move . Delegate1
+Delegate1 .> XMoveLogger::move
+
+Mole::moveInternal . Delegate2
+Delegate2 .> XMoveDigger::move
+
+@enduml

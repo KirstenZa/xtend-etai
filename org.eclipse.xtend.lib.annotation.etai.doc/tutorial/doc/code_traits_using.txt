@@ -1,0 +1,63 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+
+import virtual.intf.IXBasicAttributes
+import virtual.intf.IXExtendedAttributes
+import virtual.intf.IXWithAge
+import virtual.intf.IXWithName
+import virtual.intf.IXWithSpeed
+
+@TraitClass
+abstract class XWithName {
+
+	String name
+
+	@ExclusiveMethod
+	override String getName() { name }
+
+	@ExclusiveMethod
+	override void setName(String name) { this.name = name }
+
+}
+
+@TraitClass
+abstract class XWithAge {
+	
+	int age
+
+	@ExclusiveMethod
+	override int getAge() { age }
+
+	@ExclusiveMethod
+	override void setAge(int age) { this.age = age }
+	
+}
+
+@TraitClassAutoUsing
+abstract class XWithSpeed implements IXWithAge {
+	
+	double speed
+
+	@ExclusiveMethod
+	override double getSpeed() { if (age < 0 ) 0 else speed }
+
+	@ExclusiveMethod
+	override void setSpeed(double speed) { this.speed = speed }
+	
+}
+
+@TraitClassAutoUsing
+abstract class XBasicAttributes implements IXWithName, IXWithAge {}
+
+@TraitClassAutoUsing
+abstract class XExtendedAttributes implements IXBasicAttributes, IXWithSpeed {}
+
+@ExtendedByAuto
+abstract class Animal implements IXBasicAttributes {}
+
+@ExtendedByAuto
+class Bird extends Animal implements IXExtendedAttributes {}

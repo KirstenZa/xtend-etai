@@ -1,0 +1,33 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XMoveLogger\n&#123;abstract&#125;" as XMoveLogger <<TraitClass>> {
+	<<EnvelopeMethod>> +move()
+}
+
+abstract class "XMoveDigger\n&#123;abstract&#125;" as XMoveDigger <<TraitClass>> {
+	<<ProcessedMethod(processor=EPVoidPost)>> +move()
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    <<TraitMethodRedirection("moveInternal")>> &#009; +move()
+    &#009; &#009; &#009; &#009; &#009; &#009; &#009; &#009; #moveInternal()
+}
+
+class Mole {
+    #moveInternal()
+}
+
+Mole -up-|> Animal
+
+Animal .up-|> XMoveLogger : <<ExtendedByAuto>>
+Mole .up-|> XMoveDigger : <<ExtendedByAuto>>
+
+@enduml

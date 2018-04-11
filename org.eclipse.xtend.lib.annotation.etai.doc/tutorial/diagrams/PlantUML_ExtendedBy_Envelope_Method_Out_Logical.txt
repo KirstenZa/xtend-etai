@@ -1,0 +1,28 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXEater <<Interface>> {
+	+eat(prey:String):String
+} 
+
+class Frog {
+    +eat(prey:String):String
+}
+
+Frog .up-|> IXEater
+
+note right of Frog::eat
+  <u>Output (prey: "fly"):</u>
+    LOG: start eating: fly
+    LOG: stop eating: fly
+    LOG: result: Yummy!
+end note
+
+@enduml

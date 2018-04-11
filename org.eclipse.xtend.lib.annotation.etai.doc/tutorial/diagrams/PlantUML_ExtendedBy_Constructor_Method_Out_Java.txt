@@ -1,0 +1,46 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXWithName <<Interface>> {
+	+getName():String
+} 
+
+class XWithName <<TraitClass>> {
+	-name:String
+	+createWithoutName() _
+	+createWithName(name:String) __
+	+getName():String
+}
+
+class Cat {
+    -age:int
+    <<@ExtendedConstructionHelperMethod>> &#009; #new$XWithName() _
+    <<@ExtendedConstructionHelperMethod>> &#009; #new$XWithName(name:String) __
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; &#009; +Cat()
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; &#009; +Cat(age:int,name:String)
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; &#009; +getAge():int
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; &#009; +getName():String
+}
+
+Cat .up-|> IXWithName
+XWithName .up-|> IXWithName
+
+Cat *-> "-delegate$XWithName    " XWithName
+
+note "delegates to" as Delegate
+
+Cat::_ . Delegate
+Delegate .> XWithName::_
+Cat::__ . Delegate
+Delegate .> XWithName::__
+Cat::getName . Delegate
+Delegate .> XWithName::getName
+
+@enduml

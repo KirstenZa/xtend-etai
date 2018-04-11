@@ -1,0 +1,62 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.EPDefault
+import org.eclipse.xtend.lib.annotation.etai.EPVoidPost
+import org.eclipse.xtend.lib.annotation.etai.EPBooleanPreAnd
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+
+import virtual.intf.IAnimal
+import virtual.intf.IXHunter
+
+@ExtractInterface
+abstract class Animal {
+	boolean adult
+	boolean male
+	override boolean isAdult() { adult }
+	override boolean isMale() { male }
+}
+
+@TraitClass
+abstract class XHunter implements IAnimal {
+
+    @ProcessedMethod(processor=EPDefault)
+    override String getHuntingMethods() {
+        "pursue"
+    }
+
+    @ProcessedMethod(processor=EPDefault)
+    override String getHunters() {
+        "individuals"
+    }
+    
+    @ProcessedMethod(processor=EPBooleanPreAnd)
+    override boolean canHunt() {
+        isAdult
+    }
+
+    @ProcessedMethod(processor=EPVoidPost)
+    override void hunt(String prey) {
+        System.out.println('''Hunting «prey»...''')
+    }
+
+}
+
+@ExtendedByAuto
+class Lion extends Animal implements IXHunter {
+
+    override String getHunters() {
+        "pack,lioness"
+    }
+    
+    override boolean canHunt() {
+        return !isMale
+    }
+
+    override void hunt(String prey) {
+        System.out.println("Roar!")
+    }
+
+}

@@ -1,0 +1,57 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.EPVoidPost
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitMethodRedirection
+
+import virtual.intf.IXMoveDigger
+import virtual.intf.IXMoveLogger
+
+@TraitClass
+abstract class XMoveLogger {
+
+	@EnvelopeMethod
+	override void move() {
+		System.out.println("start moving...")
+		move$extended
+		System.out.println("stop moving...")
+	}
+
+}
+
+@TraitClass
+abstract class XMoveDigger {
+
+	@ProcessedMethod(processor=EPVoidPost)
+	override void move() {
+		System.out.println("digging...")
+	}
+
+}
+
+@ExtendedByAuto
+abstract class Animal implements IXMoveLogger {
+
+	@TraitMethodRedirection("moveInternal")
+	override void move() {
+		moveInternal
+	}
+
+	def protected void moveInternal() {
+		System.out.println("moving...")
+	}
+
+}
+
+@ExtendedByAuto
+class Mole extends Animal implements IXMoveDigger {
+
+	override protected void moveInternal() {
+		super.moveInternal
+		System.out.println("through the ground...")
+	}
+
+}

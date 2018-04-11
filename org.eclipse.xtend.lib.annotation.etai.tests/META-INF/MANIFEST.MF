@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ETAI Library - Tests
+Bundle-SymbolicName: org.eclipse.xtend.lib.annotation.etai.tests
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.xtend.lib,
+ org.eclipse.xtext.xbase.lib,
+ org.junit;bundle-version="4.5.0",
+ org.eclipse.xtend.core,
+ org.eclipse.xtext,
+ org.eclipse.xtext.junit4,
+ org.eclipse.jdt.core,
+ org.eclipse.emf.codegen,
+ org.eclipse.xtext.xbase.testing,
+ org.eclipse.core.runtime,
+ org.eclipse.xtend.lib.annotation.etai;bundle-version="1.0.0",
+ org.apache.log4j,
+ org.objectweb.asm;bundle-version="5.0.1"
+Automatic-Module-Name: org.eclipse.xtend.lib.annotation.etai.tests
+

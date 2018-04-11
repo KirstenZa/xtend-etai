@@ -1,0 +1,69 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Animal\n&#123;abstract&#125;" as Animal <<ExtractInterface>> {
+    -adult:boolean
+    -male:boolean
+	+isAdult():boolean
+	+isMale():boolean
+}
+
+abstract class "XHunter\n&#123;abstract&#125;" as XHunter <<TraitClass>> {
+	<<ProcessedMethod(processor=EPDefault)>> &#009; &#009; +getHuntingMethods():String
+	<<ProcessedMethod(processor=EPDefault)>> &#009; &#009; +getHunters():String
+	<<ProcessedMethod(processor=EPBooleanPreAnd)>> &#009; +canHunt():boolean
+	<<ProcessedMethod(processor=EPVoidPost)>> &#009; &#009; +hunt(prey:String)
+} 
+
+class Lion {
+	+getHunters():String
+	+canHunt():boolean
+	+hunt(prey:String)
+}
+
+note "implements\nextracted\ninterface" as ImplementExtracted
+
+note right of XHunter::getHuntingMethods
+  return "pursue";
+end note
+
+note right of XHunter::getHunters
+  return "individuals";
+end note
+
+note right of XHunter::canHunt
+  return isAdult();
+end note
+
+note right of XHunter::hunt
+  <u>Output (prey: "Antelope"):</u>
+    Hunting Antelope...
+end note
+
+note left of Lion::getHunters
+  return "pack,lioness";
+end note
+
+note left of Lion::canHunt
+  return !isMale();
+end note
+
+note left of Lion::hunt
+  <u>Output (prey: "Antelope"):</u>
+    Roar!
+end note
+
+Lion -up-|> Animal
+Lion .up-|> XHunter : <<ExtendedByAuto>>
+
+XHunter .up. ImplementExtracted
+ImplementExtracted .up.|> Animal
+
+@enduml

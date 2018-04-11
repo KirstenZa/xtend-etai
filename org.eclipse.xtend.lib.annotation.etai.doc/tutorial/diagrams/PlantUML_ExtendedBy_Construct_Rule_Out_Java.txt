@@ -1,0 +1,75 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXWithSize <<Interface>> {
+	+getSize():double
+}
+
+interface IXWithName <<Interface>> {
+	+getName():String
+}
+
+class XWithSize <<TraitClass>> {
+	-size:double
+	+createWithSize(size:double)
+	+getSize():double
+}
+
+class XWithName <<TraitClass>> {
+	-name:String
+	+createWithoutName() _
+	+createWithName(name:String) __
+	+getName():String
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithSize(size:double) _
+    &#009; &#009; &#009; &#009; &#009; &#009; &#009; +getSize():double
+}
+
+class Cat {
+    -age:int
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithName() _
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithName(name:String) __
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; #Cat()
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; #Cat(age:int)
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(size:double):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(age:int,size:double):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(size:double,name:String):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(age:int,size:double,name:String):Cat
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; +getAge():int
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; +getName():String
+}
+
+Cat -up-|> Animal
+Animal .up-|> IXWithSize
+Cat .up-|> IXWithName
+XWithName .up-|> IXWithName
+XWithSize .up-|> IXWithSize
+
+Animal *-> "-delegate$XWithSize    " XWithSize
+Cat *-> "-delegate$XWithName    " XWithName
+
+note "delegates to" as Delegate1
+note "delegates to" as Delegate2
+
+Animal::_ . Delegate1
+Delegate1 .> XWithSize::createWithSize
+Animal::getSize . Delegate1
+Delegate1 .> XWithSize::getSize
+
+Cat::_ . Delegate2
+Delegate2 .> XWithName::_
+Cat::__ . Delegate2
+Delegate2 .> XWithName::__
+Cat::getName . Delegate2
+Delegate2 .> XWithName::getName
+
+@enduml

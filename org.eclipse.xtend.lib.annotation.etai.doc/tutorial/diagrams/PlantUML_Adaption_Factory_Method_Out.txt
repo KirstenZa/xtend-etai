@@ -1,0 +1,32 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class Animal {
+	-age:int
+	&#009; &#009; &#009; &#009; &#009; &#009; #Animal()
+	&#009; &#009; &#009; &#009; &#009; &#009; #Animal(age:int)
+	{static} <<GeneratedFactoryMethod>> &#009; +createAnimal():Animal
+	{static} <<GeneratedFactoryMethod>> &#009; +createAnimal(age:int):Animal
+	&#009; &#009; &#009; &#009; &#009; &#009; +init() 
+}
+
+note right of Animal::createAnimal
+  Animal newObject = new Animal();
+  newObject.init();
+  return newObject;
+end note
+
+note right of Animal::createAnimal(age:int)
+  Animal newObject = new Animal(age);
+  newObject.init();
+  return newObject;
+end note
+
+@enduml

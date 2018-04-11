@@ -1,0 +1,28 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Flow
+rectangle "//{empty}//" as s1 #orange
+storage "apply(Test)" as f1
+rectangle "Test" as s2 #yellow
+storage "append(MyWorld)" as f2
+rectangle "TestMyWorld" as s3 #yellow
+storage "replace(My,Hello)" as f3
+rectangle "TestHelloWorld" as s4 #orange
+
+s1 -> f1
+f1 -> s2
+s2 -> f2
+f2 -> s3
+s3 -> f3
+f3 -> s4
+
+f3 -[hidden]up-> s1
+
+@enduml

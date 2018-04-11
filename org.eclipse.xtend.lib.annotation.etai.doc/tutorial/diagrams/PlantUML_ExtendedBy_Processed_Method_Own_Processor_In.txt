@@ -1,0 +1,65 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface TraitMethodProcessor <<Interface>> {
+    +call(expressionTraitClass:LazyEvaluation, expressionExtendedClass:LazyEvaluation): Object
+} 
+
+class ProcessorStringCommaSeparated {
+    +call(expressionTraitClass:LazyEvaluation, expressionExtendedClass:LazyEvaluation): Object
+}
+
+abstract class "XFlying\n&#123;abstract&#125;" as XFlying <<TraitClass>> {
+	<<ProcessedMethod>> +getCharacteristics():String
+} 
+
+abstract class "XTalking\n&#123;abstract&#125;" as XTalking <<TraitClass>> {
+	<<ProcessedMethod>> +getCharacteristics():String
+} 
+
+abstract class "XColorful\n&#123;abstract&#125;" as XColorful <<TraitClass>> {
+	<<ProcessedMethod>> +getCharacteristics():String
+} 
+
+class Parrot {
+}
+
+ProcessorStringCommaSeparated .up-|> TraitMethodProcessor
+
+Parrot .-|> XFlying : <<ExtendedByAuto>>
+Parrot .-|> XTalking : <<ExtendedByAuto>>
+Parrot .-|> XColorful : <<ExtendedByAuto>>
+
+note left of XFlying::getCharacteristics
+  return "flying";
+end note
+
+note left of XTalking::getCharacteristics
+  return "talking";
+end note
+
+note left of XColorful::getCharacteristics
+  return "colorful";
+end note
+
+note "processor" as Processor
+
+XFlying::getCharacteristics . Processor
+XTalking::getCharacteristics . Processor
+XColorful::getCharacteristics . Processor
+Processor .> ProcessorStringCommaSeparated
+
+'Layout
+ProcessorStringCommaSeparated <-up[hidden]- XFlying
+XFlying <-up[hidden]- XTalking
+XTalking <-up[hidden]- XColorful
+XTalking <-left[hidden]- Parrot
+
+@enduml

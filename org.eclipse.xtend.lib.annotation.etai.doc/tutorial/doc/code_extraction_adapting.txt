@@ -1,0 +1,20 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+import org.eclipse.xtend.lib.annotation.etai.NoInterfaceExtract
+
+import external.IAnimal
+
+@ExtractInterface(name = "external.IAnimal")
+class Animal { 
+}
+
+@ExtractInterface(name = "#internal.")
+class Dog implements IAnimal {
+	
+	override void bark() { /* ... */ }
+	
+	@NoInterfaceExtract
+	def void bite() { /* ... */ }
+	 
+}

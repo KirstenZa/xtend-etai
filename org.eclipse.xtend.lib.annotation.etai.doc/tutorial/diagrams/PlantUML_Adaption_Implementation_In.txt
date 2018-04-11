@@ -1,0 +1,37 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class "Sound\n&#123;abstract&#125;" as Sound {
+}
+class SoundDog {
+}
+class SoundLion {
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules>> {
+	{abstract} <<ImplAdaptionRule(...)>> +getClassName():String &#009; &#009; &#123;abstract&#125;
+	<<ImplAdaptionRule(...)>> +createSoundObject():Sound 
+}
+
+class AnimalDog <<ApplyRules>> {
+}
+class AnimalLion <<ApplyRules>> {
+}
+class AnimalZebra <<ApplyRules>> {
+}
+
+Sound <|-down- SoundDog
+Sound <|-down- SoundLion
+
+Animal <|-down- AnimalDog
+Animal <|-down- AnimalLion
+Animal <|-down- AnimalZebra
+
+@enduml

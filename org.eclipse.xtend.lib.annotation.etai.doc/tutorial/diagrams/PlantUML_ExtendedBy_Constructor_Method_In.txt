@@ -1,0 +1,27 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XWithName\n&#123;abstract&#125;" as XWithName <<TraitClass>> {
+	-name:String
+	<<ConstructorMethod>> &#009; +createWithoutName() 
+	<<ConstructorMethod>> &#009; +createWithName(name:String) 
+	<<ExclusiveMethod>> &#009; &#009; +getName():String
+} 
+
+class Cat {
+    -age:int
+	+Cat()
+	+Cat(age:int)
+	+getAge():int
+}
+
+Cat .up-|> XWithName : <<ExtendedByAuto>>
+
+@enduml

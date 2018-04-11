@@ -1,0 +1,31 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Flow
+rectangle "//{empty}//" as s1 #orange
+storage "apply(X1)" as f1
+rectangle "X1" as s2
+storage "replace(1,2)" as f2
+rectangle "X2" as s3
+storage "replace(2,3) " as f3
+rectangle "X3" as s4 #orange
+
+rectangle "X1" as s2_res #orange
+rectangle "X2" as s3_res #orange
+
+s1 -> f1
+f1 -> s2
+s2 -d.> f2 : "   if X1 does not exist"
+s2 -r-> s2_res : "if X1 exists"
+f2 -> s3
+s3 -d.> f3 : "   if X2 does not exist"
+s3 -r-> s3_res : "if X2 exists"
+f3 -> s4
+
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+package virtual {
+
+	class Animal <<ExtractInterface(name = "external.IAnimal")>> {
+	}
+
+	class Dog <<ExtractInterface(name = "#internal.")>> {
+		&#009; &#009; &#009; &#009; +bark()
+		<<NoInterfaceExtract>> &#009; +bite()
+	}
+	
+	note "implements\nextracted\ninterface" as ImplementExtracted
+
+}
+
+Dog .up. ImplementExtracted
+ImplementExtracted .up.|> Animal
+
+@enduml

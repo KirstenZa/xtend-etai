@@ -1,0 +1,87 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+package virtual {
+	
+	package intf {
+
+		interface IMammal <<Interface>> {
+			+feed()
+		}
+
+		interface ICat <<Interface>> {
+		}
+
+		interface ILion <<Interface>> {
+			+roar()
+			+huntInPack()
+		}
+
+		interface IAnimal <<Interface>> {
+			+getHome():String
+		}
+
+		interface ILargeAnimal <<Interface>> {
+		}
+
+		interface IPredator <<Interface>> {
+		}
+
+		interface IMammalPredator <<Interface>> {
+		}
+	
+	}
+	
+	together {
+
+		abstract class "Mammal\n&#123;abstract&#125;" as Mammal {
+			+feed()
+		}
+
+		abstract class "Cat\n&#123;abstract&#125;" as Cat {
+		}
+
+		abstract class "BigCat\n&#123;abstract&#125;" as BigCat {
+			+roar()
+		}
+
+		class Lion {
+			+getHome():String
+			+huntInPack()
+		}
+
+	}
+
+}
+
+Mammal .left.|> IMammal
+Cat .left.|> ICat
+Lion .left.|> ILion
+
+Cat -up-|> Mammal
+BigCat -up-|> Cat
+Lion -up-|> BigCat
+
+Mammal .up.|> IAnimal
+Cat .up.|> IMammalPredator
+BigCat .up.|> ILargeAnimal
+
+ILargeAnimal -up-|> IAnimal
+IPredator -up-|> IAnimal
+IMammalPredator -up-|> IPredator
+IMammalPredator -up-|> IMammal
+
+IMammal -up-|> IAnimal
+ICat -up-|> IMammal
+ICat -up-|> IMammalPredator
+ILion -up-|> ICat
+ILion -up-|> ILargeAnimal
+
+@enduml

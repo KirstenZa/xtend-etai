@@ -1,0 +1,36 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Bird\n&#123;abstract&#125;" as Bird {
+	-age:int
+	#isHealthy():boolean
+	+getAge():int
+}
+
+abstract class "XFlying\n&#123;abstract&#125;" as XFlying <<TraitClass>> {
+	<<ExclusiveMethod>> &#009; +fly() 
+	{abstract} <<RequiredMethod>> &#009; #isHealthy():boolean &#009; &#009; &#009; &#123;abstract&#125;
+	{abstract} <<RequiredMethod>> &#009; #isFledged():boolean &#009; &#009; &#009; &#123;abstract&#125;
+	{abstract} <<RequiredMethod>> &#009; +getFlyingSpeedFactor():double &#009; &#123;abstract&#125;
+} 
+
+abstract class "Raptor\n&#123;abstract&#125;" as Raptor {
+}
+
+class Eagle {
+	#isFledged():boolean
+	+getFlyingSpeedFactor():double
+}
+
+Raptor .up-|> XFlying : <<ExtendedByAuto>>
+Raptor -up-|> Bird
+Eagle -up-|> Raptor
+
+@enduml

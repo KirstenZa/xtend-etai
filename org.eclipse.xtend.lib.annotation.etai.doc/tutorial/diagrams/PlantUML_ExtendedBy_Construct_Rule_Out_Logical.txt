@@ -1,0 +1,79 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXWithSize <<Interface>> {
+	+getSize():double
+}
+
+interface IXWithName <<Interface>> {
+	+getName():String
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithSize(size:double)
+    &#009; &#009; &#009; &#009; &#009; &#009; &#009; +getSize():double
+}
+
+class Cat {
+    -age:int
+	-name:String &#009; &#009; &#123;no access&#125;
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithName()
+    <<ExtendedConstructionHelperMethod>> &#009; #auto$new$XWithName(name:String)
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; #Cat()
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; #Cat(age:int)
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(size:double):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(age:int,size:double):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(size:double,name:String):Cat
+	{static} <<GeneratedFactoryMethod>> &#009;&#009; +create(age:int,size:double,name:String):Cat
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; +getName():String
+	&#009; &#009; &#009; &#009; &#009; &#009; &#009; +getAge():String
+}
+
+note right of Cat::auto$new$XWithName()
+  this.name = "*noname*";
+end note
+
+note right of Cat::auto$new$XWithName(name:String)
+  this.name = name;
+end note
+
+note right of Cat::create(size:double)
+  Cat newObject = new Cat();
+  newObject.auto$new$XWithSize(size);
+  newObject.auto$new$XWithName();
+  return newObject;
+end note
+
+note right of Cat::create(age:int,size:double)
+  Cat newObject = new Cat(age);
+  newObject.auto$new$XWithSize(size);
+  newObject.auto$new$XWithName();
+  return newObject;
+end note
+
+note right of Cat::create(size:double,name:String)
+  Cat newObject = new Cat();
+  newObject.auto$new$XWithSize(size);
+  newObject.auto$new$XWithName(name);
+  return newObject;
+end note
+
+note right of Cat::create(age:int,size:double,name:String)
+  Cat newObject = new Cat(age);
+  newObject.auto$new$XWithSize(size);
+  newObject.auto$new$XWithName(name);
+  return newObject;
+end note
+
+Cat -up-|> Animal
+Animal .up-|> IXWithSize
+Cat .up-|> IXWithName
+
+@enduml

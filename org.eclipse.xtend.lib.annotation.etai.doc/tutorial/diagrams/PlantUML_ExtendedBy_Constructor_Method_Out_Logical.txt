@@ -1,0 +1,46 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXWithName <<Interface>> {
+	+getName():String
+} 
+
+class Cat {
+    -age:int
+	-name:String &#009; &#009; &#123;no access&#125;
+    #new$XWithName()
+    #new$XWithName(name:String)
+	+Cat(age:int,name:String)
+	+Cat()
+	+getName():String
+	+getAge():String
+}
+
+note right of Cat::new$XWithName()
+  this.name = "*noname*";
+end note
+
+note right of Cat::new$XWithName(name:String)
+  this.name = name;
+end note
+
+note right of Cat::Cat(age:int,name:String)
+  this.age = age;
+  new$XWithName(name);
+end note
+
+note right of Cat::Cat()
+  this.age = 0;
+  new$XWithName();
+end note
+
+Cat .up-|> IXWithName
+
+@enduml

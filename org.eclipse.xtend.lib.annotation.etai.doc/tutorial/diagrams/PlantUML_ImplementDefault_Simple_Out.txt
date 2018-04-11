@@ -1,0 +1,40 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+
+'Class Diagram
+class IElephant <<ExtractInterface>> {
+	+trumpet()
+}
+	
+abstract class "AnimalBase\n&#123;abstract&#125;" as AnimalBase {
+	{abstract} +getWeight() : float &#009; &#123;abstract&#125;
+	{abstract} +getName() : String &#009; &#123;abstract&#125;
+}
+	
+class Elephant {
+	<<DefaultImplementation>> +trumpet()
+	<<DefaultImplementation>> +getWeight() : float
+	<<DefaultImplementation>> +getName() : String
+}
+
+Elephant -up-|> AnimalBase
+Elephant .up.|> IElephant
+
+note right of Elephant::trumpet
+  does nothing
+end note
+note right of Elephant::getWeight
+  returns the value **0.0f**
+end note
+note right of Elephant::getName
+  returns the value **null**
+end note
+
+@enduml

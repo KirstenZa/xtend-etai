@@ -1,0 +1,37 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+
+@ExtractInterface
+abstract class Mammal implements IAnimal {
+	override void feed() { /* ... */ }
+}
+
+@ExtractInterface
+abstract class Cat extends Mammal implements IMammalPredator {}
+
+abstract class BigCat extends Cat implements ILargeAnimal {
+	def String roar() { /* ... */ }
+}
+
+@ExtractInterface
+class Lion extends BigCat {
+	override String getHome() { "Afrika" }
+	override void huntInPack() {}
+}
+
+---SPLIT---
+
+package virtual.intf
+
+import virtual.intf.IMammal
+
+interface IAnimal {
+	def String getHome()
+}
+
+interface ILargeAnimal extends IAnimal {}
+
+interface IPredator extends IAnimal {}
+
+interface IMammalPredator extends IPredator, IMammal {}

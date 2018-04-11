@@ -1,0 +1,40 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXFlying <<Interface>> {
+	+getCharacteristics():String
+} 
+
+interface IXTalking <<Interface>> {
+	+getCharacteristics():String
+} 
+
+interface IXColorful <<Interface>> {
+	+getCharacteristics():String
+} 
+
+class Parrot {
+    +getCharacteristics():String
+}
+
+Parrot .right-|> IXFlying
+Parrot .right-|> IXTalking
+Parrot .right-|> IXColorful
+
+note left of Parrot::getCharacteristics
+  return "flying,talking,colorful";
+end note
+
+'Layout
+IXFlying <-up[hidden]- IXTalking
+IXTalking <-up[hidden]- IXColorful
+IXTalking <-left[hidden]- Parrot
+
+@enduml

@@ -1,0 +1,52 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.LazyEvaluation
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitMethodProcessor
+
+import virtual.intf.IXColorful
+import virtual.intf.IXFlying
+import virtual.intf.IXTalking
+
+class ProcessorStringCommaSeparated implements TraitMethodProcessor {
+
+	override Object call(
+			LazyEvaluation expressionTraitClass,
+			LazyEvaluation expressionExtendedClass) {
+		if (expressionExtendedClass === null)
+			return expressionTraitClass.eval() as String
+		else
+			return expressionExtendedClass.eval() as String + "," + 
+				expressionTraitClass.eval() as String
+	}
+
+}
+
+@TraitClass
+abstract class XFlying {
+
+	@ProcessedMethod(processor=ProcessorStringCommaSeparated)
+	override String getCharacteristics() { "flying"	}
+
+}
+
+@TraitClass
+abstract class XTalking {
+
+	@ProcessedMethod(processor=ProcessorStringCommaSeparated)
+	override String getCharacteristics() { "hunting" }
+
+}
+
+@TraitClass
+abstract class XColorful {
+
+	@ProcessedMethod(processor=ProcessorStringCommaSeparated)
+	override String getCharacteristics() { "colorful" }
+
+}
+
+@ExtendedByAuto
+class Parrot implements IXFlying, IXTalking, IXColorful {}

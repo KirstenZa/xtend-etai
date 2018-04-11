@@ -1,0 +1,53 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class "Sound\n&#123;abstract&#125;" as Sound {
+}
+class "SoundCarnivora\n&#123;abstract&#125;" as SoundCarnivora {
+	+check()
+}
+class "SoundFelidae\n&#123;abstract&#125;" as SoundFelidae {
+}
+class "SoundLion\n&#123;abstract&#125;" as SoundLion {
+}
+class SoundLionSouthAfrica {
+}
+
+class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules>> {
+	-sound:Sound
+	<<CopyConstructorRule>> &#009; +Animal()
+	&#009; &#009; &#009; &#009; &#009; +Animal(<<TypeAdaptionRule(...)>> sound:Sound)
+	<<TypeAdaptionRule(...)>> &#009; +getSound():Sound
+}
+
+class "AnimalCarnivora\n&#123;abstract&#125;" as AnimalCarnivora <<ApplyRules>> {
+	<<AdaptedMethod>> +getSound():SoundCarnivora
+}
+class "AnimalFelidae\n&#123;abstract&#125;" as AnimalFelidae <<ApplyRules>> {
+}
+class "AnimalLion\n&#123;abstract&#125;" as AnimalLion <<ApplyRules>> {
+	+AnimalLion(soundLion:SoundLion)
+	+getSound():SoundLion
+}
+class AnimalLionSouthAfrican <<ApplyRules>> {
+	+AnimalLionSouthAfrican(soundLion:SoundLion)
+}
+
+Sound <|-down- SoundCarnivora
+SoundCarnivora <|-down- SoundFelidae
+SoundFelidae <|-down- SoundLion
+SoundLion <|-down- SoundLionSouthAfrica
+
+Animal <|-down- AnimalCarnivora
+AnimalCarnivora <|-down- AnimalFelidae
+AnimalFelidae <|-down- AnimalLion
+AnimalLion <|-down- AnimalLionSouthAfrican
+
+@enduml

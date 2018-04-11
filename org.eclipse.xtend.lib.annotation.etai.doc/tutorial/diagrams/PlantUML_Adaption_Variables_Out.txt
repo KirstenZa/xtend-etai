@@ -1,0 +1,54 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+abstract class "AnimalCat\n&#123;abstract&#125;" as AnimalCat {
+	{static} +getFemaleName():String
+	{abstract} +isStriped():boolean &#009; &#009; &#123;abstract&#125;
+}
+
+class AnimalLion {
+    <<AdaptedMethod>> {static} +getFemaleName():String
+    <<AdaptedMethod>> +isStriped():boolean
+}
+class AnimalTiger {
+    <<AdaptedMethod>> {static} +getFemaleName():String
+    <<AdaptedMethod>> +isStriped():boolean
+}
+
+AnimalCat <|-down- AnimalLion
+AnimalCat <|-down- AnimalTiger
+
+note right of AnimalCat::getFemaleName
+  return "Queen";
+end note
+
+note left of AnimalLion::getFemaleName
+  return "Lioness";
+end note
+
+note left of AnimalLion::isStriped
+  return false;
+end note
+
+note right of AnimalTiger::getFemaleName
+  return "Tigress";
+end note
+
+note right of AnimalTiger::isStriped
+  return true;
+end note
+
+' Layout
+AnimalLion <-down[hidden]- AnimalTiger
+'AnimalTiger -left[hidden]-> AnimalLion
+'AnimalDog <-[hidden]- AnimalZebra
+'AnimalZebra <-[hidden]- Sound
+
+@enduml

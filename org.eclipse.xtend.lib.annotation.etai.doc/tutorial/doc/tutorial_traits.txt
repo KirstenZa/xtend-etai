@@ -1,0 +1,420 @@
+## Traits
+
+### Overview
+
+Extending classes via trait classes is the most powerful feature of the ETAI library. With the traits mechanism, it is possible to directly "inject" methods from so-called **trait classes** into classes beyond regular Java inheritance mechanisms. Thereby, trait classes can also specify and use attributes, i.e., **stateful extension** via trait classes is possible. It feels a little bit like [multiple inheritance](https://en.wikipedia.org/wiki/Multiple_inheritance) known from other languages like C++ and is an adaption of the [Traits](https://en.wikipedia.org/wiki/Trait_(computer_programming)) or [Mixin](https://en.wikipedia.org/wiki/Mixin) concept.
+
+### Basic Usage of Trait Classes
+
+Each regular (Xtend) class can be extended by trait classes besides usual class inheritance. This means that annotated methods of the trait classes will be "injected" into the **extended class**. This happens during code generation of the Java code. Actually, the generated code will call the method of the trait class by using a delegation pattern, i.e., internally an object of trait type is maintained. This way, methods of trait classes can also access and use attributes, which are defined inside the trait class.
+
+A trait class must be declared *abstract* and annotated by ***@TraitClass***. This implicates several effects. First, a mirror interface will be extracted exactly as if *@ExtractInterface* is annotated (cp. [Interface Extraction](#interface-extraction)). Second, trait classes support attributes, but they do not support the specification of non-private, non-static methods and constructors. Non-*private*, non-*static* methods must be so-called **trait methods** and annotated accordingly. There are:
+
+- [Exclusive Methods](#exclusive-methods)
+- [Processed Methods](#processed-methods)
+- [Required Methods](#required-methods)
+- [Envelope Methods](#envelope-methods)
+
+Private or static methods can be used as usual.
+
+Instead of constructors, trait classes must specify so-called **constructor methods** (see [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)). Basically, they are a fifth type of trait method.
+
+In order to extend a class by a trait class, **the mirror interface of the trait class must be included in the list of implemented interfaces** (*implements*) of the class which shall be extended. In addition, the this class must be annotated by ***@ExtendedByAuto***.
+
+The example below shows a class named *Dog* which is extended by trait class *XNamed*. This trait class shall simply offer attribute *name* and the according methods *getName* and *setName* for any class, which is extended by this trait class. In order to extend dog this way, it *implements* the mirror interface *IXNamed*. Therefore it gets *getName* and *setName*, which can be used for any *Dog* object.
+
+Internally, *getName* and *setName* delegate to the methods implemented in *XNamed* via *delegate\$XNamed*. The attribute *name* can logically be considered as part of class *Dog*, but there is no access to it except via getter/setter. The used annotation *@ExclusiveMethod* for the trait methods *getName* and *setName* is explained in [Exclusive Methods](#exclusive-methods). 
+
+##### Input (Code)
+
+[!include_code code_traits_simple.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Simple_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Simple_Out_Logical.png)
+
+##### Output (Diagram - Technical / Java)
+
+![](images/PlantUML_ExtendedBy_Simple_Out_Java.png)
+
+##### Hint
+
+> Historically, the annotation ***@ExtendedBy*** was the only way to apply trait classes. With *@ExtendedBy* such trait classes can explicitly be specified within the annotation itself (*value*). However, it was not possible to enable the usage of Java Generics this way.
+>
+> Therefore, other possibilities have been investigated including the usage of a string. The easiest way, however, was to request the specification of the mirror interfaces of trait classes via *implements* in addition. The annotation *@ExtendedByAuto* does not demand the specification of any trait class, but it scans the listed interfaces for trait classes (resp. their mirror interfaces) and applies all of them automatically.
+>
+> **Java Generics are fully supported** now.
+
+### Exclusive Methods
+
+**Exclusive methodes** are the simplest type of trait methods. They are annotated by ***@ExclusiveMethod*** and demand that the **extended class does not have an implementation** of the method, yet. Logically, it can be considered that the exclusive method is simply copied ("injected").
+
+An example can be found in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes). If class *Dog* in that example implemented a method *getName* itself already, there would be an error reported by the active annotation processor.
+
+### Required Methods
+
+Another type of trait methods are **required methods** which are annotated by ***@RequiredMethod***. They must not be implemented and can be considered as a **way to define *abstract* methods** within trait classes and serve a very similar purpose, e.g. the declared method can already be used in algorithms of the trait class.
+
+Primarily, the possibility to specify required methods is just a simplification, because it is not necessary to create and apply additional interfaces. In addition, it is also possible to demand methods, which are not *public*. This cannot be realized via interfaces.
+
+In the example, there are three declarations of required methods within *XFlying*. They can be used in method *fly*, but they must be implemented somewhere in the extended class's hierarchy. This is ensured via different mechanisms, which is why three examples are shown. For *isHealthy* nothing happens during generation, because it is already implemented in the base class *Bird*. The method *getFlyingSpeedFactor* is included in the mirror interface *IXFlying*, which is a base mechanism for *public* trait methods. Finally, there are several cases where implementation must be ensured by generating an *abstract* method in the extended class. Such a scenario is illustrated by the *protected* method *isFledged*, which is included in *Raptor* therefore. Because it is generated with keyword *abstract* there, it must be implemented later on.
+
+##### Input (Code)
+
+[!include_code code_traits_required_method.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Required_Method_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Required_Method_Out_Logical.png)
+
+### Processed Methods
+
+**Processed methods** allow that the method is already implemented in the extended class. They must be annotated in the trait class by ***@ProcessedMethod***.
+
+This means that next to the method in the trait class, **the same method might exist in the extended class**. If this is not the case, the method in simply injected (see [Exclusive Methods](#exclusive-methods)). If the method exists in both classes the execution order must be coordinated and the final result based on two return values must be calculated. For that reason, a processed method needs to specify a **trait method processor**. This way it can be defined, if only one of the methods shall be executed or the return value shall be combined, for example.
+
+With such a processor a huge variety of scenarios can be realized. They can be implemented individually (see [Implement Own Trait Method Processor](#implement-own-trait-method-processor)), but there are also standard ones (see [Standard Trait Method Processors](#standard-trait-method-processors)).
+
+#### Standard Trait Method Processors
+
+The following trait method processors are predefined and ready-to-use (package *org.eclipse.xtend.lib.annotation.etai*):
+
+| Trait Method Processor    | Return Type     | Description                                                    |
+| ------------------------- |:----------:|---------------------------------------------------------------:|
+| ***EPDefault*** | any | If the trait method exists in the extended class, the extended class will override the functionality in the trait class, i.e. the functionality in the trait class just represents a default behavior. |
+| ***EPOverride*** | any | The trait method overrides a potential method in the extended class. |
+| ***EPVoidPre*** | *void* | The trait method is executed before a potential method in the extended class. |
+| ***EPVoidPost*** | *void* | The trait method is executed after a potential method in the extended class. |
+| ***EPVoidFinally*** | *void* | The trait method is executed after a potential method in the extended class, even if there has been an exception. |
+| ***EPBooleanPreAnd*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed, if the result of the trait method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. |
+| ***EPBooleanPostAnd*** | *boolean* | The trait method will only be executed after a potential method in the extended class, if the result of such a method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. If such a method does not exist, only the trait method will be called. |
+| ***EPBooleanPreOr*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed, if the result of the trait method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. |
+| ***EPBooleanPostOr*** | *boolean* | The trait method will only be executed after a potential method in the extended class, if the result of such a method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. If such a method does not exist, only the trait method will be called. |
+| ***EPFirstNotNullPre*** | non-*void* | The functionality of the trait class will be processed first. If there is a result, which is not *null*, this result will be returned immediately. If the result is *null*, the functionality of the extended class (if existing) will be processed afterwards and the latter result will be returned. |
+| ***EPFirstNotNullPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. If there is a result, which is not *null*, this result will be returned immediately. If the result is *null* (or there is no method in the extended class), the functionality of the trait class will be processed afterwards and the latter result will be returned. |
+| ***EPExtendedResultPre*** | non-*void* | The functionality of the trait class will be processed first. Afterwards, the functionality of the extended class (if existing) will be processed. The returned result will be the result from the functionality of the extended class, if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
+| ***EPExtendedResultPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. Afterwards, the functionality of the trait class will be processed. The returned result will be the result from the functionality of the extended class, if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
+| ***EPTraitClassResultPre*** | non-*void* | The functionality of the trait class will be processed first. Afterwards, the functionality of the extended class (if existing) will be processed. The returned result will be the result from the functionality of the trait class. The result from the functionality of the extended class will be ignored. |
+| ***EPTraitClassResultPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. Afterwards, the functionality of the trait class will be processed. The returned result will be the result from the functionality of the trait class. The result from the functionality of the extended class will be ignored. |
+
+In the example below, the consequences of three different standard trait method processors is shown.
+
+First of all, the processed methods *getHuntingMethods* and *getHunters* both apply processor *EPDefault*. This means, that *XHunter* specifies two methods representing default behavior, which is used, if the extended class does not specify an own behavior. Therefore, the extended class *Lion* completely applies *getHuntingMethods* from *XHunter*, but uses its own *getHunters* method.
+
+Another possibility is show by processed method *canHunt* which applies *EPBooleanPreAnd*. This way, in context of *Lion* both implementations of *canHunt* (from *XHunter* and *Lion* itself) are logically executed and combined via AND operation.
+
+Finally, the processed method *hunt* shows a possible usage for *void* methods. On call of method *hunt*, the processor *EPVoidPost* ensures, that the implementation of *hunt* within *Lion* is executed first. Afterwards, the implementation of *hunt* within *XHunter* is executed.
+
+##### Input (Code)
+
+[!include_code code_traits_processed_method.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Processed_Method_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Processed_Method_Out_Logical.png)
+
+#### Implement Own Trait Method Processor
+
+As shown in the previous section, there are some standard processors which cover basic use cases. However, in case of more complex return types and accompanying requirements for combining return values and executing the methods, these use cases might not fit. Then it is necessary to write an own trait method processor.
+
+A trait method processor must implement the interface ***TraitMethodProcessor*** and therefore its method ***call***. If a trait class's method *myMethod* gets annotated by *@ProcessedMethod* together with a trait method processor, the processor's *call* method will get responsible for executing the implementation of *myMethod* in the trait class and the potential implementation in the extended class. So it is wrapping the original implementations. For example, if the implementation of *call* is empty, actually nothing from the original implementations of *myMethod* will be executed.
+
+Method *call* gets two arguments of type ***LazyEvaluation***: ***expressionTraitClass*** and ***expressionExtendedClass***. Both are actually [function objects](https://en.wikipedia.org/wiki/Function_object) which already bind the arguments for calling the original methods. Argument ***expressionExtendedClass* might be *null***, if there is no according method in the extended class. If such a method is required, by the way, it is possible to set attribute *required* of *@ProcessedMethod* to *true* (see [Flag: *required*](#flag-required)).
+
+Objects of type *LazyEvaluation* offer method *eval*. If calling this method for *expressionTraitClass*, the implementation of the original method in the trait class is executed. If calling this method for *expressionExtendedClass*, the implementation of the original method in the extended class is executed. The return value of both executions is returned by *eval* and can be used and modified within *call*. In the end, also ***call* has to return a value**, which then represents the final result.
+
+If the original method has return type *void*, *call* is simply expected to return *null*.
+
+The following code shows an exemplary trait method processor *ProcessorStringCommaSeparated*. It shall execute the original method of the extended class first and the original method of the trait class afterwards. It concatenates both resulting strings with a separating comma in between and returns the concatenated string.
+
+This trait method processor is used for method *getCharacteristics* of all three trait classes *XFlying*, *XTalking* and *XColorful*. Class *Parrot* is extended by these trait classes, so in the end, it gets a method *getCharacteristics* which returns *"flying,talking,colorful"*, i.e. the individual results combined by *ProcessorStringCommaSeparated*.
+
+The example also shows what happens, if multiple trait classes with the same processed method are applied. The extension starts with trait class  *XFlying*. This class logically introduces the first implementation of *getCharacteristics*. Second, *XTalking* is applied, so its method *getCharacteristics* gets combined with the first implementation (via *ProcessorStringCommaSeparated*). Finally, *XColorful* has another implementation of *getCharacteristics*, which again is combined with the combination before (also via *ProcessorStringCommaSeparated*). This represents the final logical behavior of the method *getCharacteristics*, which is injected into *Parrot*. 
+
+##### Input (Code)
+
+[!include_code code_traits_processed_method_own_processor.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Processed_Method_Own_Processor_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Processed_Method_Own_Processor_Out_Logical.png)
+
+### Envelope Methods
+
+**Envelope methods** are annotated by ***@EnvelopeMethod***. They are similar to processed methods with *EPOverride* as processor (see [Standard Trait Method Processors](#standard-trait-method-processors)). This means, that any matching method of the extended class is overridden/masked by the envelope method. However, with envelope methods **it is possible to explicitly call the overridden method**. For that purpose, an envelope method can call ***method\$extended***, where *method* must be replaced by the actual method name.
+
+In the example below, class *Frog* is shown, which already implements method *eat*. However, the same method is specified by its trait class *XEater*. It is marked as envelope method, so if called for a *Frog* object, the *eat* method of *XEater* will be executed first. However, it calls *eat\$extended*, i.e., also the original *eat* method of *Frog* is executed there. 
+
+##### Input (Code)
+
+[!include_code code_traits_envelope_method.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Envelope_Method_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Envelope_Method_Out_Logical.png)
+
+#### Default Value Provider
+
+Applying an envelope method usually requires that the extended class implements a matching method, because the envelope wants to call it (*method\$extended*). However, it might be ok that there is no such method in the extended class. If this is the case, the envelope must specify a **default value provider**. This provider has to provide a (default) value. If the method of the extended class is called, but such a method does not exist, this default value will be queried and used as if it is returned by the method.
+
+The default value provider can be set by parameter ***defaultValueProvider*** of *@EnvelopeMethod*, whereby the potential value is a class. The given class must implement the interface ***DefaultValueProvider&lt;T&gt;***, where *T* can be replaced by the actual type of the provided default value. As a consequence, the class must implement method *getDefaultValue* which just has to return the default value.
+
+An exemplary implementation of a default value provider is shown below. Because *Rabbit* does not implement method *eat*, but the trait class *XEater* calls *eat\$extended*, the default value *"ok"* is returned for a call of *eat*. This resulting value is caused by *StringOkProvider*.
+
+If a default value provider is given, it is also meaningful to set the *required* flag of the *@EnvelopeMethod* annotation to *false* (see [Flag: required](#flag-required)).
+
+##### Input (Code)
+
+[!include_code code_traits_envelope_method_default_value.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Envelope_Method_Default_Value_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Envelope_Method_Default_Value_Out_Logical.png)
+
+### Additional Flags for Trait Methods
+
+Some trait method annotations offer additional configuration parameters. They will be explained in the following.
+
+#### Flag: *required*
+
+It is possible for *@ProcessedMethod* and *@EnvelopeMethod* to **demand that the extended class already implements this method**. It is not sufficient, if there is only an abstract method.
+
+In order to activate this demand, the flag ***required*** must be set in the annotation of the trait method.
+
+In certain situations, it is not possible to change the value of this flag. For example, it must be set to *true* in case of *@EnvelopeMethod*, because the envelope method is able to call the method in the extended class. However, if a default value provider is given, it can be set to *false* (cp. [Default Value Provider](#default-value-provider)).
+
+#### Flag: *setFinal*
+
+For *@ExclusiveMethod*, *@ProcessedMethod* and *@EnvelopeMethod* the flag ***setFinal*** can be set. If it is set to *true*, the method **matching method in the extended class will be declared *final***.
+
+Afterwards, the method cannot be overridden any more. This way, the trait class can **ensure that there is no derivation** in context of the extended class. This can be very important for processed methods or envelope methods. In case of *@EnvelopeMethod* the parameter *setFinal* is even set to *true* by default.
+
+Sometimes, a trait method wants to guarantee that it is, for example, executed in the very beginning or the very end (*@ProcessedMethod*) of the whole algorithm, or a trait method wants to wrap the implementation of the extended class (*@EnvelopeMethod*) completely. This can only be guaranteed, if the method is set to *final*.
+
+If it is necessary that child classes influence the functionality of a method, but it has been set to *final*, a possible solution would be to delegate the execution flow to another (internal) method. This pattern and also some more details concerning *setFinal* are shown in the example in [Redirection of Trait Methods](#redirection-of-trait-methods). 
+
+### Redirection of Trait Methods
+
+It is possible to specify **rules so that a trait method is renamed** before it is actually injected into the extended class. This can be done by a feature called **trait method redirection**.
+
+If a method in the extended class is annotated by ***@TraitMethodRedirection***, which specifies a new method name via *String* *value*, each matching trait method will be renamed to this name before it is extending the class. In addition, it will become a new visibility, which is also specified by *@TraitMethodRedirection* via parameter *visibility* (default: *PROTECTED*). 
+
+The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive will be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
+
+However, **trait methods can ignore the redirection**. For this, there is a parameter *disableRedirection*, which can be specified together with *@EnvelopeMethod*, *@ProcessedMethod* or *@ExclusiveMethod*. If the flag is set to to *true*, which is the default value for *@EnvelopeMethod*, any setting by *@TraitMethodRedirection* is ignored.
+
+The following example shows redirection together with a use case. Trait class *XMoveLogger* specifies envelope method *move*. Its purpose is to log calls of method *move*. There shall be a log message before and after any other functionality within *move*, i.e. the envelope method must surround everything else. In order to ensure this, the flag *setFinal* is set to *true* (default) in *@EnvelopeMethod* and also redirection is disabled by setting *disableRedirection* to *true*. Because *move* becomes *final* in *Animal*, overriding is not possible any more, so the requirements mentioned above are always fulfilled.
+
+However, it is intended that the functionality of *move* is overridden in child classes, which is why an internal method *moveInternal* is specified and called from within *move*. In case other trait classes want to extend *move* as well, a redirection to *moveInternal* is configured. Therefore, the processed method *move* of *XMoveDigger* adjusts *moveInternal* instead of *move*.
+
+##### Input (Code)
+
+[!include_code code_traits_method_redirection.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Method_Redirection_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Method_Redirection_Out_Logical.png)
+
+##### Output (Diagram - Technical / Java)
+
+![](images/PlantUML_ExtendedBy_Method_Redirection_Out_Java.png)
+
+##### Hint
+
+> Redirection allows that an exclusive method is renamed **before** it is checked, if it already exists in the extended class. 
+
+### Constructor Methods and Construction Process
+
+As trait classes can have a state, it might be necessary that this state is initialized as soon as an according object is constructed. Therefore, it is possible to define **constructor methods** by annotating methods in trait classes with ***@ConstructorMethod***. Initialization code can be placed in such methods then.
+
+The name of a constructor method can be chosen freely. It has no impact on the generated code from a logical perspective. However, it must be declared *protected* and non-*static* and have return type *void*.
+
+A constructor method can be thought of as constructor for the trait class, so exactly one constructor method for each trait class **must be called when an object extended by this trait is constructed**. This means that in each constructor of the extended class such a call must exist. There is an **assertion during runtime**, which checks this prerequisite. This requirement is not applicable, of course, if there is no constructor method or only one constructor method without any parameter in a trait class. In the latter case, the constructor method is called automatically at the beginning of processing the object construction.
+
+For calling constructor methods, if applicable, **construction helper methods** are generated within the extended class. They are named ***new\$TraitClass*** where *TraitClass* is the name of the trait class containing the constructor methods. Such a helper method is generated for each constructor method. They are distinguished - exactly like constructors - only by parameters and their major purpose is to call the constructor method of the trait class.
+
+This is also shown in the example below. Trait class *XWithName* specifies two constructor methods. Because *Cat* is extended by this trait class, two construction helper methods named *new\$XWithName* are generated. One of them must be called within each constructor of *Cat*. This is actually done. Attribute *name* gets a value during object construction for sure this way.
+
+##### Input (Code)
+
+[!include_code code_traits_constructor_method.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Constructor_Method_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Constructor_Method_Out_Logical.png)
+
+##### Output (Diagram - Technical / Java)
+
+![](images/PlantUML_ExtendedBy_Constructor_Method_Out_Java.png)
+
+#### Automatic Generation of Constructors
+
+In combination with [adaption features](#automatic-adaption-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
+
+- the construction helper methods are called at the end of the constructor and
+- the parameters needed by construction helper methods are added to the constructor's parameter lists and later passed to the construction helper methods.
+
+If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Adaption of Classes](#automatic-adaption-of-classes)).
+
+Parameters of constructor methods are fully supported by this technique. They are simply added to the generated factory methods. In the trivial case that there is only one constructor method in the trait class and one constructor in the extended class, the parameters of the constructor methods are added to the end of the constructor's parameter list and then transferred to the generated factory method. In cases where multiple constructor methods, multiple (or no) constructors in the extended class or even multiple trait classes exist, cross products are calculated during code generation in order to generate factory methods and their parameter lists. The order of parameters is based on the order of applying trait classes, whereas parameters of the extended class's constructor always start the parameter list.
+
+This is shown in the following example. There are two trait classes *XWithSize* and *XWithName* which require a construction with a *size* and *name* (optional). The extended class *Cat* brings its own constructor with *age* (also optional). In fact, also a base class *Animal* is involved, but it does not affect the principle and therefore is ignored in this textual description.
+
+The mentioned parameters are combined in order to generate the *create* factory methods. There are four factory methods because of the two optional parameters *name* and *age*. One of these factory methods supports the specification of all three parameters *age*, *size* and *name*, of course. All parameters are forwarded to the according implementation.
+
+##### Input (Code)
+
+[!include_code code_traits_construct_rule.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Construct_Rule_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Construct_Rule_Out_Logical.png)
+
+##### Output (Diagram - Technical / Java)
+
+![](images/PlantUML_ExtendedBy_Construct_Rule_Out_Java.png)
+
+##### Hint
+
+> There are more fine-granular possibilities to control the automatic generation of factory methods as described above. The origin of *@ConstructRuleAuto* is the annotation ***@ConstructRule***. This annotation expects that a list of classes is given by its *value*. The listed classes must be trait classes. For all listed trait classes the extended class and child classes are not expected to call corresponding construction helper methods. Generated factory methods are adapted accordingly (as described above). The annotation *@ConstructRuleAuto* is just a shortcut, which automatically applies these rules for all trait classes which extend the annotated class.
+>
+> In addition to this, there is the annotation ***@ConstructRuleDisable***. It can be applied, if a construct rule for a specific trait class is active, i.e., factory methods would be adapted in order to call corresponding construction helper methods. This is not a valid use case for classes which apply *@ConstructRule* or *@ConstructRuleAuto*, but for child classes, because construct rules are also inherited. If construction helper methods must be called manually again there, e.g. because calculations must be performed or parameters shall be controlled completely, a construct rule can be disabled for the specified trait classes via *@ConstructRuleDisable* and its *value*.
+
+##### Warning
+
+> Of course, the automatic combination of parameters can lead to ambiguous factory methods. In this case, the described technique cannot be used and construction must be implemented manually. 
+
+### *this* within Trait Classes
+
+Trait classes can be thought of as extension for the class annotating it. Logically, if the annotated class is instantiated, we imagine one created object which contains all traits. It has the type the extended classes and trait classes (or rather their mirror interfaces). Technically, however, the object is composed of multiple sub objects including one object for each trait class (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
+
+#### Calling Methods inside of Trait Classes
+
+Of course, if the keyword *this* is used within methods of trait classes, it will technically not reference the object, we logically construct, but the technical instantiation of the trait class. This can lead to several logical problems, e.g. when calling methods. Due to several internal mechanisms some of these logical problems have been solved.
+
+For example, if a **trait method *methodX* within a trait class *A* calls *this.methodY***, whereas *methodY* is a trait method which is also in *A*, it does not necessarily mean that *methodY* of *A* is called. Imagine that *methodY* in *A* is a default method (cp. [Standard Trait Method Processors](#standard-trait-method-processors)), but the class extended by *A* has its own *methodY* implemented. In this case, it would usually be **expected that *methodY* of the extended class is called**, even if the call is within the trait class.
+
+**The ETAI library can ensure this**. Technically, this is possible by renaming methods and adding helper methods within trait classes during Java code generation.
+
+However, there is a **possibility to call the original method within the trait class explicitly**. This is even necessary in some use cases. For example, if the implementation of a method in the parent class shall be (re-)used. If trait method *methodX* wants to use the implementation of *methodX* in *B*, which is a parent class of *A*, it must call ***super.methodX\$impl*** instead of *super.methodX*. Using the latter usually even ends in an endless recursion. So, only **by adding *\$impl* the real implementation of a trait method can be called** from within a trait class.
+
+The following showcase exemplifies this. Method *attack* within trait class *XPredator* calls *sound*. However, the method *sound* within *XPredator* is not called directly. In case of a *Tiger* object, it actually is called in the end, because *Tiger* does not specify any method. In context of a *Wolf* object, however, the *sound* method of the *Wolf* class is called.
+
+The example also shows that method *sound* in *XPredator* wants to call the base functionality in *XAnimal*. For this it is using *super.attack\$impl*.
+
+##### Input (Code)
+
+[!include_code code_traits_this.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_This_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_This_Out_Logical.png)
+
+##### Output (Diagram - Technical / Java)
+
+![](images/PlantUML_ExtendedBy_This_Out_Java.png)
+
+#### Usage of *\$extendedThis*
+
+It is tricky to perform type checks regarding *this* within trait classes. As described above, *this* does not reference the logical object, which is extended by the trait class.
+
+In order to perform type checks, ***\$extendedThis*** instead of *this* should be used:
+
+| *if (\$extendedThis instanceof Type)* |
+|:-------------------------:|
+
+##### Hint
+
+> *\$extendedThis* always references the extended class. Actually, *\$extendedThis* is a generated method with the trait class's mirror interface as return type, because the extended class also implements this interface. The method returns *\$extendedThis\$data* (see example in previous section). This member variable is automatically set accordingly during construction of the object.
+
+### Trait Classes and Inheritance
+
+Trait classes support inheritance and **most known techniques can be used as usual**. For example, it is possible to override trait methods and even changing the type of a trait method is sometimes possible. For example, it is possible to change a trait method from *@ExclusiveMethod* to *@ProcessedMethod*, but not from *@EnvelopeMethod* to anything else.
+
+It is also important to know that **a trait class cannot be applied twice in the hierarchy of extended classes**. This is also a problem, if applied trait classes are not exactly equal, but there is a relationship, e.g. a trait class *A* is derived from trait class *B* (or the other way around). Then, it is not possible to extend a class by *A* and *B* together. 
+
+The following sub sections show some more specifics regarding trait classes and inheritance.
+
+#### Calling Trait Methods of Parent Class within Trait Classes
+
+There is an important rule for calling trait methods in trait parent classes:
+
+- If you want to call *super.method()* within a trait class, use **super.method\$impl** instead. This will apply, **if *method* is a trait method, but not a constructor method**.
+
+The background and more details are explained in [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes).
+
+#### Base Trait Classes
+
+If a class is declared *abstract* it is not possible to construct corresponding objects. However, writing such classes is still meaningful as some base functionality for derived classes can be implemented there.
+
+This schema is also be applicable for trait classes, i.e. it is possible to declare trait classes with base functionality, but it should not be possible to use them already. The keyword *abstract*, however, is not suitable, because each trait class is declared *abstract* anyways as it should not be possible to construct them.
+
+Therefore, it is possible to set flag *baseClass* in annotation *@TraitClass*. If it is set to *true*, it will not be possible to apply this trait class in order to extend another class. It can only be used as a base in order to derive other trait classes.
+
+#### Trait Classes using Trait Classes
+
+Trait classes can extend regular classes but not other trait classes via *@ExtendedByAuto*. However, there is a concept which solves this issue for the most part.
+
+The ETAI library allows to declare that a **trait class *A* uses another trait class *B***. This way, methods in *B* can be called in context of methods of trait class *A*. This is possible, because it will be ensured that a class, which is extended by trait class *A*, is also extended by *B*. As soon as a class is extended by *A*, there is a check, if the class (or any parent class) has also been extended by *B*. If not, the extension by *B* will automatically be applied. In the end, the logically constructed object contains all required methods, which is why all calls are successful and work as expected. Internally, delegation and redirection of calls are used again. 
+
+In order to specify that a trait class *A* is using trait class *B*, it is necessary for *A* to implement the mirror interfaces of *B* (*implements*), which follows the pattern of extending a regular class by a trait class. Instead of annotating a trait class by *@TraitClass*, it must be annotated by ***@TraitClassAutoUsing***. Of course, using multiple trait classes is supported.
+
+The following example shows how class *Bird* is extended by trait class *XExtendedAttributes*. This trait class uses other trait classes: *XWithSpeed* and *XBasicAttributes*. *XBasicAttributes* again uses other trait classes, which finally results in the fact that *Bird* is extended by *XWithName*, *XWithAge* and *XWithSpeed*. It is also be extended by *XBasicAttributes* and *XExtendedAttributes*, of course, but in the end these trait classes are empty and they represent only an abstraction layer for combining further trait classes. An important fact, however, is that *XWithName* and *XWithAge* have already extended the base class *Animal*, which is why they are technically not extending *Bird* again.
+
+Trait class *XWithSpeed* also shows that it is actually possible to call methods of used trait classes. Method *getSpeed* calls method *getAge*, which is implemented in *XWithAge*. This is possible, because it is ensured that the class which is extended by *XWithSpeed* will also be extended by *XWithAge*, so the corresponding implementation of *getAge* will be available in the constructed object.
+
+##### Input (Code)
+
+[!include_code code_traits_using.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Using_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Using_Out_Logical.png)
+
+##### Hint
+
+> Specifying the usage of other trait classes is also possible via parameter *using* of *@TraitClass*. The annotation *@TraitClassAutoUsing* is just a way to avoid a manual declaration by scanning the listed interfaces and using all trait classes found via their mirror interface (cp. with *@ExtendedByAuto* and *@ExtendedBy* in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)). 

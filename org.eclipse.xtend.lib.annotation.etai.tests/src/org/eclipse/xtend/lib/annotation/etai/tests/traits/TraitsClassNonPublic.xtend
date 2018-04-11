@@ -1,0 +1,337 @@
+package org.eclipse.xtend.lib.annotation.etai.tests.traits
+
+import org.eclipse.xtend.lib.annotation.etai.EPVoidPre
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IExtendedClassNonPublic
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublic
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicImplementRequired
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicImplementRequiredNonBase
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicUsingImplementRequired
+import java.lang.reflect.Modifier
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.services.Problem.Severity
+import org.junit.Test
+
+import static org.junit.Assert.*
+
+@TraitClassAutoUsing
+abstract class TraitClassNonPublic {
+
+	@ProcessedMethod(processor=EPVoidPre)
+	protected def void extendedMethodUsed() {
+		TraitTestsBase.TEST_BUFFER += "1"
+	}
+
+	@ExclusiveMethod
+	protected def void method1() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "A"
+	}
+
+	@ProcessedMethod(processor=EPVoidPre)
+	protected def void method2() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "B"
+	}
+
+	@ProcessedMethod(processor=EPVoidPre)
+	protected def void method3() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "C"
+	}
+
+	@ProcessedMethod(processor=EPVoidPre)
+	override void method4() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "D"
+	}
+
+	@RequiredMethod
+	protected def void methodRequired()
+
+}
+
+@ExtendedByAuto
+@ExtractInterface
+class ExtendedClassNonPublic implements ITraitClassNonPublic {
+
+	protected def void extendedMethodUsed() {
+		TraitTestsBase.TEST_BUFFER += "2"
+	}
+
+	protected def void method2() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "X"
+	}
+
+	override void method3() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "Y"
+	}
+
+	protected override void method4() {
+		extendedMethodUsed
+		TraitTestsBase.TEST_BUFFER += "Z"
+	}
+
+	override void method1PublicAccess() {
+		method1()
+	}
+
+	override void method2PublicAccess() {
+		method2()
+	}
+
+	override void methodRequired() {
+	}
+
+}
+
+abstract class ExtendedClassCheckIncreaseVisibilityBase {
+	abstract def void method2()
+
+	def void method3() {}
+
+	protected def void method4() {}
+}
+
+interface ExtendedClassCheckIncreaseVisibilityInterface {
+	def void method1()
+}
+
+@ExtendedByAuto
+class ExtendedClassCheckIncreaseVisibility extends ExtendedClassCheckIncreaseVisibilityBase implements ExtendedClassCheckIncreaseVisibilityInterface, ITraitClassNonPublic {
+
+	def void methodRequired() {
+	}
+
+}
+
+// test (protected) required method, which is implemented by derived trait class
+@TraitClassAutoUsing(baseClass=true)
+abstract class TraitClassNonPublicBase {
+
+	@ExclusiveMethod
+	protected def int method1() {
+		return 1
+	}
+
+	@RequiredMethod
+	protected def void methodRequired()
+
+}
+
+@TraitClassAutoUsing(baseClass=true)
+abstract class TraitClassNonPublicImplementRequiredBase extends TraitClassNonPublicBase {
+
+	@ExclusiveMethod
+	protected override void methodRequired() {
+
+		TraitTestsBase.TEST_BUFFER += "I"
+
+	}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassNonPublicImplementRequiredNonBase extends TraitClassNonPublicImplementRequiredBase {
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassNonPublicImplementRequired extends TraitClassNonPublicBase {
+
+	@ExclusiveMethod
+	protected override void methodRequired() {
+
+		TraitTestsBase.TEST_BUFFER += "I"
+
+	}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassNonPublicUsingImplementRequired implements ITraitClassNonPublicImplementRequired {
+}
+
+@ExtendedByAuto
+class ExtendedClassNonPublicImplementRequired implements ITraitClassNonPublicImplementRequired {
+}
+
+@ExtendedByAuto
+class ExtendedClassNonPublicUsingImplementRequired implements ITraitClassNonPublicUsingImplementRequired {
+}
+
+@ExtendedByAuto
+class ExtendedClassNonPublicImplementRequiredCheckBaseNonBase implements ITraitClassNonPublicImplementRequiredNonBase {
+}
+
+class TraitsNonPublicTests extends TraitTestsBase {
+
+	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
+
+	@Test
+	def void testVisibilityTraitClassConstructor() {
+
+		assertEquals(1, TraitClassNonPublic.declaredConstructors.size)
+		assertTrue(Modifier.isPublic(TraitClassNonPublic.declaredConstructors.get(0).modifiers))
+
+	}
+
+	@Test
+	def void testVisibilityTraitClassMethod() {
+
+		assertTrue(
+			Modifier.isPublic(
+				TraitClassNonPublic.getDeclaredMethod("method1" +
+					TraitClassProcessor.TRAIT_METHOD_IMPL_NAME_SUFFIX).modifiers))
+
+	}
+
+	@Test
+	def void testExtensionNonPublicCalls() {
+
+		val obj = new ExtendedClassNonPublic
+		obj.method1PublicAccess
+		obj.method2PublicAccess
+		obj.method3
+		obj.method4
+		assertEquals("12A12B12X12C12Y12D12Z", TEST_BUFFER)
+
+	}
+
+	@Test
+	def void testExtensionNonPublicIncreaseVisibility() {
+
+		assertTrue(Modifier.isProtected(ExtendedClassNonPublic.getDeclaredMethod("method1").modifiers))
+		assertTrue(Modifier.isProtected(ExtendedClassNonPublic.getDeclaredMethod("method2").modifiers))
+		assertTrue(Modifier.isPublic(ExtendedClassNonPublic.getDeclaredMethod("method3").modifiers))
+		assertTrue(Modifier.isPublic(ExtendedClassNonPublic.getDeclaredMethod("method4").modifiers))
+
+		assertTrue(Modifier.isPublic(ExtendedClassCheckIncreaseVisibility.getDeclaredMethod("method1").modifiers))
+		assertTrue(Modifier.isPublic(ExtendedClassCheckIncreaseVisibility.getDeclaredMethod("method2").modifiers))
+		assertTrue(Modifier.isPublic(ExtendedClassCheckIncreaseVisibility.getDeclaredMethod("method3").modifiers))
+		assertTrue(Modifier.isPublic(ExtendedClassCheckIncreaseVisibility.getDeclaredMethod("method4").modifiers))
+
+	}
+
+	@Test
+	def void testExtensionNonPublicImplementRequiredMethod() {
+
+		{
+			TraitTestsBase.TEST_BUFFER = ""
+			val obj = new ExtendedClassNonPublicImplementRequired
+			obj.methodRequired
+			assertEquals(1, obj.method1)
+			assertEquals("I", TEST_BUFFER)
+		}
+
+		{
+			TraitTestsBase.TEST_BUFFER = ""
+			val obj = new ExtendedClassNonPublicUsingImplementRequired
+			obj.methodRequired
+			assertEquals(1, obj.method1)
+			assertEquals("I", TEST_BUFFER)
+		}
+
+		{
+			TraitTestsBase.TEST_BUFFER = ""
+			val obj = new ExtendedClassNonPublicImplementRequiredCheckBaseNonBase
+			obj.methodRequired
+			assertEquals(1, obj.method1)
+			assertEquals("I", TEST_BUFFER)
+		}
+
+	}
+
+	@Test
+	def void testExtensionNonPublicInterfaces() {
+
+		var boolean exceptionThrown
+
+		exceptionThrown = false
+		try {
+			IExtendedClassNonPublic.getDeclaredMethod("method1")
+		} catch (NoSuchMethodException exception) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			IExtendedClassNonPublic.getDeclaredMethod("method2")
+		} catch (NoSuchMethodException exception) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			IExtendedClassNonPublic.getDeclaredMethod("method3")
+		} catch (NoSuchMethodException exception) {
+			exceptionThrown = true
+		}
+		assertFalse(exceptionThrown)
+
+	}
+
+	@Test
+	def void testExtensionNonPublicRequiredMethod() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+
+import virtual.intf.ITraitClassNonPublic
+
+@TraitClassAutoUsing
+abstract class TraitClassNonPublic {
+
+	@RequiredMethod
+	protected def void methodRequired()
+
+}
+
+@ExtendedByAuto
+class ExtendedClassNonPublicNonAbstract implements ITraitClassNonPublic {
+}
+
+@ExtendedByAuto
+abstract class ExtendedClassNonPublicAbstract implements ITraitClassNonPublic {
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazzNonAbstract = findClass("virtual.ExtendedClassNonPublicNonAbstract")
+			val clazzAbstract = findClass("virtual.ExtendedClassNonPublicAbstract")
+
+			val clazzProblemsNonAbstract = (clazzNonAbstract.primarySourceElement as ClassDeclaration).problems
+			val clazzProblemsAbstract = (clazzAbstract.primarySourceElement as ClassDeclaration).problems
+
+			// do assertions
+			assertEquals(1, allProblems.size)
+
+			assertEquals(1, clazzProblemsNonAbstract.size)
+			assertEquals(Severity.ERROR, clazzProblemsNonAbstract.get(0).severity)
+			assertTrue(clazzProblemsNonAbstract.get(0).message.contains("implemented in the non-abstract"))
+
+			assertEquals(0, clazzProblemsAbstract.size)
+
+		]
+
+	}
+
+}

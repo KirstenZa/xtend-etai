@@ -1,0 +1,43 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.ConstructorMethod
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+
+import virtual.intf.IXWithName
+
+@TraitClass
+abstract class XWithName {
+
+	String name
+
+	@ConstructorMethod
+	protected def void createWithoutName() { this.name = "*noname*" }
+
+	@ConstructorMethod
+	protected def void createWithName(String name) { this.name = name }
+
+	@ExclusiveMethod
+	override String getName() { name } 
+
+}
+
+@ExtendedByAuto
+class Cat implements IXWithName {
+	
+	int age
+
+	new() {
+		this.age = 0
+		new$XWithName()
+	}
+
+	new(int age, String name) {
+		this.age = age
+		new$XWithName(name)
+	}
+
+	def int getAge() { age }
+
+}

@@ -1,0 +1,31 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+	-age:int
+	+getAge():int
+	+setAge(age:int)
+	{abstract} +move() &#009; &#009; &#123;abstract&#125;
+}
+
+abstract class "XNamed\n&#123;abstract&#125;" as XNamed <<TraitClass>> {
+	-name:String
+	<<ExclusiveMethod>> +setName(name:String) 
+	<<ExclusiveMethod>> +getName():String
+} 
+
+class Dog {
+	+move()
+}
+
+Dog .up-|> XNamed : <<ExtendedByAuto>>
+Dog -up-|> Animal
+
+@enduml

@@ -1,0 +1,84 @@
+<project name="Build Javadoc" default="build">
+
+	<description>
+		Used to build Javadoc
+	</description>
+
+	<!-- convert paths -->
+	<eclipse.convertPath resourcePath="org.eclipse.xtend.lib.annotation.etai"
+		property="src.project.dir" />
+	<eclipse.convertPath resourcePath="org.eclipse.xtend.lib.annotation.etai.doc"
+		property="project.dir" />
+
+	<!-- define base properties -->
+	<property name="base.dir" value="${project.dir}/javadoc" />
+	<property name="output.dir" value="output" />
+	<property name="temp.dir" value="temp" />
+
+	<!-- define executables -->
+	<property name="javadoc" location="${eclipse.home}/addons/jdk/bin/javadoc.exe" />
+
+	<!-- Cleans up generated files. -->
+	<target name="clean">
+
+		<delete dir="${output.dir}" />
+		<delete dir="${temp.dir}" />
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate target and temp directory. -->
+	<target name="create-target-dir">
+
+		<mkdir dir="${output.dir}" />
+		<mkdir dir="${temp.dir}" />
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate HTML5 files from MarkDown source. -->
+	<target name="build-javadoc" depends="clean, create-target-dir">
+
+		<echo message="Building Javadoc" />
+		
+		<!-- Build claspath and save in properties file (which is loaded afterwards) -->
+		<java classname="org.eclipse.xtend.lib.annotation.etai.doc.BuildClasspath"
+			fork="true">
+			<arg value="${temp.dir}/xtendclasspath.property" />
+			<arg value="xtend.classpath" />
+			<arg value="${eclipse.home}/plugins" />
+			<arg value="com.google.guava_" />
+			<arg value="org.eclipse.xtext.xbase.lib_" />
+			<arg value="org.eclipse.xtend.lib_" />
+			<arg value="org.eclipse.xtend.lib.macro_" />
+			<classpath>
+				<pathelement location="${project.dir}/bin" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+		</java>
+		<loadproperties srcFile="${temp.dir}/xtendclasspath.property" />
+
+		<!-- Run javadoc -->
+		<javadoc packagenames="*.*"
+			sourcepath="${src.project.dir}/src;${src.project.dir}/xtend-gen"
+			executable="${javadoc}" defaultexcludes="yes" destdir="${output.dir}"
+			classpath="${xtend.classpath}" windowtitle="ETAI - Javadoc">
+			<doctitle><![CDATA[<h1>ETAI - Javadoc</h1>]]></doctitle>
+		</javadoc>
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate documentation. -->
+	<target name="build" depends="build-javadoc" />
+
+</project>

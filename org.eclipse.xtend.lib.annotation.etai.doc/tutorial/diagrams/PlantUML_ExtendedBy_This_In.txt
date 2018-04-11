@@ -1,0 +1,32 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XAnimal\n&#123;abstract&#125;" as XAnimal <<TraitClass>> {
+	+attack()
+}
+
+abstract class "XPredator\n&#123;abstract&#125;" as XPredator <<TraitClass>> {
+	<<ProcessedMethod(processor=EPDefault)>> &#009; +sound()
+	<<ExclusiveMethod>> &#009; &#009; &#009; &#009; &#009; +attack()
+} 
+
+class Wolf {
+    +sound()
+}
+
+class Tiger {
+}
+
+XPredator -up-|> XAnimal
+
+Wolf .up-|> XPredator : <<ExtendedByAuto>>
+Tiger .up-|> XPredator : <<ExtendedByAuto>>
+
+@enduml

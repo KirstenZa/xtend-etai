@@ -1,0 +1,41 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+	-age:int
+	+getAge():int
+	+setAge(age:int)
+	{abstract} +move() &#009; &#009; &#123;abstract&#125;
+}
+
+interface IXNamed <<Interface>> {
+	+getName():String
+	+setName(name:String)
+} 
+
+class Dog {
+	-name:String &#009; &#009; &#123;no access&#125;
+	+move()
+	+getName():String
+	+setName(name:String)
+}
+
+note right of Dog::setName(name:String)
+  this.name = name;
+end note
+
+note right of Dog::getName()
+  return name;
+end note
+
+Dog .up-|> IXNamed
+Dog -up-|> Animal
+
+@enduml

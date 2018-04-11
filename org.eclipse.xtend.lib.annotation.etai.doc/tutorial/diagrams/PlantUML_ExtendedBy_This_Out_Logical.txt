@@ -1,0 +1,56 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXAnimal <<Interface>> {
+	+attack()
+}
+
+interface IXPredator <<Interface>> {
+	+sound()
+}
+
+class Wolf {
+    +attack()
+    +sound()
+}
+
+class Tiger {
+    +attack()
+    +sound()
+}
+
+note right of Wolf::attack()
+  <u>Output:</u>
+    -attacking-
+    Howl!
+end note
+
+note right of Wolf::sound()
+  <u>Output:</u>
+    Howl!
+end note
+
+note right of Tiger::attack()
+  <u>Output:</u>
+    -attacking-
+    Roar!
+end note
+
+note right of Tiger::sound()
+  <u>Output:</u>
+    Roar!
+end note
+
+IXPredator -up-|> IXAnimal
+
+Wolf .up-|> IXPredator
+Tiger .up-|> IXPredator
+
+@enduml

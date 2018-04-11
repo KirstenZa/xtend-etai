@@ -1,0 +1,90 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+together {
+    interface IXAnimal <<Interface>> {
+    	+attack()
+    }
+
+    interface IXPredator <<Interface>> {
+    	+sound()
+    }
+}
+
+together {
+    abstract class "XAnimal\n&#123;abstract&#125;" as XAnimal <<TraitClass>> {
+    	#$extendedThis():IXAnimal
+    	+attack()
+    }
+
+    abstract class "XPredator\n&#123;abstract&#125;" as XPredator <<TraitClass>> {
+    	#$extendedThis():IXPredator
+    	+sound()
+    	+attack()
+    }
+}
+
+together {
+    class Wolf {
+        +attack()
+        +sound()
+    }
+
+    class Tiger {
+        +attack()
+        +sound()
+    }
+}
+
+together {
+    note "delegates to" as Delegate1
+    note "delegates to" as Delegate2
+}
+
+note left of XAnimal::$extendedThis()
+  return $extendedThis$data;
+end note
+
+note left of XPredator::$extendedThis()
+  return
+    (virtual.intf.IXPredator)
+    super.$extendedThis();
+end note
+
+Wolf *--> "-delegate$XPredator" XPredator
+Tiger *--> "-delegate$XPredator" XPredator
+
+XAnimal -> "-extendedThis$data       " IXAnimal
+
+Wolf::attack . Delegate1
+Delegate1 .> XPredator::attack
+Wolf::sound . Delegate1
+Delegate1 .> XPredator::sound
+
+Tiger::attack . Delegate2
+Delegate2 .> XPredator::attack
+Tiger::sound . Delegate2
+Delegate2 .> XPredator::sound
+
+IXPredator --|> IXAnimal
+XPredator --|> XAnimal
+
+XPredator ..-|> IXPredator
+XAnimal ..-|> IXAnimal
+Wolf ..-|> IXPredator
+Tiger ..-|> IXPredator
+
+'Layout
+Delegate1 -up[hidden]-> Delegate2
+Tiger -up[hidden]-> Wolf
+XPredator -down[hidden]-> XAnimal
+IXPredator -down[hidden]-> IXAnimal
+
+@enduml

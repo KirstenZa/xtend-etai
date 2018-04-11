@@ -1,0 +1,31 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.DefaultValueProvider
+
+import virtual.intf.IXEater
+
+class StringOkProvider implements DefaultValueProvider<String> {
+
+	override String getDefaultValue() { "ok" }
+
+}
+
+@TraitClass
+abstract class XEater {
+
+	@EnvelopeMethod(defaultValueProvider=StringOkProvider, required=false)
+	override String eat(String prey) {
+		System.out.println('''LOG: start eating: «prey»''')
+		val res = eat$extended(prey)
+		System.out.println('''LOG: stop eating: «prey»''')
+		System.out.println('''LOG: result: «res»''')
+		return res
+	}
+
+}
+
+@ExtendedByAuto
+class Rabbit implements IXEater {}

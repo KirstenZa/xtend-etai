@@ -1,0 +1,97 @@
+## Interface Extraction
+
+### Overview
+
+Interface Extraction is a small, but very useful feature of the ETAI library. It can **automatically extract an interface** (also called **mirror interface** in this context) for a given class. For this, the class just has to be annotated by ***@ExtractInterface***. Of course, the interface extraction supports some options to adjust the concrete behavior.
+
+Defining and working with interfaces is very important in modern software development. The separation of implementation and interface will help to manage software complexity and especially offer flexibility in later project stages. Algorithms shall rather work on basis of abstract objects with a defined interface instead of concrete ones.
+
+For many types of software components it is very hard to define interfaces in early phases and prototyping. Such interfaces will not be stable during the development process. This results in work overhead, because both implementation and interface must be maintained. Therefore, a meaningful usage of interfaces is even omitted at this point in time, so creating and using interfaces will cause work in refactoring phases.
+
+Extracting interfaces automatically in early project stages will solve this problem. If necessary, interface and implementation can be decoupled in later phases by writing the interface manually. There is no real overhead for the programmer until then.
+
+Interface Extraction is already available as an example of Xtend's Active Annotation abilities (see [\@Extract](https://www.eclipse.org/xtend/documentation/204_activeannotations.html)). However, the interface extraction implementation within the ETAI library supports a broader amount of Java constructs and offers slightly more features. Generics are fully supported, for example. In addition, it is smoothly working together with other ETAI features.
+				
+### Basic Usage of Interface Extraction
+
+In the following example a simple interface extraction is used. The annotation ***@ExtractInterface*** is applied to a class called *Lion*. Therefore, a mirror interface *ILion* is generated automatically. By default, this interface is located in a sub package called *intf*. The name of the interface or sub package can be influenced by options as shown in the latter examples (see [Adapt Interface Extration](#adapt-interface-extraction)).
+
+The generated mirror interface *ILion* gets all ***public*** methods (abstract and non-abstract) of *Lion* by default. Also Javadoc comments of the methods in *Lion* will be copied to the interface. Non-public methods will not show up in the interface. Finally, the class *Lion* will be adapted in order to implement the interface *ILion*.
+
+##### Input (Code)
+
+[!include_code code_extraction_simple.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtractInterface_Simple_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_ExtractInterface_Simple_Out.png)
+
+##### Important
+
+> Please note, that methods which shall be extracted must already be declared with ***override*** not *def*, even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
+
+##### Limitations
+
+> A class using *@ExtractInterface* must **not be placed in the default package**.
+>
+> It is also necessary to explicitly define all types for methods, because **types cannot be inferred for the extraction process**.
+
+### Adapt Interface Extraction
+
+There are two possibilities to influence the extraction of the mirror interface. Firstly, methods can be excluded, i.e., they will not become part of the extracted interface. Secondly, it can be specified how the name of the extracted interface is generated and in which package it is put.
+
+If a *public* method shall not be placed in the mirror interface, it must be annotated by ***@NoInterfaceExtract***.
+
+In order to influence the name and package of the mirror interface the parameter ***name*** of the *@ExtractInterface* annotation must be set. This parameter is also available for *@TraitClass*.
+
+The value of *name* must be a string and can be considered as *naming rule*:
+
+* If the naming rule does not contain any special character, the string represents the fully qualified name of the mirror interface.
+* If the naming rule starts with a *"#"* symbol, it contains a relative prefix. For example, if *name* is set to *"#subpack.I"* for a class *mainpack.Foo*, the mirror interface will be generated in a package called *mainpack.subpack* and the mirror interface's name will be *IFoo*. If the class is an inner class, the mirror interface will be in the same enclosing class.
+* If the naming rule starts with a *"@"* symbol, it contains an absolute prefix. For example, if *name* is set to *"@apack.I"* for a class *mainpack.Foo*, the mirror interface will be generated in a package called *apack* and the interface's name will be *IFoo*.
+
+The default value (applied if nothing is set) of *name* is *"#intf.I"*, so the mirror interface is put into a sub package *intf* (relative to the annotated class) and has the prefix *"I"*.
+
+The following example shows how both the usage of *@NoInterfaceExtract* and setting *name* to specific values.
+
+##### Input (Code)
+
+[!include_code code_extraction_adapting.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtractInterface_Adapting_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_ExtractInterface_Adapting_Out.png)
+
+##### Limitations
+
+*@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
+
+### Behavior of Interface Extraction in Hierarchies
+
+The extraction of mirror interfaces also takes the **type hierarchy** of the class with *@ExtractInterface* annotation into account. For example, the implemented interfaces of the annotated class will also be the base for the mirror interface.
+
+In addition, **methods of parent classes and their implemented interfaces** are processed as if they were in the annotated class. A recursive algorithm takes care that also elements in parents are extracted. It can stop, however, if another parent class with *@ExtractInterface* annotation is found.
+
+The example below shows this. The extracted mirror interface *IMammal* extends *IAnimal*, because this has been defined for *Mammal*. Another showcase is the mirror interface *ILion*. In this case, *Lion* does not directly define implemented interfaces. However, its base class *BigCat* does implement *ILargeAnimal*, which is why *ILion* is extending this interface. In addition, *ILion* is extending *ICat*, because *Cat* is a parent class of *Lion*. Because *ICat* itself is a mirror interface, *ILion* can rely on extraction mechanisms and does not need to extend another interface deeper in the class hierarchy.
+
+In a similar way, the class structure is analyzed for defining methods in the mirror interfaces. For example, *ILion* contains method *hintInPack*, because it is defined within *Lion*. It also contains method *roar*, because it is defined in its parent class *BigCat*. On the other side, it does not contain method *getHome*, because it is already contained in mirror interface *IAnimal*. The same applies for method *feed*, which is in mirror interface *IMammal*.
+
+##### Input (Code)
+
+[!include_code code_extraction_hierarchy.txt]
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtractInterface_Hierarchy_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_ExtractInterface_Hierarchy_Out.png)

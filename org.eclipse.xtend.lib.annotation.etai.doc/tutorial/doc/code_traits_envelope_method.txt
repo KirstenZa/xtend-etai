@@ -1,0 +1,30 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+
+import virtual.intf.IXEater
+
+@TraitClass
+abstract class XEater {
+
+	@EnvelopeMethod
+	override String eat(String prey) {
+		System.out.println('''LOG: start eating: «prey»''')
+		val res = eat$extended(prey)
+		System.out.println('''LOG: stop eating: «prey»''')
+		System.out.println('''LOG: result: «res»''')
+		return res
+	}
+
+}
+
+@ExtendedByAuto
+class Frog implements IXEater {
+
+	override String eat(String prey) {
+		if("fly".equals(prey)) "Yummy!" else "Yikes!"
+	}
+
+}

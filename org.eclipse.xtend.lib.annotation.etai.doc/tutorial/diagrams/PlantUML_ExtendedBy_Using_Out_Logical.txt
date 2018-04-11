@@ -1,0 +1,58 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXWithName <<Interface>> {
+    +getName():String
+	+setName(name:String)
+}
+
+interface IXWithAge <<Interface>> {
+    +getAge():int
+	+setAge(age:int)
+}
+
+interface IXWithSpeed <<Interface>> {
+    +getSpeed():double
+	+setSpeed(speed:double)
+}
+
+interface IXBasicAttributes <<Interface>> {
+}
+
+interface IXExtendedAttributes <<Interface>> {
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    -name:String &#009; &#123;no access&#125;
+    -age:int &#009; &#009; &#123;no access&#125;
+    +getName():String
+	+setName(name:String)
+    +getAge():int
+	+setAge(age:int)
+}
+
+class Bird {
+    -speed:double &#009; &#009; &#123;no access&#125;
+    +getSpeed():double
+	+setSpeed(speed:double)
+}
+
+Bird -up-|> Animal
+
+IXWithSpeed -up-|> IXWithAge
+IXBasicAttributes -up-|> IXWithName
+IXBasicAttributes -up-|> IXWithAge
+IXExtendedAttributes -up-|> IXBasicAttributes
+IXExtendedAttributes -up-|> IXWithSpeed
+
+Animal .up-|> IXBasicAttributes
+Bird .up-|> IXExtendedAttributes
+
+@enduml

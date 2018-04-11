@@ -1,0 +1,113 @@
+<project name="Build HTML5 Tutorial" default="build">
+
+	<description>
+		Used to transform Markdown (Pandoc) to HTML5 output
+	</description>
+
+	<!-- task definitions -->
+	<taskdef name="plantuml" classname="net.sourceforge.plantuml.ant.PlantUmlTask" 
+		classpath="lib/plantuml.jar" />
+
+	<!-- convert paths -->
+	<eclipse.convertPath resourcePath="org.eclipse.xtend.lib.annotation.etai.doc"
+		property="project.dir" />
+
+	<!-- define base properties -->
+	<property name="base.dir" value="${project.dir}/tutorial" />
+	<property name="input.dir" value="doc" />
+	<property name="input.dir.css" value="css" />
+	<property name="temp.dir" value="temp" />
+	<property name="output.dir" value="output" />
+
+	<!-- define executables -->
+	<property name="pandoc" location="${eclipse.home}/addons/pandoc/pandoc.exe" />
+
+	<!-- Cleans up generated files. -->
+	<target name="clean">
+
+		<delete dir="${output.dir}" />
+		<delete dir="${temp.dir}" />
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate target and temp directory. -->
+	<target name="create-target-dir">
+
+		<mkdir dir="${output.dir}" />
+		<mkdir dir="${output.dir}/images" />
+		<mkdir dir="${temp.dir}" />
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate UML images with PlantUML. -->
+	<target name="build-img" depends="clean, create-target-dir">
+
+		<plantuml  dir="${project.dir}/tutorial/diagrams" output="${project.dir}/tutorial/output/images"
+			graphvizDot="${eclipse.home}/addons/GraphViz/bin/dot.exe" />
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Preprocess markdown documentation files. -->
+	<target name="preprocess-markdown" depends="clean, create-target-dir">
+
+		<!-- Run preprocessor -->
+		<java classname="org.eclipse.xtend.lib.annotation.etai.doc.Preprocessor"
+			fork="true">
+			<arg value="${base.dir}/${input.dir}" />
+			<arg value="${base.dir}/${temp.dir}" />
+			<arg value="tutorial.txt" />
+			<classpath>
+				<pathelement location="${project.dir}/bin" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+		</java>
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate HTML5 files from MarkDown source. -->
+	<target name="build-html-markdown"
+		depends="clean, create-target-dir, build-img, preprocess-markdown">
+
+		<echo message="Building HTML output" />
+
+		<!-- copy the stylesheet to the same directory as the HTML files -->
+		<copy todir="${output.dir}">
+			<fileset dir="${input.dir.css}">
+				<include name="tutorial.css" />
+			</fileset>
+		</copy>
+
+		<!-- generate HTML from markup using pandoc -->
+		<exec dir="${temp.dir}" executable="${pandoc}">
+			<arg line="-o ../${output.dir}/tutorial.html" />
+			<arg line="tutorial.txt" />
+			<arg line="--css tutorial.css" />
+			<arg line="--toc --toc-depth=4" />
+		</exec>
+
+		<!-- refresh Eclipse -->
+		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
+			depth="infinite" />
+
+	</target>
+
+	<!-- Generate documentation. -->
+	<target name="build" depends="build-html-markdown" />
+
+</project>

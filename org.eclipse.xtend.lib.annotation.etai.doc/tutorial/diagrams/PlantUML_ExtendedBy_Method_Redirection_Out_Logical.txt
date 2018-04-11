@@ -1,0 +1,42 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXMoveLogger <<Interface>> {
+    +move()
+}
+
+interface IXMoveDigger <<Interface>> {
+    +move()
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal {
+    +move()
+    #moveInternal()
+}
+
+class Mole {
+    #moveInternal()
+}
+
+note right of Animal::move
+  <u>Output (for concrete class <i>Mole</i>):</u>
+    start moving...
+    moving...
+    through the ground...
+    digging...
+    stop moving...
+end note
+
+Mole -up-|> Animal
+
+Animal .up-|> IXMoveLogger
+Mole .up-|> IXMoveDigger
+
+@enduml

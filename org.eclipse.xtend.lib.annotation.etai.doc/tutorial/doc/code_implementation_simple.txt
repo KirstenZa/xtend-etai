@@ -1,0 +1,16 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ImplementDefault
+
+interface IElephant {
+	def void trumpet()
+}
+
+abstract class AnimalBase {
+	abstract def float getWeight()
+	abstract def String getName()
+}
+
+@ImplementDefault
+class Elephant extends AnimalBase implements IElephant {
+}

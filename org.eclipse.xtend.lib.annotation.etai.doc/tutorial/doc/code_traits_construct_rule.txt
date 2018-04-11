@@ -1,0 +1,66 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ConstructRuleAuto
+import org.eclipse.xtend.lib.annotation.etai.ConstructorMethod
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+
+import virtual.intf.IXWithSize
+import virtual.intf.IXWithName
+
+@TraitClass
+abstract class XWithSize {
+
+	double size
+
+	@ConstructorMethod
+	protected def void createWithSize(double size) { this.size = size }
+
+	@ExclusiveMethod
+	override double getSize() { size }
+
+}
+
+@TraitClass
+abstract class XWithName {
+
+	String name
+
+	@ConstructorMethod
+	protected def void createWithoutName() { this.name = "*noname*" }
+
+	@ConstructorMethod
+	protected def void createWithName(String name) { this.name = name }
+
+	@ExclusiveMethod
+	override String getName() { name }
+
+}
+
+@ApplyRules
+@ConstructRuleAuto
+@ExtendedByAuto
+@FactoryMethodRule(factoryMethod="create")
+abstract class Animal implements IXWithSize {}
+
+@ApplyRules
+@ConstructRuleAuto
+@ExtendedByAuto
+class Cat extends Animal implements IXWithName {
+
+	int age
+
+	new() {
+		this.age = 0
+	}
+
+	new(int age) {
+		this.age = age
+	}
+
+	def int getAge() { age }
+
+}

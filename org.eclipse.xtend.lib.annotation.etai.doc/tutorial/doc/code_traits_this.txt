@@ -1,0 +1,47 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.EPDefault
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+
+import virtual.intf.IXPredator
+
+@TraitClass
+abstract class XAnimal {
+
+	@ExclusiveMethod
+	override void attack() {
+		System.out.println("-attacking-");
+	}
+
+}
+
+@TraitClass
+abstract class XPredator extends XAnimal {
+
+	@ProcessedMethod(processor=EPDefault)
+	override void sound() {
+		System.out.println("Roar!")
+	}
+
+	@ExclusiveMethod
+	override void attack() {
+		super.attack$impl
+		sound()
+	}
+
+}
+
+@ExtendedByAuto
+class Wolf implements IXPredator {
+
+	override void sound() {
+		System.out.println("Howl!")
+	}
+
+}
+
+@ExtendedByAuto
+class Tiger implements IXPredator {}

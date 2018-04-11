@@ -1,0 +1,33 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
+import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
+
+interface IAnimalFactory {
+	def Animal create(int age)
+}
+
+@ApplyRules
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory)
+abstract class Animal {
+
+	int age
+
+	@CopyConstructorRule
+	new(int age) { this.age = age }
+
+}
+
+@ApplyRules
+class AnimalLion extends Animal {}
+
+@ApplyRules
+class AnimalDog extends Animal {}
+
+class App {
+	static def main(String[] args) {
+		val IAnimalFactory animalFactory = AnimalLion.FACTORY
+		val animal = animalFactory.create(12)
+	}
+}

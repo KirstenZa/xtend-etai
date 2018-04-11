@@ -1,0 +1,31 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+
+interface external.IAnimal <<Interface>> {
+}
+
+interface virtual.internal.Dog <<Interface>> {
+	+bark()
+}
+
+class virtual.Animal {
+}
+
+class virtual.Dog {
+	+bark()
+	+bite()
+}
+
+virtual.Dog .up.|> virtual.internal.Dog
+virtual.internal.Dog -up-|> external.IAnimal
+virtual.Animal .up.|> external.IAnimal
+
+@enduml

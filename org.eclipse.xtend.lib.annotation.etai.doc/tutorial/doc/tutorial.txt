@@ -1,0 +1,13 @@
+# ETAI Library - Tutorial
+
+## Introduction
+
+The ETAI library contains several [Active Annotations for Xtend](https://eclipse.org/xtend/documentation/204_activeannotations.html). The major purpose of the provided Active Annotations is to avoid boilerplate code by providing different means. These means include the automatic **extraction** of interfaces from classes, an extension mechanism for classes by methods of so-called **trait** classes, and the automatic **adaption** and **implementation** of methods and constructors in derived classes. Based on these keywords, this Active Annotation library is called ETAI.
+
+[!include tutorial_extraction.txt]
+
+[!include tutorial_adaption.txt]
+
+[!include tutorial_implementation.txt]
+
+[!include tutorial_traits.txt]

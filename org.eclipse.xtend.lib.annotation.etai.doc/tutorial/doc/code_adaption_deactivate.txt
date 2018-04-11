@@ -1,0 +1,77 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
+import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
+
+abstract class Sound {}
+
+abstract class SoundCarnivora extends Sound {
+	def void check() { /* ... */ }
+}
+
+abstract class SoundFelidae extends SoundCarnivora {}
+
+abstract class SoundLion extends SoundFelidae {}
+
+class SoundLionSouthAfrica extends SoundLion {}
+
+@ApplyRules
+abstract class Animal {
+
+	Sound sound
+
+	@CopyConstructorRule
+	new() {
+		this.sound = null
+	}
+
+	new(
+		@TypeAdaptionRule("
+		applyVariable(var.class.qualified);
+		replaceAll(Animal,Sound)")
+		Sound sound
+	) {
+		this.sound = sound
+	}
+	
+	@TypeAdaptionRule("
+		applyVariable(var.class.qualified);
+		replaceAll(Animal,Sound)")
+	def Sound getSound() { return sound }
+
+}
+
+@ApplyRules
+abstract class AnimalCarnivora extends Animal {
+	@AdaptedMethod
+	override SoundCarnivora getSound() {
+		val soundCarnivora = super.sound as SoundCarnivora
+		soundCarnivora.check
+		return soundCarnivora
+	}
+}
+
+@ApplyRules
+abstract class AnimalFelidae extends AnimalCarnivora {}
+
+@ApplyRules
+abstract class AnimalLion extends AnimalFelidae {
+
+	new(SoundLion soundLion) {
+		super(soundLion)
+	}
+
+	override SoundLion getSound() {
+		return super.getSound() as SoundLion
+	}
+
+}
+
+@ApplyRules
+class AnimalLionSouthAfrican extends AnimalLion {
+	new(SoundLion soundLion) {
+		super(soundLion)
+	}
+}

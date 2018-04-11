@@ -1,0 +1,38 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XWithSize\n&#123;abstract&#125;" as XWithSize <<TraitClass>> {
+	-size:double
+	<<ConstructorMethod>> &#009; +createWithSize(size:double) 
+	<<ExclusiveMethod>> &#009; &#009; +getSize():double
+}
+
+abstract class "XWithName\n&#123;abstract&#125;" as XWithName <<TraitClass>> {
+	-name:String
+	<<ConstructorMethod>> &#009; +createWithoutName() 
+	<<ConstructorMethod>> &#009; +createWithName(name:String) 
+	<<ExclusiveMethod>> &#009; &#009; +getName():String
+}
+
+abstract class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules, FactoryMethodRule(factoryMethod="create"), ConstructRuleAuto>> {
+}
+
+class Cat <<ApplyRules, ConstructRuleAuto>> {
+    -age:int
+	+Cat()
+	+Cat(age:int)
+	+getAge():int
+}
+
+Cat -up-|> Animal
+Animal .up-|> XWithSize : <<ExtendedByAuto>>
+Cat .up-|> XWithName : <<ExtendedByAuto>>
+
+@enduml

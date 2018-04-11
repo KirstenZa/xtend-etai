@@ -1,0 +1,28 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+abstract class "AnimalCat\n&#123;abstract&#125;" as AnimalCat <<ApplyRules, SetAdaptionVariable("var.cat.striped=false")>> {
+	<<ImplAdaptionRule(...)>> {static} +getFemaleName():String
+	{abstract} <<ImplAdaptionRule(...)>> +isStriped():boolean &#009; &#009; &#123;abstract&#125;
+}
+
+class AnimalLion <<ApplyRules, SetAdaptionVariable("var.cat.female=Lioness")>> {
+}
+
+class AnimalTiger <<ApplyRules, SetAdaptionVariable("var.cat.female=Tigress, var.cat.striped=true")>> {
+}
+
+AnimalCat <|-down- AnimalLion
+AnimalCat <|-down- AnimalTiger
+
+'Layout
+AnimalLion <-down[hidden]- AnimalTiger
+
+@enduml

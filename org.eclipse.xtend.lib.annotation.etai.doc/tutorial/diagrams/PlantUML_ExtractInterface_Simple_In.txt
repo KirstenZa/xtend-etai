@@ -1,0 +1,20 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+package virtual {
+
+	class Lion <<ExtractInterface>> {
+		-noise() : String
+		+roar(intensity : int)
+	}
+
+}
+
+@enduml
