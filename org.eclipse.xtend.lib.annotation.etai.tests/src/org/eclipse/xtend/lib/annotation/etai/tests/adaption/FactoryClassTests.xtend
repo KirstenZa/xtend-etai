@@ -1,31 +1,36 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import java.lang.reflect.Modifier
+import java.util.ArrayList
+import java.util.List
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
 import org.eclipse.xtend.lib.annotation.etai.SetAdaptionVariable
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IComponentBase
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IComponentFeature
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerAttributeStringConcrete1
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerBase
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithChangingFactoryInterfaceExtension
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithFactoryClassReturnTypeAdaption
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithFactoryClassReturnTypeAdaptionDerived
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithFactoryClassTypeArgsAndInterface
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.ITraitClassSpecifyingFactoryMethodRule
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeA
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeB
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeC
-import java.lang.reflect.Modifier
-import java.util.ArrayList
-import java.util.List
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
+import static org.eclipse.xtend.lib.annotation.etai.tests.adaption.ClassWithFactoryClassNonFinal.*
 import static org.junit.Assert.*
-import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithChangingFactoryInterfaceExtension
-import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.ITraitClassSpecifyingFactoryMethodRule
 
 abstract class ClassWithFactoryClassBase1 {
 
@@ -57,6 +62,19 @@ abstract class ClassWithFactoryClassWithoutConstructorDerived2 extends ClassWith
 
 @ApplyRules
 class ClassWithFactoryClassWithoutConstructorDerived3 extends ClassWithFactoryClassWithoutConstructorDerived2 {
+}
+
+@ApplyRules
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryClassDerived=true)
+class ClassWithFactoryClassCheckDerivation1 {
+}
+
+@ApplyRules
+abstract class ClassWithFactoryClassCheckDerivation2 extends ClassWithFactoryClassCheckDerivation1 {
+}
+
+@ApplyRules
+class ClassWithFactoryClassCheckDerivation3 extends ClassWithFactoryClassCheckDerivation2 {
 }
 
 @ApplyRules
@@ -159,16 +177,16 @@ class ClassWithFactoryClassTypeArgs<T, B extends Double> {
 }
 
 interface IFactory {
-	def IFactoryClassInterface create()
+	def IClassWithFactoryClassImplementingInterface create()
 }
 
-interface IFactoryClassInterface {
+interface IClassWithFactoryClassImplementingInterface {
 	def int getValue()
 }
 
 @ApplyRules
-@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IFactory)
-class ClassWithFactoryClassImplementingInterface implements IFactoryClassInterface {
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IFactory, factoryClassDerived=true)
+class ClassWithFactoryClassImplementingInterface implements IClassWithFactoryClassImplementingInterface {
 
 	public int value
 
@@ -178,6 +196,24 @@ class ClassWithFactoryClassImplementingInterface implements IFactoryClassInterfa
 
 	override int getValue() {
 		value
+	}
+
+}
+
+@ApplyRules
+class ClassWithFactoryClassImplementingInterfaceDerived extends ClassWithFactoryClassImplementingInterface {
+}
+
+interface IFactoryWithTypeArgs {
+	def <T, U extends Double> IClassWithFactoryClassTypeArgsAndInterface<T, U> create()
+}
+
+@ApplyRules
+@ExtractInterface
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IFactoryWithTypeArgs)
+class ClassWithFactoryClassTypeArgsAndInterface<T, U extends Double> {
+
+	new() {
 	}
 
 }
@@ -232,8 +268,8 @@ class ExtendedClassNotSpecifyingFactoryMethodRule implements ITraitClassSpecifyi
 }
 
 @ApplyRules
-@FactoryMethodRule(factoryMethod="construct", factoryInstance="FACTORY")
-abstract class ClassWithFactoryAdaptedTwiceBase {
+@FactoryMethodRule(factoryMethod="construct", factoryInstance="FACTORY", factoryClassDerived=false)
+abstract class ClassWithFactoryClassAdaptedTwiceBase {
 
 	new(
 		IControllerBase x
@@ -255,7 +291,7 @@ abstract class ClassWithFactoryAdaptedTwiceBase {
 }
 
 @ApplyRules
-abstract class ClassWithFactoryAdaptedTwiceDerived extends ClassWithFactoryAdaptedTwiceBase {
+abstract class ClassWithFactoryClassAdaptedTwiceDerived extends ClassWithFactoryClassAdaptedTwiceBase {
 
 	new(
 		@TypeAdaptionRule("apply(org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerAttributeStringConcrete1)")
@@ -281,7 +317,46 @@ abstract class ClassWithFactoryAdaptedTwiceDerived extends ClassWithFactoryAdapt
 }
 
 @ApplyRules
-class ClassWithFactoryAdaptedTwiceConcrete extends ClassWithFactoryAdaptedTwiceDerived {
+class ClassWithFactoryClassAdaptedTwiceConcrete extends ClassWithFactoryClassAdaptedTwiceDerived {
+}
+
+interface IFactoryForClassWithFactoryNonFinal {
+	def ClassWithFactoryClassNonFinal construct()
+}
+
+@ApplyRules
+@FactoryMethodRule(factoryMethod="construct", factoryInstance="FACTORY", factoryInterface=IFactoryForClassWithFactoryNonFinal, factoryInstanceFinal=false, factoryClassDerived=true)
+class ClassWithFactoryClassNonFinal {
+
+	def int method1() { 1 }
+
+}
+
+@ApplyRules
+class ClassWithFactoryClassNonFinalDerived extends ClassWithFactoryClassNonFinal {
+
+	override int method1() { 9 }
+
+}
+
+@ApplyRules
+@ExtractInterface
+@FactoryMethodRule(factoryInstance="FACTORY", factoryMethod="create", returnTypeAdaptionRule="applyVariable(var.package);append(.intf.I);appendVariable(var.class.simple);append(<);appendVariable(var.class.typeparameters);append(>)")
+class ClassWithFactoryClassReturnTypeAdaption<G, H> {
+
+	new(Integer g) {
+	}
+
+}
+
+@ApplyRules
+@ExtractInterface
+class ClassWithFactoryClassReturnTypeAdaptionDerived extends ClassWithFactoryClassReturnTypeAdaption<Integer, Double> {
+
+	new(Integer h) {
+		super(h)
+	}
+
 }
 
 class FactoryClassTests {
@@ -415,8 +490,26 @@ class FactoryClassTests {
 	def void testFactoryInterface() {
 
 		val IFactory factory = ClassWithFactoryClassImplementingInterface::FACTORY
-		val IFactoryClassInterface newObj = factory.create
+		val IClassWithFactoryClassImplementingInterface newObj = factory.create
 		assertEquals(99, newObj.value)
+
+	}
+
+	@Test
+	def void testFactoryInterfaceAndTypeArgument() {
+
+		val IFactoryWithTypeArgs factory = ClassWithFactoryClassTypeArgsAndInterface::FACTORY
+		val IClassWithFactoryClassTypeArgsAndInterface<Integer, Double> newObj = factory.create()
+		assertNotNull(newObj)
+
+	}
+
+	@Test
+	def void testFactoryInterfaceHierarchy() {
+
+		assertEquals(ClassWithFactoryClassImplementingInterface::FACTORY.class,
+			ClassWithFactoryClassImplementingInterfaceDerived::FACTORY.class.superclass)
+		assertEquals(0, ClassWithFactoryClassImplementingInterfaceDerived::FACTORY.class.interfaces.size)
 
 	}
 
@@ -560,28 +653,109 @@ class UsingFactoryClassInterface {
 	def void testFactoryAdaptedTwice() {
 
 		// check factory and its methods
-		assertEquals(3, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.size)
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IControllerAttributeStringConcrete1
 		].size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === TypeC
 		].size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IComponentFeature
 		].size)
 
 		// check also if declared in another file		
-		assertEquals(3, ClassWithFactoryAdaptedTwiceConcreteOtherFile.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcreteOtherFile.FACTORY.class.declaredMethods.size)
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IControllerAttributeStringConcrete1
 		].size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === TypeC
 		].size)
-		assertEquals(1, ClassWithFactoryAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IComponentFeature
 		].size)
+
+	}
+
+	@Test
+	def void testFactoryClassNoDerivation() {
+
+		assertTrue(Modifier.isPrivate(ClassWithFactoryClassWithoutConstructorDerived2.declaredClasses.findFirst [
+			simpleName == "Factory"
+		].modifiers))
+
+		assertEquals(ClassWithFactoryClassWithoutConstructorDerived1,
+			ClassWithFactoryClassWithoutConstructorDerived2.superclass)
+		assertEquals(ClassWithFactoryClassWithoutConstructorDerived2,
+			ClassWithFactoryClassWithoutConstructorDerived3.superclass)
+		assertEquals(Object, ClassWithFactoryClassWithoutConstructorDerived3.Factory.superclass)
+
+	}
+
+	@Test
+	def void testFactoryClassDerivation() {
+
+		assertEquals(ClassWithFactoryClassNonFinal, ClassWithFactoryClassNonFinalDerived.superclass)
+		assertFalse(Modifier.isAbstract(ClassWithFactoryClassNonFinal.Factory.modifiers))
+		assertEquals(ClassWithFactoryClassNonFinal.Factory, ClassWithFactoryClassNonFinalDerived.Factory.superclass)
+
+		assertFalse(Modifier.isAbstract(ClassWithFactoryClassCheckDerivation1.Factory.modifiers))
+		assertTrue(Modifier.isAbstract(ClassWithFactoryClassCheckDerivation2.Factory.modifiers))
+		assertFalse(Modifier.isAbstract(ClassWithFactoryClassCheckDerivation3.Factory.modifiers))
+
+		assertEquals(Object, ClassWithFactoryClassCheckDerivation1.Factory.superclass)
+
+		assertEquals(ClassWithFactoryClassCheckDerivation1, ClassWithFactoryClassCheckDerivation2.superclass)
+		assertEquals(ClassWithFactoryClassCheckDerivation1.Factory,
+			ClassWithFactoryClassCheckDerivation2.Factory.superclass)
+
+		assertEquals(ClassWithFactoryClassCheckDerivation2, ClassWithFactoryClassCheckDerivation3.superclass)
+		assertEquals(ClassWithFactoryClassCheckDerivation2.Factory,
+			ClassWithFactoryClassCheckDerivation3.Factory.superclass)
+
+	}
+
+	@Test
+	def void testFactoryClassNonFinal() {
+
+		ClassWithFactoryClassNonFinal::FACTORY = ClassWithFactoryClassNonFinalDerived::FACTORY
+
+		val classWithFactory = ClassWithFactoryClassNonFinal::FACTORY.construct
+
+		assertEquals(9, classWithFactory.method1)
+
+	}
+
+	@Test
+	def void testFactoryClassReturnTypeAdaption() {
+
+		assertEquals(IClassWithFactoryClassReturnTypeAdaption,
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).returnType)
+		assertEquals(2,
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).typeParameters.length)
+		assertEquals(2,
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).returnType.
+				typeParameters.length)
+		assertEquals(
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).typeParameters.get(0).
+				name,
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).returnType.
+				typeParameters.get(0).name)
+		assertEquals(
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).typeParameters.get(1).
+				name,
+			ClassWithFactoryClassReturnTypeAdaption::FACTORY.class.getMethod("create", Integer).returnType.
+				typeParameters.get(1).name)
+
+		assertEquals(IClassWithFactoryClassReturnTypeAdaptionDerived,
+			ClassWithFactoryClassReturnTypeAdaptionDerived::FACTORY.class.getMethod("create", Integer).returnType)
+		assertEquals(0,
+			ClassWithFactoryClassReturnTypeAdaptionDerived::FACTORY.class.getMethod("create", Integer).typeParameters.
+				length)
+		assertEquals(0,
+			ClassWithFactoryClassReturnTypeAdaptionDerived::FACTORY.class.getMethod("create", Integer).returnType.
+				typeParameters.length)
 
 	}
 

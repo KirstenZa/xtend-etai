@@ -19,7 +19,7 @@ class TraitsClassDefaultPackageErrorTests {
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 
 @TraitClassAutoUsing
-abstract public class MyExtension {}
+abstract class MyExtension {}
 
 		'''.compile [
 

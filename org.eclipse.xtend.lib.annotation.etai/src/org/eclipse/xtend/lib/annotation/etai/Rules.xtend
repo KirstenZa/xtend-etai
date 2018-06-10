@@ -73,9 +73,26 @@ annotation FactoryMethodRule {
 	 * @see GeneratedFactoryClass
 	 * @see GeneratedFactoryInstance
 	 * @see FactoryMethodRule#factoryInterface
+	 * @see FactoryMethodRule#factoryInstanceFinal
 	 * @see SetAdaptionVariable
 	 */
 	String factoryInstance = ""
+
+	/**
+	 * <p>Determines if the <code>static</code> factory instance variable will be declared
+	 * <code>final</code>.</p>
+	 * 
+	 * @see FactoryMethodRule#factoryInstance
+	 */
+	boolean factoryInstanceFinal = true
+	
+	/**
+	 * <p>Determines if the generated factory class shall extend the potentially
+	 * generated factory class of a parent class.</p>
+	 * 
+	 * @see FactoryMethodRule#factoryInstance
+	 */
+	boolean factoryClassDerived = false
 
 	/**
 	 * If a factory is used, which is determined by the setting of <code>factoryInstance</code>,
@@ -100,6 +117,14 @@ annotation FactoryMethodRule {
 	 * @see SetAdaptionVariable
 	 */
 	String factoryInterfaceVariable = ""
+	
+	/**
+	 * <p>The return type of the generated factory method matches the class for which the
+	 * factory method is generated. However, with this attribute an adaption rule can be specified. If the
+	 * specified string is not empty, the rule will be applied in order to
+	 * determine the return type of the factory method.</p>
+	 */
+	String returnTypeAdaptionRule = ""
 
 }
 
@@ -496,8 +521,11 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		public String factoryMethod = null
 		public String initMethod = null
 		public String factoryInstance = null
+		public boolean factoryInstanceFinal = true
+		public boolean factoryClassDerived = true
 		public TypeDeclaration factoryInterface = null
 		public String factoryInterfaceVariable = null
+		public String returnTypeAdaptionRule = null
 
 	}
 
@@ -519,8 +547,12 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 			val factoryMethod = annotationFactoryMethodRule.getStringValue("factoryMethod")
 			val initMethod = annotationFactoryMethodRule.getStringValue("initMethod")
 			val factoryInstance = annotationFactoryMethodRule.getStringValue("factoryInstance")
+			val factoryInstanceFinal = annotationFactoryMethodRule.getBooleanValue("factoryInstanceFinal")
+			val factoryClassDerived = annotationFactoryMethodRule.getBooleanValue("factoryClassDerived")
 			val factoryInterface = annotationFactoryMethodRule.getClassValue("factoryInterface")
 			val factoryInterfaceVariable = annotationFactoryMethodRule.getStringValue("factoryInterfaceVariable")
+			val returnTypeAdaptionRule = annotationFactoryMethodRule.getStringValue("returnTypeAdaptionRule")
+			
 
 			if (factoryMethod !== null)
 				result.factoryMethod = factoryMethod
@@ -532,6 +564,10 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 				result.factoryInterface = factoryInterface.type as TypeDeclaration
 			if (factoryInterfaceVariable !== null)
 				result.factoryInterfaceVariable = factoryInterfaceVariable
+			if (returnTypeAdaptionRule !== null)
+				result.returnTypeAdaptionRule = returnTypeAdaptionRule
+			result.factoryInstanceFinal = factoryInstanceFinal
+			result.factoryClassDerived = factoryClassDerived
 
 			return result
 
@@ -546,7 +582,7 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 	 * The method will search recursively through supertypes and gather information, if applicable.
 	 * If no specification is found, null is returned.
 	 */
-	static public def <T extends TypeLookup & TypeReferenceProvider> FactoryMethodRuleInfo getFactoryMethodRuleInfo(
+	static def <T extends TypeLookup & TypeReferenceProvider> FactoryMethodRuleInfo getFactoryMethodRuleInfo(
 		ClassDeclaration classDeclaration, List<String> errors, extension T context) {
 
 		return getFactoryMethodRuleInfoInternal(classDeclaration, classDeclaration, errors, context)
@@ -667,7 +703,7 @@ class ConstructRuleProcessor extends AutoAdaptionRuleClassProcessor {
 	 * 
 	 * If the <code>recursive</code> flag is set, also settings from superclasses will be collected. 
 	 */
-	static public def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<ClassDeclaration> getTraitClassesAutoConstruct(
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<ClassDeclaration> getTraitClassesAutoConstruct(
 		ClassDeclaration annotatedClass,
 		boolean recursive,
 		extension T context
@@ -841,7 +877,7 @@ class ConstructRuleDisableProcessor extends AutoAdaptionRuleClassProcessor {
 	 * 
 	 * @see ConstructRule
 	 */
-	static public def List<ClassDeclaration> getTraitClassesAutoConstructDisabled(ClassDeclaration annotatedClass,
+	static def List<ClassDeclaration> getTraitClassesAutoConstructDisabled(ClassDeclaration annotatedClass,
 		boolean recursive, extension TypeLookup context) {
 
 		// return valid trait classes

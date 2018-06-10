@@ -105,7 +105,7 @@ class ExtendedClassWithRequiredImplementDerived extends ExtendedClassWithRequire
 class ImplementDefaultExtendedTests {
 
 	@Test
-	public def void testDefaultImplementationExtended() {
+	def void testDefaultImplementationExtended() {
 
 		val obj = new ExtendedClassWithRequiredImplementDerived
 		assertEquals(0, obj.methodRequired)
@@ -120,7 +120,7 @@ class ImplementDefaultExtendedTests {
 	}
 
 	@Test
-	public def void testDefaultImplementationExtendedProtectedRequired() {
+	def void testDefaultImplementationExtendedProtectedRequired() {
 
 		val obj = new ExtendedClassWithRequiredImplement
 		assertEquals(0, obj.methodRequired)

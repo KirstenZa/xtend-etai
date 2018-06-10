@@ -128,7 +128,7 @@ abstract class ExtendedRedirectionPreBase {
 abstract class ExtendedRedirectionBase extends ExtendedRedirectionPreBase implements ITraitMethodRedirectionEnvelope {
 
 	@TraitMethodRedirection(value="disposeInternal", visibility=Visibility.PROTECTED)
-	public override int dispose() {
+	override int dispose() {
 		return super.dispose() + disposeInternal()
 	}
 
@@ -179,7 +179,7 @@ class ExtendedRedirectionDerived3 extends ExtendedRedirectionDerived2 implements
 abstract class ExtendedRedirectionDerived4 extends ExtendedRedirectionDerived3 implements ITraitMethodRedirectionPre4 {
 
 	@TraitMethodRedirection(value="disposeInternal3", visibility=Visibility.DEFAULT)
-	public override int disposeInternal2() {
+	override int disposeInternal2() {
 		return super.disposeInternal2 + disposeInternal3
 	}
 
@@ -490,7 +490,7 @@ import org.eclipse.xtend.lib.macro.declaration.Visibility
 interface InterfaceWithRedirection {
 
 	@TraitMethodRedirection("methodInternal")
-	public def void method() {}
+	def void method() {}
 
 }
 
@@ -499,24 +499,24 @@ abstract class RedirectedTraitClass {
 
 	@TraitMethodRedirection("methodInternal")
 	@ExclusiveMethod
-	public override void method() {}
+	override void method() {}
 
 	@ExclusiveMethod
-	public override void methodInternal() {}
+	override void methodInternal() {}
 
 }
 
 class RedirectedExtendedClass {
 
 	@TraitMethodRedirection("methodInternal1")
-	static public def void method1() {}
+	static def void method1() {}
 
-	static public def void methodInternal1() {}
+	static def void methodInternal1() {}
 
 	@TraitMethodRedirection(value="methodInternal2", visibility=Visibility.PRIVATE)
-	public def void method2() {}
+	def void method2() {}
 
-	public def void methodInternal2() {}
+	def void methodInternal2() {}
 
 }
 
@@ -586,7 +586,7 @@ abstract class RedirectedTraitClass {
 class RedirectedExtendedClassBase {
 
 	@TraitMethodRedirection("methodInternal")
-	public def void method() {
+	def void method() {
 		methodInternal()
 	}
 
@@ -719,7 +719,7 @@ abstract class TraitMethodRedirectionRequired {
 abstract class ExtendedRedirectionBase {
 
 	@TraitMethodRedirection("disposeInternal")
-	public def void dispose() {}
+	def void dispose() {}
 
 }
 

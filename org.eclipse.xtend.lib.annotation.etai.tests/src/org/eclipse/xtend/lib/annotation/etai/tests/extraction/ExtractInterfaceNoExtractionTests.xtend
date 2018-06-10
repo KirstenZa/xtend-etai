@@ -30,7 +30,7 @@ class ExtractInterfaceTestNoExtractionTests {
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
 	@Test
-	public def void testExtractInterfaceTestNoExtraction() {
+	def void testExtractInterfaceTestNoExtraction() {
 
 		assertEquals(1, IExtractInterfaceTestNoExtraction.declaredMethods.size)
 		assertEquals("method1", IExtractInterfaceTestNoExtraction.declaredMethods.get(0).name)

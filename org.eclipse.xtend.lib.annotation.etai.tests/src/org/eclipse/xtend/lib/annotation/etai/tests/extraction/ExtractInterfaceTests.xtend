@@ -35,7 +35,7 @@ class ExtractInterfaceTestRegular extends ExtractInterfaceTestRegularBase {
 class ExtractInterfaceTestInnerClass {
 
 	@ExtractInterface
-	static public class Inner {
+	static class Inner {
 
 		override void method() {}
 

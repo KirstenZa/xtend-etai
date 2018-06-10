@@ -110,8 +110,7 @@ class ProcessUtils {
 	 * <p>In addition to this, the method is able to resolve type hierarchies, which
 	 * are not fully processed by the active annotations, yet.</p>
 	 */
-	static public def boolean isAssignableFromConsiderUnprocessed(Type type1, Type type2,
-		extension TypeLookup context) {
+	static def boolean isAssignableFromConsiderUnprocessed(Type type1, Type type2, extension TypeLookup context) {
 
 		return isAssignableFromConsiderUnprocessedInternal(type1, type2, new HashSet<Type>, context)
 
@@ -120,8 +119,8 @@ class ProcessUtils {
 	/**
 	 * Internal method for checking if assignable.
 	 */
-	static public def boolean isAssignableFromConsiderUnprocessedInternal(Type type1, Type type2,
-		Set<Type> processedTypes, extension TypeLookup context) {
+	static def boolean isAssignableFromConsiderUnprocessedInternal(Type type1, Type type2, Set<Type> processedTypes,
+		extension TypeLookup context) {
 
 		if (type1 !== null && type1.isAssignableFrom(type2))
 			return true
@@ -188,8 +187,8 @@ class ProcessUtils {
 	 * 
 	 * @see #isAssignableFromConsiderUnprocessed
 	 */
-	static public def boolean isAssignableFromStripRefConsiderUnprocessed(TypeReference typeRef1,
-		TypeReference typeRef2, extension TypeLookup context) {
+	static def boolean isAssignableFromStripRefConsiderUnprocessed(TypeReference typeRef1, TypeReference typeRef2,
+		extension TypeLookup context) {
 
 		var plainType1 = typeRef1
 		var plainType2 = typeRef2
@@ -488,7 +487,7 @@ class ProcessUtils {
 	 * 
 	 * @see #parametersEquals
 	 */
-	static public def boolean constructorEquals(
+	static def boolean constructorEquals(
 		ConstructorDeclaration constructor1,
 		ConstructorDeclaration constructor2,
 		TypeMatchingStrategy typeMatchingStrategy,
@@ -1516,12 +1515,12 @@ class ProcessUtils {
 	 */
 	static def TypeReference createTypeReference(
 		String typeDetailString,
-		ClassDeclaration classContext,
+		List<TypeParameterDeclarator> typeParameterDeclarators,
 		List<String> errors,
 		extension TransformationContext context
 	) {
 
-		return createTypeReferenceInternal(null, typeDetailString, classContext, errors, context)
+		return createTypeReferenceInternal(null, typeDetailString, typeParameterDeclarators, errors, context)
 
 	}
 
@@ -1531,7 +1530,7 @@ class ProcessUtils {
 	static def private TypeReference createTypeReferenceInternal(
 		String annotationName,
 		String typeDetailString,
-		ClassDeclaration annotatedClass,
+		List<TypeParameterDeclarator> typeParameterDeclarators,
 		List<String> errors,
 		extension TransformationContext context
 	) {
@@ -1551,7 +1550,7 @@ class ProcessUtils {
 					if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
 
 			return newWildcardTypeReference(
-				createTypeReferenceInternal(annotationName, subTypeString, annotatedClass, errors, context))
+				createTypeReferenceInternal(annotationName, subTypeString, typeParameterDeclarators, errors, context))
 
 		}
 
@@ -1566,7 +1565,7 @@ class ProcessUtils {
 					if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
 
 			return newWildcardTypeReferenceWithLowerBound(
-				createTypeReferenceInternal(annotationName, subTypeString, annotatedClass, errors, context))
+				createTypeReferenceInternal(annotationName, subTypeString, typeParameterDeclarators, errors, context))
 
 		}
 
@@ -1582,8 +1581,8 @@ class ProcessUtils {
 						typeDetailStringArraySearch.length - 1).trim
 
 					return newArrayTypeReference(
-						createTypeReferenceInternal(annotationName, typeDetailStringArraySearch, annotatedClass, errors,
-							context))
+						createTypeReferenceInternal(annotationName, typeDetailStringArraySearch,
+							typeParameterDeclarators, errors, context))
 
 				}
 			}
@@ -1602,7 +1601,8 @@ class ProcessUtils {
 				lastIndexOfTypeParamBracket).splitConsideringParenthesis(',', '<', '>')
 			for (typeArgumentString : typeArgumentStrings)
 				typeArguments.add(
-					createTypeReferenceInternal(annotationName, typeArgumentString, annotatedClass, errors, context))
+					createTypeReferenceInternal(annotationName, typeArgumentString, typeParameterDeclarators, errors,
+						context))
 		}
 
 		// type reference itself
@@ -1635,11 +1635,11 @@ class ProcessUtils {
 		}
 
 		// check if type is available in type parameter list of annotated class (if provided)
-		if (annotatedClass !== null)
-			for (givenTypeParameter : annotatedClass.typeParameters) {
-				if (givenTypeParameter.simpleName == typeNameWithoutTypeArguments)
-					return givenTypeParameter.newTypeReference()
-			}
+		if (typeParameterDeclarators !== null)
+			for (typeParameterDeclarator : typeParameterDeclarators)
+				for (givenTypeParameter : typeParameterDeclarator.typeParameters)
+					if (givenTypeParameter.simpleName == typeNameWithoutTypeArguments)
+						return givenTypeParameter.newTypeReference()
 
 		errors?.add('''Incorrect type information: type "«typeNameWithoutTypeArguments»" not found''' +
 			if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')

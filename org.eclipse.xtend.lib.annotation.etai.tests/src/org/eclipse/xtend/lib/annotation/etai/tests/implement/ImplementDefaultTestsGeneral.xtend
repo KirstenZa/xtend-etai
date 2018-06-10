@@ -144,7 +144,7 @@ class ImplementDefaultGeneralTests {
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
 	@Test
-	public def void testDefaultImplementationAllTypes() {
+	def void testDefaultImplementationAllTypes() {
 
 		val obj = new DefaultImplementedAllTypes
 		obj.methodVoid
@@ -163,7 +163,7 @@ class ImplementDefaultGeneralTests {
 	}
 
 	@Test
-	public def void testDefaultImplementationSimpleWithBase() {
+	def void testDefaultImplementationSimpleWithBase() {
 
 		val obj = new DefaultImplementedSimpleWithBase
 		obj.method0
@@ -187,7 +187,7 @@ class ImplementDefaultGeneralTests {
 	}
 
 	@Test
-	public def void testDefaultImplementationDerived() {
+	def void testDefaultImplementationDerived() {
 
 		val obj = new DefaultImplementedCovariance
 		assertNotNull(obj.method)

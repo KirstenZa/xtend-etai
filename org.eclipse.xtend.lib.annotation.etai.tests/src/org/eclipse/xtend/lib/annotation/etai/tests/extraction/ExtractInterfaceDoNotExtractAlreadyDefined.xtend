@@ -58,7 +58,7 @@ class ExtractInterfacePartly implements PartInterface2, PartInterface3 {
 class ExtractInterfaceDoNotExtractAlreadyDefinedTests {
 
 	@Test
-	public def void testMethodsInExtractedInterfaceWithoutAlreadyDefined() {
+	def void testMethodsInExtractedInterfaceWithoutAlreadyDefined() {
 
 		assertEquals(2, IExtractInterfacePartly.interfaces.size)
 		assertEquals(#{PartInterface2, PartInterface3}, new HashSet(IExtractInterfacePartly.interfaces))

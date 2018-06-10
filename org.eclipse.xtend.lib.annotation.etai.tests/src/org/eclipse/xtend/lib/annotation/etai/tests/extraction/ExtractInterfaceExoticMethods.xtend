@@ -28,7 +28,7 @@ class ExtractInterfaceExoticMethods {
 class ExtractInterfaceExoticMethodsTests {
 
 	@Test
-	public def void testReturnTypeArray() {
+	def void testReturnTypeArray() {
 
 		assertEquals(true, IExtractInterfaceExoticMethods.getMethod("method1").returnType.array)
 		assertEquals(false, IExtractInterfaceExoticMethods.getMethod("method1").returnType.componentType.array)

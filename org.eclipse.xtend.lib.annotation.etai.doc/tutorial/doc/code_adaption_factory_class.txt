@@ -9,7 +9,8 @@ interface IAnimalFactory {
 }
 
 @ApplyRules
-@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory)
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY",
+	factoryInterface=IAnimalFactory, factoryClassDerived=true)
 abstract class Animal {
 
 	int age

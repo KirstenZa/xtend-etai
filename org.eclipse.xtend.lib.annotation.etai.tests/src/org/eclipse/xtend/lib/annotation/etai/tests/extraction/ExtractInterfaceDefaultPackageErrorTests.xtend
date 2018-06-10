@@ -19,7 +19,7 @@ class ExtractInterfaceDefaultPackageErrorTests {
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 
 @ExtractInterface
-public class MyComponent {}
+class MyComponent {}
 
 		'''.compile [
 

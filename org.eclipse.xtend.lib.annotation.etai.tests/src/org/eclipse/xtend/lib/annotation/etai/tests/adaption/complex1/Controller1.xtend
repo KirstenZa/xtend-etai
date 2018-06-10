@@ -6,20 +6,20 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.ControllerAttributeS
 
 @ExtractInterface
 @ApplyRules
-public abstract class ControllerAttributeString extends ControllerAttribute {
+abstract class ControllerAttributeString extends ControllerAttribute {
 }
 
 @ExtractInterface
 @ApplyRules
-public class ControllerAttributeStringConcrete1 extends ControllerAttributeString {
+class ControllerAttributeStringConcrete1 extends ControllerAttributeString {
 }
 
 @ApplyRules
-public class ControllerAttributeStringConcreteSubSub extends ControllerAttributeStringConcrete2 {	
+class ControllerAttributeStringConcreteSubSub extends ControllerAttributeStringConcrete2 {	
 }
 
 
 @ExtractInterface
 @ApplyRules
-public class ControllerEnhanced_CAN_BE_REMOVED extends ControllerClassPart {
+class ControllerEnhanced_CAN_BE_REMOVED extends ControllerClassPart {
 }

@@ -13,7 +13,7 @@ class App {
 }
 
 interface IAnimalFactory <<Interface>> {
-	+create(age:int)
+	+create(age:int):Animal
 }
 
 class "Animal\n&#123;abstract&#125;" as Animal {
@@ -22,11 +22,17 @@ class "Animal\n&#123;abstract&#125;" as Animal {
 }
 
 class AnimalLion {
+    {static} +FACTORY:AnimalLion::Factory &#123;readOnly&#125;
     #AnimalLion(age:int)
 }
 
 class AnimalDog {
+    {static} +FACTORY:AnimalDog::Factory &#123;readOnly&#125;
     #AnimalDog(age:int)
+}
+
+class "Factory" as FactoryAnimal <<GeneratedFactoryClass>> {
+    {abstract} +create(age:int):Animal &#009; &#123;abstract&#125;
 }
 
 class "Factory" as FactoryLion <<GeneratedFactoryClass>> {
@@ -39,27 +45,29 @@ class "Factory" as FactoryDog <<GeneratedFactoryClass>> {
 
 AnimalLion +-- FactoryLion
 AnimalDog +-- FactoryDog
+Animal +-- FactoryAnimal
 
 Animal <|-down- AnimalLion
 Animal <|-down- AnimalDog
-IAnimalFactory <|.up. FactoryLion
-IAnimalFactory <|.up. FactoryDog
+FactoryAnimal <|-down- FactoryDog
+FactoryAnimal <|-down- FactoryLion
+IAnimalFactory <|.up. FactoryAnimal
 
 Animal <-down[hidden]- App
 
-note right of AnimalLion::AnimalLion(age:int)
+note left of AnimalLion::AnimalLion(age:int)
   super(age);
 end note
 
-note left of AnimalDog::AnimalDog(age:int)
+note right of AnimalDog::AnimalDog(age:int)
   super(age);
 end note
 
-note right of FactoryLion::create(age:int)
+note left of FactoryLion::create(age:int)
   return new AnimalLion(age);
 end note
 
-note left of FactoryDog::create(age:int)
+note right of FactoryDog::create(age:int)
   return new AnimalDog(age);
 end note
 

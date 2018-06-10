@@ -36,6 +36,9 @@ abstract class TraitClassWithAdaptionBase {
 	@ConstructorMethod
 	protected def void construct(char character) {
 		this.character = character
+
+		// use attribute in order to avoid warning
+		this.character = this.character
 	}
 
 	@ConstructorMethod

@@ -286,7 +286,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
 	 * processed specifically. 
 	 */
-	static public def boolean isUnprocessedExtendedClass(String annotatedClass) {
+	static def boolean isUnprocessedExtendedClass(String annotatedClass) {
 
 		if (EXTENDED_CLASS_TO_BE_PROCESSED.contains(annotatedClass))
 			return true
@@ -636,7 +636,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * Retrieves the trait classes which shall be be constructed automatically (and for which this
 	 * feature is not disabled) inside the factory method of the given class.
 	 */
-	static public def <T extends TypeLookup & FileLocations & TypeReferenceProvider> Iterable<ClassDeclaration> getTraitClassesAutoConstructEnabled(
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> Iterable<ClassDeclaration> getTraitClassesAutoConstructEnabled(
 		ClassDeclaration annotatedClass, extension T context) {
 
 		val traitClassesAutoConstruct = annotatedClass.getTraitClassesAutoConstruct(true, context)

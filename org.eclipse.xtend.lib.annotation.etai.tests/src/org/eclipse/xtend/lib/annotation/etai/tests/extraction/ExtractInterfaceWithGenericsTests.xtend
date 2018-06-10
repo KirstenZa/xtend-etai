@@ -72,7 +72,7 @@ class ExtractInterfaceWithGenericsInnerType<T> implements ExtractInterfaceWithGe
 class ExtractInterfaceWithGenericsTests {
 
 	@Test
-	public def void testMethodsInExtractedInterfaceWithGenerics() {
+	def void testMethodsInExtractedInterfaceWithGenerics() {
 
 		var IExtractInterfaceWithGenerics1<String, Exception, Double> obj = new ExtractInterfaceWithGenerics1<String, Exception, Double>();
 		assertEquals(20, obj.method1(20));
@@ -85,7 +85,7 @@ class ExtractInterfaceWithGenericsTests {
 	}
 
 	@Test
-	public def void testMethodsInExtractedInterfaceCheckBounds() {
+	def void testMethodsInExtractedInterfaceCheckBounds() {
 
 		val list = new ArrayList<BigInteger>
 		var IExtractInterfaceWithGenerics3<ArrayList<BigInteger>> obj = new ExtractInterfaceWithGenerics3<ArrayList<BigInteger>>()
@@ -95,7 +95,7 @@ class ExtractInterfaceWithGenericsTests {
 	}
 
 	@Test
-	public def void testMethodsInExtractedInterfaceInnerType() {
+	def void testMethodsInExtractedInterfaceInnerType() {
 
 		val obj = new ExtractInterfaceWithGenericsInnerType<String>
 		var List<String> stringList = obj.method
@@ -104,7 +104,7 @@ class ExtractInterfaceWithGenericsTests {
 	}
 
 	@Test
-	public def void testMethodsInExtractedInterfaceAvoidRespecification() {
+	def void testMethodsInExtractedInterfaceAvoidRespecification() {
 
 		assertEquals(3, IExtractInterfaceWithGenerics1.declaredMethods.size)
 		assertEquals(#{"method6", "method7", "method8"},

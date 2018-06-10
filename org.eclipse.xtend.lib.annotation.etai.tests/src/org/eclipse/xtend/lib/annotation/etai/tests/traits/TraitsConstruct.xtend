@@ -125,6 +125,9 @@ abstract class ExtendedClassConstructBase {
 
 	new(BigDecimal bigDecimal) {
 		this.bigDecimal = bigDecimal
+		
+		// use attribute in order to avoid warning
+		this.bigDecimal = this.bigDecimal
 	}
 
 	def int getValue() {
@@ -167,6 +170,9 @@ class ExtendedClassConstructOwnConstructor implements ITraitClassConstructConcre
 
 	protected new(Long longValue) {
 		this.longValue = longValue
+		
+		// use attribute in order to avoid warning
+		this.longValue = this.longValue
 	}
 
 	/**

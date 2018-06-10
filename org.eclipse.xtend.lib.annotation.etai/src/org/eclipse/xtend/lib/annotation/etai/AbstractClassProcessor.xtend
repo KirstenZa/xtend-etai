@@ -17,7 +17,7 @@ import org.eclipse.xtend.lib.macro.declaration.TypeDeclaration
 /**
  * Base class for activate annotation class processors.
  */
-public abstract class AbstractClassProcessor implements RegisterGlobalsParticipant<TypeDeclaration>, TransformationParticipant<MutableTypeDeclaration>, CodeGenerationParticipant<TypeDeclaration>, ValidationParticipant<TypeDeclaration> {
+abstract class AbstractClassProcessor implements RegisterGlobalsParticipant<TypeDeclaration>, TransformationParticipant<MutableTypeDeclaration>, CodeGenerationParticipant<TypeDeclaration>, ValidationParticipant<TypeDeclaration> {
 
 	override void doRegisterGlobals(List<? extends TypeDeclaration> annotatedTypes,
 		extension RegisterGlobalsContext context) {

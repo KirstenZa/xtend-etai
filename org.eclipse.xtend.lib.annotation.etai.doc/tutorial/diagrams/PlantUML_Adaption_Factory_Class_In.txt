@@ -13,10 +13,10 @@ class App {
 }
 
 interface IAnimalFactory <<Interface>> {
-	+create(age:int)
+	+create(age:int):Animal
 }
 
-class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules, FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory)>> {
+class "Animal\n&#123;abstract&#125;" as Animal <<ApplyRules, FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory, factoryClassDerived=true)>> {
 	-age:int
 	+Animal(age:int)
 }

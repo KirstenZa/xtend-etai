@@ -495,7 +495,7 @@ import virtual.intf.IXTraitClassDisposable1
 import virtual.intf.IXTraitClassDisposable2
 
 @TraitClassAutoUsing
-abstract public class XLifecycleManaged {
+abstract class XLifecycleManaged {
 	@EnvelopeMethod(setFinal=true, disableRedirection=true, required=false)
 	override void dispose() {}
 }
@@ -541,7 +541,7 @@ import virtual.intf.IXTraitClassLevel2
 import virtual.intf.IXTraitClassMain
 
 @TraitClassAutoUsing
-abstract public class XLifecycleManaged {
+abstract class XLifecycleManaged {
 	@EnvelopeMethod(setFinal=true, disableRedirection=true, required=false)
 	override void dispose() {}
 }

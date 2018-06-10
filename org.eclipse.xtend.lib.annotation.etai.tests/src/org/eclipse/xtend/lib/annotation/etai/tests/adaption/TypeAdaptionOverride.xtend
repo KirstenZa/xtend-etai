@@ -9,15 +9,15 @@ import org.junit.Test
 
 import static org.junit.Assert.*
 
-public class Base {
+class Base {
 }
 
-public class Derived extends Base {
+class Derived extends Base {
 }
 
 @ExtractInterface
 @ApplyRules
-abstract public class TypeAdaptionOverrideBase1 {
+abstract class TypeAdaptionOverrideBase1 {
 
 	@CopyConstructorRule
 	new(Base obj) {
@@ -67,7 +67,7 @@ abstract public class TypeAdaptionOverrideBase1 {
 
 @ExtractInterface
 @ApplyRules
-public abstract class TypeAdaptionOverrideBase2 extends TypeAdaptionOverrideBase1 {
+abstract class TypeAdaptionOverrideBase2 extends TypeAdaptionOverrideBase1 {
 
 	@CopyConstructorRule
 	new(Derived obj) {
@@ -95,7 +95,7 @@ public abstract class TypeAdaptionOverrideBase2 extends TypeAdaptionOverrideBase
 
 @ExtractInterface
 @ApplyRules
-public class TypeAdaptionOverrideBase3 extends TypeAdaptionOverrideBase2 {
+class TypeAdaptionOverrideBase3 extends TypeAdaptionOverrideBase2 {
 
 	new() {
 		super(null)
@@ -125,12 +125,12 @@ public class TypeAdaptionOverrideBase3 extends TypeAdaptionOverrideBase2 {
 
 @ExtractInterface
 @ApplyRules
-public class TypeAdaptionOverrideBase4 extends TypeAdaptionOverrideBase3 {
+class TypeAdaptionOverrideBase4 extends TypeAdaptionOverrideBase3 {
 }
 
 @ExtractInterface
 @ApplyRules
-public class TypeAdaptionOverride extends TypeAdaptionOverrideBase4 {
+class TypeAdaptionOverride extends TypeAdaptionOverrideBase4 {
 }
 
 class TypeAdaptionOverrideTests {

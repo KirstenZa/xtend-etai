@@ -16,7 +16,7 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IComponentWithG
 
 @ExtractInterface
 @ApplyRules
-public class ControllerWithGenericsBase<T> {
+class ControllerWithGenericsBase<T> {
 
 	public IComponentWithGenericsBase<T> comp;
 	public IControllerWithGenericsBase<T> controllerParent;
@@ -28,12 +28,12 @@ public class ControllerWithGenericsBase<T> {
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.qualified);replace(Controller,intf.IComponent);replace(_CAN_BE_REMOVED,)")
-	public override IComponentWithGenericsBase<T> _comp() {
+	override IComponentWithGenericsBase<T> _comp() {
 		return comp;
 	}
 
 	@TypeAdaptionRule("apply(org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IComponentWithGenericsTopLevel);addTypeParamWildcardSuper(apply(org.eclipse.xtend.lib.annotation.etai.tests.adaption.ControllerWithGenericsTopLevel);addTypeParam(apply(?));addTypeParam(apply(?)));addTypeParamWildcardExtends(apply(Integer))")
-	public override IComponentWithGenericsBase<? extends Number> _compComplexAdaption() {
+	override IComponentWithGenericsBase<? extends Number> _compComplexAdaption() {
 		return null;
 	}
 
@@ -45,7 +45,7 @@ public class ControllerWithGenericsBase<T> {
 
 @ExtractInterface
 @ApplyRules
-public class ControllerWithGenericsTopLevel<B, C> extends ControllerWithGenericsBase<C> {
+class ControllerWithGenericsTopLevel<B, C> extends ControllerWithGenericsBase<C> {
 
 	new() {
 		super(
@@ -56,12 +56,12 @@ public class ControllerWithGenericsTopLevel<B, C> extends ControllerWithGenerics
 
 @ExtractInterface
 @ApplyRules
-public class ControllerWithGenericsClassPart extends ControllerWithGenericsBase<Integer> {
+class ControllerWithGenericsClassPart extends ControllerWithGenericsBase<Integer> {
 }
 
 @ExtractInterface
 @ApplyRules
-public class ComponentWithGenericsBase<T> {
+class ComponentWithGenericsBase<T> {
 
 	public IComponentWithGenericsBase<T> componentParent;
 	public IControllerWithGenericsBase<T> controller;
@@ -76,12 +76,12 @@ public class ComponentWithGenericsBase<T> {
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replace(Component,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController);addTypeParam(applyVariable(var.class.typeparameter.1));addTypeParam(applyVariable(var.class.typeparameter.2));addTypeParam(applyVariable(var.class.typeparameter.3))")
-	public override IControllerWithGenericsBase<T> _ctrl() {
+	override IControllerWithGenericsBase<T> _ctrl() {
 		return controller;
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replace(Component,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController);addTypeParam(applyVariable(var.class.typeparameter.1));addTypeParam(applyVariable(var.class.typeparameter.2))")
-	public override <K extends T> IControllerWithGenericsBase<T> _ctrlExtended(K someValue) {
+	override <K extends T> IControllerWithGenericsBase<T> _ctrlExtended(K someValue) {
 		return controller;
 	}
 
@@ -89,7 +89,7 @@ public class ComponentWithGenericsBase<T> {
 
 @ApplyRules
 @ExtractInterface
-public class ComponentWithGenericsTopLevel<B, C> extends ComponentWithGenericsBase<C> {
+class ComponentWithGenericsTopLevel<B, C> extends ComponentWithGenericsBase<C> {
 
 	new(IControllerWithGenericsTopLevel<B, C> controller) {
 		super(controller, null)
@@ -99,7 +99,7 @@ public class ComponentWithGenericsTopLevel<B, C> extends ComponentWithGenericsBa
 
 @ExtractInterface
 @ApplyRules
-public class ComponentWithGenericsClassPart extends ComponentWithGenericsBase<Integer> {
+class ComponentWithGenericsClassPart extends ComponentWithGenericsBase<Integer> {
 }
 
 class TypeAdaptionWithGenericsTests {

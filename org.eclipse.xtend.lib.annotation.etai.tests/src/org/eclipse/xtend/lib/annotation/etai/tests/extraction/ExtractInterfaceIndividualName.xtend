@@ -59,7 +59,7 @@ class ExtractInterfaceIndividualNameTests {
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
 	@Test
-	public def void testRelativePrefix() {
+	def void testRelativePrefix() {
 
 		assertNotNull(
 			class.classLoader.loadClass(
@@ -80,7 +80,7 @@ class ExtractInterfaceIndividualNameTests {
 	}
 
 	@Test
-	public def void testAbsolutePrefix() {
+	def void testAbsolutePrefix() {
 
 		assertNotNull(class.classLoader.loadClass("pack1.ExtractInterfaceAbsolutePrefixOneSubPackage"))
 		assertNotNull(class.classLoader.loadClass("pack1.pack2.XExtractInterfaceAbsolutePrefixMultipleSubPackages"))
@@ -88,7 +88,7 @@ class ExtractInterfaceIndividualNameTests {
 	}
 
 	@Test
-	public def void testTraitClass() {
+	def void testTraitClass() {
 
 		assertNotNull(class.classLoader.loadClass("org.eclipse.xtend.lib.annotation.etai.tests.extraction.pack1.ITraitClassIndividualInterfaceName1"))
 		assertNotNull(class.classLoader.loadClass("org.eclipse.xtend.lib.annotation.etai.tests.extraction.pack1.ITraitClassIndividualInterfaceName2"))
@@ -96,14 +96,14 @@ class ExtractInterfaceIndividualNameTests {
 	}
 
 	@Test
-	public def void testFullyQualified() {
+	def void testFullyQualified() {
 
 		assertNotNull(class.classLoader.loadClass("pack1.pack2.TheExtractedInterface2"))
 
 	}
 
 	@Test
-	public def void testDoNotExtractInDefaultPackage() {
+	def void testDoNotExtractInDefaultPackage() {
 
 		'''
 

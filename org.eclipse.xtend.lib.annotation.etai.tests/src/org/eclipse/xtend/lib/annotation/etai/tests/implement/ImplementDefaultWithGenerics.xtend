@@ -71,7 +71,7 @@ class NonAbstractGeneric2 extends AbstractBaseGeneric<TypeBase> {
 class ImplementDefaultWithGenericsTests {
 
 	@Test
-	public def void testDefaultImplementationGeneric() {
+	def void testDefaultImplementationGeneric() {
 
 		val obj1 = new NonAbstractGeneric1
 		obj1.method11

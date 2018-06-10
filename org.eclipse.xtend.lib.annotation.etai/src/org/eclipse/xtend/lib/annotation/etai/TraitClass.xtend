@@ -443,7 +443,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	/**
 	 * Returns the methods which must be added to an extended class applying the specified trait class.
 	 */
-	static public def List<MethodDeclaration> getTraitMethodsToApply(
+	static def List<MethodDeclaration> getTraitMethodsToApply(
 		ClassDeclaration traitClass,
 		TypeMap typeMap,
 		extension TransformationContext context
@@ -461,7 +461,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	/**
 	 * Returns the trait methods from the specified trait class.
 	 */
-	static public def List<MethodDeclaration> getTraitMethodClosure(ClassDeclaration traitClass,
+	static def List<MethodDeclaration> getTraitMethodClosure(ClassDeclaration traitClass,
 		TypeMap typeMap, extension TransformationContext context) {
 
 		return traitClass.getMethodClosure(null, [

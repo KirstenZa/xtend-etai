@@ -9,18 +9,19 @@
     * [Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
   * [Automatic Adaption of Classes](#automatic-adaption-of-classes)
     * [Overview](#overview-1)
-    * [Generate the Implementation of Methods/Constructors](#generate-the-implementation-of-methodsconstructors)
-    * [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types)
+    * [Generate the Implementation of Methods/Constructors](#generate-the-implementation-of-methods-constructors)
+    * [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructor-method-parameters-and-return-types)
     * [Reimplement Constructors](#reimplement-constructors)
     * [Deactivate and Change Adaption Rules](#deactivate-and-change-adaption-rules)
     * [Use Adaption Variables](#use-adaption-variables)
     * [Generate Factory Methods](#generate-factory-methods)
       * [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
+      * [Factory Method](#factory-method)
     * [Generate Factories](#generate-factories)
     * [Adaption Rule Specification](#adaption-rule-specification)
       * [Adaption Functions](#adaption-functions)
       * [Predefined Adaption Variables](#predefined-adaption-variables)
-      * [Adaption Function: *alternative*](#adaption-function-alternative)
+      * [Adaption Function: *alternative*](#adaption-function---alternative-)
   * [Default Implementation](#default-implementation)
     * [Overview](#overview-2)
     * [Basic Usage of Default Implementation](#basic-usage-of-default-implementation)
@@ -35,14 +36,14 @@
     * [Envelope Methods](#envelope-methods)
       * [Default Value Provider](#default-value-provider)
     * [Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
-      * [Flag: *required*](#flag-required)
-      * [Flag: *setFinal*](#flag-setfinal)
+      * [Flag: *required*](#flag---required-)
+      * [Flag: *setFinal*](#flag---setfinal-)
     * [Redirection of Trait Methods](#redirection-of-trait-methods)
     * [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
       * [Automatic Generation of Constructors](#automatic-generation-of-constructors)
-    * [*this* within Trait Classes](#this-within-trait-classes)
+    * [*this* within Trait Classes](#-this--within-trait-classes)
       * [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
-      * [Usage of *$extendedThis*](#usage-of-extendedthis)
+      * [Usage of *\$extendedThis*](#usage-of----extendedthis-)
     * [Trait Classes and Inheritance](#trait-classes-and-inheritance)
       * [Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
       * [Base Trait Classes](#base-trait-classes)
@@ -563,7 +564,7 @@ class AnimalLion extends AnimalCat {}
 
 ### Generate Factory Methods
 
-The ETAI library supports the **generation of factory methods** (see [Factory Method Pattern](https://en.wikipedia.org/wiki/Factory_method_pattern)).
+The ETAI library supports the **generation of factory methods**, i.e. methods for creating an object instead of using constructors. This feature enables [Constructor Methods](#constructor-methods-and-construction-process) in trait classes (see [Automatic Generation of Constructors](#automatic-generation-of-constructors)), it can be useful, if additional code shall be executed automatically after object construction (see [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)), or the factory methods become part of a factory (see [Generate Factories](#generate-factories)).
 
 In order to generate factory methods, a class and derived classes must enable adaption (*@ApplyRules*). Afterwards, the first class in the type hierarchy, which shall get a factory method, must be annotated by a rule represented by ***@FactoryMethodRule***. All derived classes will also get a factory method according to the same rule. However, the rule can be changed by derived classes by annotating it again with other options. It can even be deactivated by annotating *@FactoryMethodRule* to a derived class and setting parameter *factoryMethod* to an empty string.
 
@@ -614,15 +615,27 @@ class Animal {
 
 ![](images/PlantUML_Adaption_Factory_Method_Out.png)
 
+#### Factory Method  
+
+The return type of the generated factory method usually matches the class it is generated for (see the example in [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)).
+
+However, it is possible to influence the return type of the generated methods. This can be accomplished via an adaption rule specification (see [Adaption Rule Specification](#adaption-rule-specification)) in parameter ***returnTypeAdaptionRule*** of *@FactoryMethodRule*. If the specified string is not empty, the rule will be applied in order to determine the return type of the factory method.
+
+If the application of the adaption rule specification would lead to a string, which does not represent a locatable type, the generation does not consider the adaption rule.
+
 ### Generate Factories
 
-Another parameter of *@FactoryMethodRule* (see [Generate Factory Methods](#generate-factory-methods)) is ***factoryInstance***. If it is non-empty, an inner class *Factory* (*private*) will be generated for all adapted classes. This class represents a **factory class** (see [Factory](https://en.wikipedia.org/wiki/Factory_(object-oriented_programming))). A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. In this case, the factory method, which shall be generated, will not be in the adapted class, but inside the factory class.
+Another parameter of *@FactoryMethodRule* (see [Generate Factory Methods](#generate-factory-methods)) is ***factoryInstance***. If it is non-empty, an inner class *Factory* (*private*) will be generated for all adapted classes. This class represents a **factory class** (see [Factory](https://en.wikipedia.org/wiki/Factory_(object-oriented_programming))). In this case, the factory method will not be in the adapted class directly, but inside the factory class.
+
+A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. The variable will be declarerd *final* (or read-only) unless parameter ***factoryInstanceFinal*** of *@FactoryMethodRule* is explicitly set to *false*.
 
 If generating factory classes, it can also be helpful to provide an interface for them, which allows for supporting the [Abstract Factory Pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern). The type of such an interface can be specified by setting the ***factoryInterface*** parameter.
 
-An alternative to *factoryInterface* is ***factoryInterfaceVariable*** (both must not be used). In case of *factoryInterfaceVariable*, the name of the factory class's interface is not static, but will be equal to the value of an adaption variable (see [Use Adaption Variables](#use-adaption-variables)) in context of the adapted class. The name of the adaption variable is given by *factoryInterfaceVariable*. If the referred adaption variable is not set, an interface will not be applied.
+An alternative to *factoryInterface* is ***factoryInterfaceVariable*** (both must not be used). In case of *factoryInterfaceVariable*, the name of the factory class's interface is not fixed, but will be equal to the value of an adaption variable (see [Use Adaption Variables](#use-adaption-variables)) in context of the adapted class. The name of the adaption variable is given by *factoryInterfaceVariable*. If the referred adaption variable is not set, an interface will not be applied.
 
-The example below shows the generation of factory classes. The rule specification can be found on *Animal*. Based on this, *AnimalLion* and *AnimalDog* generate two factory classes. Both implement interface *IAnimalFactory*, and both can be referenced by a *static* attribute called *FACTORY*. Finally, method *main* shows how an *AnimalLion* object can be constructed.
+By default, the generated factory classes will not use inheritance, i.e. the factory class generated for class *A* will not be the parent class (*extends*) for the factory class generated for class *B* which extends *A*. Inheritance can lead to the problem that the *B*-factory has to override the (factory) methods of the *A*-factory, which might be *abstract* methods, if *A* is *abstract*. This can result in errors, if *B* does not implement the same constructor as *A* (e.g. parameters changed). In this case, the factory method in the *B*-factory has other parameters compared to the factory method in the *A*-factory. However, if inheritance of generated factory classes is not an issue, this feature can be enabled by setting parameter ***factoryClassDerived*** of *@FactoryMethodRule* to *true*.
+
+The example below shows the generation of factory classes. The rule specification can be found on *Animal*. Based on this, *AnimalLion* and *AnimalDog* generate two factory classes. Both implement their interface *IAnimalFactory*, and both can be referenced by a *static* attribute called *FACTORY*. Finally, method *main* shows how an *AnimalLion* object can be constructed.
 
 ##### Input (Code)
 
@@ -638,7 +651,8 @@ interface IAnimalFactory {
 }
 
 @ApplyRules
-@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY", factoryInterface=IAnimalFactory)
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY",
+	factoryInterface=IAnimalFactory, factoryClassDerived=true)
 abstract class Animal {
 
 	int age
@@ -698,7 +712,7 @@ The following table lists supported *adaption functions*:
 | ***prependVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be prepended to the *current value* |
 | ***replace(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* |
 | ***replaceAll(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
-| ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions(https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
+| ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
 | ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* |
 | ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
 | ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
@@ -716,6 +730,8 @@ The following table shows existing predefined adaption variables:
 | ***var.class.simple*** | the class name (unqualified) |
 | ***var.class.qualified*** | the fully qualified class name |
 | ***var.class.abstract*** | if the class is abstract "true", otherwise "false" |
+| ***var.class.typeparameters*** | the name of all type parameter (comma-separated) |
+| ***var.class.typeparameters.count*** | the number of type parameters |
 | ***var.class.typeparameter.1*** | the name of type parameter *#1* (if available) |
 | ***var.class.typeparameter.2*** | the name of type parameter *#2* (if available) |
 | *...* | |

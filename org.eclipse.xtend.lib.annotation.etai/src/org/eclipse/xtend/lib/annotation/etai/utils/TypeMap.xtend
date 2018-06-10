@@ -26,8 +26,8 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 class TypeMap {
 
 	// mapping data for type map
-	private Map<String, TypeReference> hierarchyMapping = new HashMap<String, TypeReference>
-	private Map<Type, TypeReference> cloneMapping = new HashMap<Type, TypeReference>
+	Map<String, TypeReference> hierarchyMapping = new HashMap<String, TypeReference>
+	Map<Type, TypeReference> cloneMapping = new HashMap<Type, TypeReference>
 
 	/**
 	 * Retrieves a unique name for a given type (which might be a type parameter declaration).

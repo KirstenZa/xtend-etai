@@ -9,7 +9,7 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.ICompo
 
 @ExtractInterface
 @ApplyRules
-public class ComponentBase {
+class ComponentBase {
 
 	public IComponentBase componentParent;
 	public IControllerBase controller;
@@ -32,7 +32,7 @@ public class ComponentBase {
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replace(Component,org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IController)")
-	public override IControllerBase _ctrl() {
+	override IControllerBase _ctrl() {
 		return controller;
 	}
 
@@ -40,11 +40,11 @@ public class ComponentBase {
 
 @ApplyRules
 @ExtractInterface
-public class ComponentIntermediate extends ComponentBase {
+class ComponentIntermediate extends ComponentBase {
 }
 
 
 @ApplyRules
 @ExtractInterface
-public class ComponentTopLevel extends ComponentIntermediate {
+class ComponentTopLevel extends ComponentIntermediate {
 }

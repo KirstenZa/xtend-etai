@@ -107,7 +107,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
 	 * processed specifically. 
 	 */
-	static public def boolean isUnprocessedMirrorInterface(String interfaceName) {
+	static def boolean isUnprocessedMirrorInterface(String interfaceName) {
 
 		if (MIRROR_INTERFACE_TO_BE_PROCESSED.containsKey(interfaceName))
 			return true
@@ -121,7 +121,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
 	 * processed specifically. 
 	 */
-	static public def boolean isUnprocessedClassExtraction(String className) {
+	static def boolean isUnprocessedClassExtraction(String className) {
 
 		if (EXTRACT_INTERFACE_TO_BE_PROCESSED.contains(className))
 			return true
@@ -160,7 +160,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	/**
 	 * Returns the corresponding class of the mirror interface (which must have been processed already).
 	 */
-	static public def ClassDeclaration getClassOfProcessedMirrorInterface(InterfaceDeclaration interfaceDeclaration) {
+	static def ClassDeclaration getClassOfProcessedMirrorInterface(InterfaceDeclaration interfaceDeclaration) {
 
 		val extractInterfaceAnnotation = interfaceDeclaration.getAnnotation(ExtractedInterface)
 		val extractedClass = extractInterfaceAnnotation.getClassValue("extractedClass")
@@ -172,7 +172,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	 * Returns the class annotated by {@link ExtractInterface} which extracts the interface with the
 	 * specified name. 
 	 */
-	static public def ClassDeclaration getClassOfUnprocessedMirrorInterface(String interfaceName) {
+	static def ClassDeclaration getClassOfUnprocessedMirrorInterface(String interfaceName) {
 
 		return MIRROR_INTERFACE_TO_BE_PROCESSED.get(interfaceName)
 
@@ -346,7 +346,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	/**
 	 * Returns all super interfaces of the interface extracted by the given class.
 	 */
-	static public def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<TypeReference> getMirrorInterfaceExtends(
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<TypeReference> getMirrorInterfaceExtends(
 		ClassDeclaration annotatedClass,
 		TypeMap typeMap,
 		extension T context

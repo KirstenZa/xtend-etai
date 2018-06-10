@@ -46,6 +46,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.CollectionUt
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.StringUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
+import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclarator
 
 /**
  * <p>Classes can be annotated by this element in order to adapt them concerning
@@ -318,12 +319,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				!methodsNotToAdapt.contains(it.simpleName)
 			]
 
-			// maybe a bug in xtend: it is required to create this list here because relevantMethods will loose its items on iteration
-			val relevantMethodsList = new ArrayList<MethodDeclaration>(relevantMethods.size)
-			relevantMethodsList.addAll(relevantMethods)
-
 			// search for methods with adaption rules and add
-			val methodsWithAdaptionRule = relevantMethodsList.filter [
+			val methodsWithAdaptionRule = relevantMethods.filter [
 				it.visibility != Visibility.PRIVATE && annotationCheckExistenceOnMethod.apply(it)
 			]
 
@@ -332,7 +329,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				methodsToAdapt.put(method, superClass)
 
 			// all found (relevant) methods shall not be considered in further processing of current hierarchy any more
-			methodsNotToAdapt.addAll(relevantMethodsList.map[simpleName])
+			methodsNotToAdapt.addAll(relevantMethods.map[simpleName])
 
 		}
 
@@ -533,7 +530,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 */
 	static protected def TypeReference applyTypeAdaptionRule(
 		Declaration element,
-		ClassDeclaration annotatedClass,
+		List<TypeParameterDeclarator> typeParameterDeclarators,
 		ClassDeclaration relevantSuperClass,
 		String completeRule,
 		ExecutableDeclaration source,
@@ -564,7 +561,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		for (typeString : alternativeTypeStrings) {
 
 			// create new type reference
-			var TypeReference newType = typeString.createTypeReference(annotatedClass, null, context)
+			var TypeReference newType = typeString.createTypeReference(typeParameterDeclarators, null, context)
 
 			if (newType !== null)
 				return newType;
@@ -626,7 +623,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			val parameterMethodToCompare = parameterIteratorExecutableToCompare.next
 
 			val ruleParam = parameterRuleSource.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			val adaptedType = parameterMethodToCompare.applyTypeAdaptionRule(annotatedClass, relevantSuperClass,
+			val adaptedType = parameterMethodToCompare.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
 				ruleParam, ruleSource, variableMap, typeMap, true, context)
 
 			if (!adaptedType.typeReferenceEquals(parameterMethodToCompare.type, null, true, typeMap, null))
@@ -638,7 +635,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (executableToCompare instanceof MethodDeclaration) {
 
 			val ruleMethod = ruleSource.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			val adaptedReturnType = executableToCompare.applyTypeAdaptionRule(annotatedClass, relevantSuperClass,
+			val adaptedReturnType = executableToCompare.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
 				ruleMethod, ruleSource, variableMap, typeMap, true, context)
 
 			if (!adaptedReturnType.typeReferenceEquals(executableToCompare.returnType, null, true, typeMap, null))
@@ -664,7 +661,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			// apply adaption rule (for parameter type)
 			val ruleParam = parameter.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			val adaptedType = parameter.applyTypeAdaptionRule(annotatedClass, relevantSuperClass, ruleParam, source,
+			val adaptedType = parameter.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass, ruleParam, source,
 				variableMap, typeMap, true, context)
 
 			// construct new parameter name and check
@@ -698,7 +695,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	/**
 	 * Returns the (qualified) factory class name for the annotated class
 	 */
-	static public def String getFactoryClassName(ClassDeclaration annotatedClass) {
+	static def String getFactoryClassName(ClassDeclaration annotatedClass) {
 
 		return annotatedClass.qualifiedName + "." + FACTORY_CLASS_NAME
 
@@ -709,7 +706,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * 
 	 * @see SetAdaptionVariable
 	 */
-	static public def Map<String, String> getAdaptionVariables(ClassDeclaration annotatedClass, List<String> errors,
+	static def Map<String, String> getAdaptionVariables(ClassDeclaration annotatedClass, List<String> errors,
 		extension TransformationContext context) {
 
 		val result = new HashMap<String, String>
@@ -730,6 +727,9 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		result.put("var.class.simple", annotatedClass.simpleName)
 		result.put("var.class.qualified", annotatedClass.qualifiedName)
 		result.put("var.class.abstract", if(annotatedClass.abstract) "true" else "false")
+
+		result.put("var.class.typeparameters", annotatedClass.typeParameters.map[simpleName].join(","))
+		result.put("var.class.typeparameters.count", String::valueOf(annotatedClass.typeParameters.length))
 
 		var typeParameterDeclarationCount = 1
 		for (typeParameterDeclaration : annotatedClass.typeParameters)
@@ -814,7 +814,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	/**
 	 * <p>Removes all adaption rules and copy constructor rules from an element.</p>
 	 */
-	static public def void removeTypeAdaptionAndCopyConstructorRules(MutableExecutableDeclaration executable) {
+	static def void removeTypeAdaptionAndCopyConstructorRules(MutableExecutableDeclaration executable) {
 
 		if (executable === null)
 			return;
@@ -833,7 +833,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * <p>If the <code>skip</code> counter is set, the first number of parameters of the source will
 	 * not be considered.</p>
 	 */
-	static public def void copyTypeAdaptionAndCopyConstructorRules(
+	static def void copyTypeAdaptionAndCopyConstructorRules(
 		ExecutableDeclaration src,
 		MutableExecutableDeclaration trg,
 		int skip,
@@ -891,7 +891,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	/**
 	 * Moves the {@link GeneratedFactoryMethod} annotation from one element to another.
 	 */
-	static public def void moveAnnotationConstructorHiddenForFactoryMethod(MutableAnnotationTarget trg,
+	static def void moveAnnotationConstructorHiddenForFactoryMethod(MutableAnnotationTarget trg,
 		MutableAnnotationTarget src, extension TransformationContext context) {
 
 		val adaptionConstructorHiddenForFactoryMethod = src.getAnnotation(ConstructorHiddenForFactoryMethod)
@@ -1099,7 +1099,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				val ruleImplTypeExistenceCheck = method.getAnnotation(ImplAdaptionRule)?.getStringValue(
 					"typeExistenceCheck")
 				if (!ruleImplTypeExistenceCheck.isNullOrEmpty) {
-					val existingType = method.applyTypeAdaptionRule(annotatedClass, null,
+					val existingType = method.applyTypeAdaptionRule(#[annotatedClass], null,
 						ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, context)
 					if (existingType === null)
 						isImplAdaption = false
@@ -1154,8 +1154,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// apply adaption rule (for method return type)
 					val ruleMethod = method.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-					newMethod.returnType = method.applyTypeAdaptionRule(annotatedClass, relevantSuperClass, ruleMethod,
-						method, variableMap, typeMapLocal, true, context)
+					newMethod.returnType = method.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
+						ruleMethod, method, variableMap, typeMapLocal, true, context)
 
 				} else {
 
@@ -1272,7 +1272,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					val ruleImplTypeExistenceCheck = constructor.getAnnotation(ImplAdaptionRule)?.getStringValue(
 						"typeExistenceCheck")
 					if (!ruleImplTypeExistenceCheck.isNullOrEmpty) {
-						val existingType = constructor.applyTypeAdaptionRule(annotatedClass, null,
+						val existingType = constructor.applyTypeAdaptionRule(#[annotatedClass], null,
 							ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, context)
 						if (existingType === null)
 							isImplAdaption = false
@@ -1291,7 +1291,6 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (constructor.hasAnnotation(ConstructorHiddenForFactoryMethod)) {
 
 						it.visibility = Visibility.PUBLIC
-							
 
 					} else {
 
@@ -1360,12 +1359,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		val factoryClass = context.findClass(annotatedClass.getFactoryClassName()) as MutableClassDeclaration
 		factoryClass.addAnnotation(GeneratedFactoryClass.newAnnotationReference)
 
-		// hide factory method by default
+		// hide factory class by default
 		factoryClass.visibility = Visibility.PRIVATE
-
-		// do not generate factory methods, if class is abstract
-		if (annotatedClass.abstract)
-			return
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
@@ -1375,24 +1370,50 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (xtendClass.reportErrors(errors, context))
 			return;
 
+		// check if factory class shall be generated (including content) 
+		val useFactoryClass = factoryMethodRuleInfo !== null && !factoryMethodRuleInfo.factoryInstance.nullOrEmpty
+		val useFactoryClassInheritance = useFactoryClass && factoryMethodRuleInfo.factoryClassDerived
+
+		// do not generate factory methods, if class is abstract
+		if (annotatedClass.abstract && !useFactoryClassInheritance)
+			return;
+
 		// construct factory method, if method name has been set
 		if (factoryMethodRuleInfo !== null && !factoryMethodRuleInfo.factoryMethod.nullOrEmpty) {
 
 			// prepare factory class (inner class)
 			var MutableClassDeclaration classToAddFactoryMethods
-			val useFactoryClass = !factoryMethodRuleInfo.factoryInstance.nullOrEmpty
 			if (useFactoryClass) {
 
 				// factory class is used
 				factoryClass.visibility = Visibility.PUBLIC
 				factoryClass.static = true
+				factoryClass.abstract = annotatedClass.abstract
+
+				// extend factory from first parent class, which has a factory (if applicable)
+				var ClassDeclaration factoryClassParent = null
+				if (useFactoryClassInheritance) {
+
+					val parentClassDeclarationWithFactoryRule = if ((annotatedClass.extendedClass.
+							type as ClassDeclaration)?.getFactoryMethodRuleInfo(errors, context) !== null)
+							annotatedClass.extendedClass.type as ClassDeclaration
+					if (parentClassDeclarationWithFactoryRule !== null) {
+
+						factoryClassParent = context.findClass(
+							parentClassDeclarationWithFactoryRule.getFactoryClassName()) as ClassDeclaration
+						factoryClass.extendedClass = factoryClassParent.newTypeReference
+					}
+
+				}
 
 				// use interface for factory, if specified
 				if (factoryMethodRuleInfo.factoryInterface !== null &&
 					factoryMethodRuleInfo.factoryInterface.qualifiedName != Object.canonicalName) {
 
-					factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
-						#[factoryMethodRuleInfo.factoryInterface.newTypeReference]
+					// only add interface, if there is no parent (factory) class
+					if (factoryClassParent === null)
+						factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
+							#[factoryMethodRuleInfo.factoryInterface.newTypeReference]
 
 				}
 
@@ -1404,36 +1425,54 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (factoryInterfaceName !== null) {
 
 						var TypeReference factoryInterfaceReference = factoryInterfaceName.
-							createTypeReference(annotatedClass, null, context)
+							createTypeReference(#[annotatedClass], null, context)
 
 						// set factory interface if the type exists			
-						if (factoryInterfaceReference !== null)
-							factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
-								#[factoryInterfaceReference]
+						if (factoryInterfaceReference !== null) {
+
+							// check for already implemented interface
+							var TypeReference firstImplementedInterfaceParent = null
+							var ClassDeclaration currentParentFactoryClass = factoryClassParent
+							while (currentParentFactoryClass !== null && firstImplementedInterfaceParent === null) {
+								if (currentParentFactoryClass.implementedInterfaces.size != 0)
+									firstImplementedInterfaceParent = currentParentFactoryClass.implementedInterfaces.
+										get(0)
+								currentParentFactoryClass = currentParentFactoryClass.extendedClass?.
+									type as ClassDeclaration
+							}
+
+							// only add interface, if there is a change
+							if (firstImplementedInterfaceParent === null ||
+								firstImplementedInterfaceParent.type != factoryInterfaceReference.type)
+								factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
+									#[factoryInterfaceReference]
+
+						}
 
 					}
 
 				}
 
-				// add instance
-				val instanceField = annotatedClass.addField(factoryMethodRuleInfo.factoryInstance) [
-					it.static = true
-					it.final = true
-					it.visibility = Visibility.PUBLIC
-					it.type = factoryClass.newTypeReference
-					it.initializer = '''new «factoryClass.qualifiedName»()'''
-				]
+				// add instance (if not abstract)
+				if (!factoryClass.abstract) {
 
-				// specify annotation
-				instanceField.addAnnotation(GeneratedFactoryInstance.newAnnotationReference)
+					val instanceField = annotatedClass.addField(factoryMethodRuleInfo.factoryInstance) [
+						it.static = true
+						it.final = factoryMethodRuleInfo.factoryInstanceFinal
+						it.visibility = Visibility.PUBLIC
+						it.type = factoryClass.newTypeReference
+						it.initializer = '''new «factoryClass.qualifiedName»()'''
+					]
+
+					// specify annotation
+					instanceField.addAnnotation(GeneratedFactoryInstance.newAnnotationReference)
+
+				}
 
 				// add factory method to factory class
 				classToAddFactoryMethods = factoryClass
 
 			} else {
-
-				// factory is not used
-				factoryClass.visibility = Visibility.PRIVATE
 
 				// add factory method to annotated class
 				classToAddFactoryMethods = annotatedClass
@@ -1495,16 +1534,17 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						it.static = !useFactoryClass
 						it.deprecated = constructor.deprecated
 						it.exceptions = constructor.exceptions
+						it.abstract = annotatedClass.abstract
 
 					]
 
 					// additional refactoring of factory method, if class provides type parameters
 					var TypeMap usedTypeMap
 
-					// set return type of factory method and handle type parameters specifics
-					if (annotatedClass.typeParameters.size > 0) {
+					val newMethodTypeArguments = new ArrayList<TypeReference>
 
-						val newTypeArguments = new ArrayList<TypeReference>
+					// consider used type map
+					if (annotatedClass.typeParameters.size > 0) {
 
 						// clone type map and adjust for type parameters of static method
 						usedTypeMap = typeMap.clone
@@ -1514,28 +1554,38 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							val newTypeParamDeclaration = newFactoryMethod.addTypeParameter(typeParameter.simpleName,
 								typeParameter.upperBounds)
 							val newTypeArgument = newTypeParamDeclaration.newSelfTypeReference
-							newTypeArguments.add(newTypeArgument)
+							newMethodTypeArguments.add(newTypeArgument)
 							usedTypeMap.putClone(typeParameter, newTypeArgument, context)
 
 						}
-
-						// set return type (with type arguments)
-						newFactoryMethod.returnType = annotatedClass.newTypeReference(newTypeArguments)
 
 					} else {
 
 						usedTypeMap = typeMap
 
-						// set return type (without type arguments)
-						newFactoryMethod.returnType = annotatedClass.newTypeReference
+					}
+
+					// set return type (consider type arguments)
+					newFactoryMethod.returnType = annotatedClass.newTypeReference(newMethodTypeArguments)
+
+					// apply return type adaption rule, if available
+					if (!factoryMethodRuleInfo.returnTypeAdaptionRule.nullOrEmpty) {
+
+						val adaptedTypeReference = newFactoryMethod.applyTypeAdaptionRule(#[newFactoryMethod], null,
+							factoryMethodRuleInfo.returnTypeAdaptionRule, null, variableMap, typeMap, false, context)
+
+						if (adaptedTypeReference !== null)
+							newFactoryMethod.returnType = adaptedTypeReference
 
 					}
 
 					// track parameters to add
-					val newParameterList = new LinkedHashMap<String, TypeReference>
+					var HashMap<String, TypeReference> newParameterList = null
 
 					// copy parameters
 					if (constructor !== null) {
+
+						newParameterList = new LinkedHashMap<String, TypeReference>
 
 						val regularParamTypeNameList = new ArrayList<String>
 						for (parameter : constructor.parameters) {
@@ -1578,7 +1628,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 								].contains(traitClass)) {
 
 								// try to apply adaption rule
-								adaptedParameterType = parameter.applyTypeAdaptionRule(annotatedClass, null,
+								adaptedParameterType = parameter.applyTypeAdaptionRule(#[annotatedClass], null,
 									adaptionRule, declaringExecutable, currentVariableMap, usedTypeMap, false, context)
 
 								// use variable map of parent, which maybe leads to an available type
@@ -1621,36 +1671,44 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// edit body code for creating delegation objects (and continue documentation)
 					var bodyDelegationObjectCreation = ""
-					for (traitClassToConstruct : traitClassesToConstructEnabled) {
+					if (!newFactoryMethod.abstract) {
 
-						val parameterNames = new ArrayList<String>
-						val parameterTypeNames = new ArrayList<String>
-						for (parameter : additionalContructorParameters) {
+						for (traitClassToConstruct : traitClassesToConstructEnabled) {
 
-							if (traitClassToConstruct == parameter.declaringExecutable.declaringType) {
-								parameterNames.add(parameter.simpleName)
-								parameterTypeNames.add(
-									parameter.type.getTypeReferenceAsString(true, true, true, context))
+							val parameterNames = new ArrayList<String>
+							val parameterTypeNames = new ArrayList<String>
+							for (parameter : additionalContructorParameters) {
+
+								if (traitClassToConstruct == parameter.declaringExecutable.declaringType) {
+									parameterNames.add(parameter.simpleName)
+									parameterTypeNames.add(
+										parameter.type.getTypeReferenceAsString(true, true, true, context))
+								}
+
 							}
+
+							bodyDelegationObjectCreation +=
+								'''newObject.«traitClassToConstruct.getConstructorMethodCallName(true)»(«parameterNames.join(", ")»);
+								'''
+							calledConstructorsDocumentation +=
+								'''<li>{@link «traitClassToConstruct.qualifiedName»#«traitClassToConstruct.simpleName»(java.lang.Object«IF !parameterTypeNames.empty», «parameterTypeNames.join(", ")»«ENDIF»)}
+								'''
 
 						}
 
-						bodyDelegationObjectCreation +=
-							'''newObject.«traitClassToConstruct.getConstructorMethodCallName(true)»(«parameterNames.join(", ")»);
-							'''
-						calledConstructorsDocumentation +=
-							'''<li>{@link «traitClassToConstruct.qualifiedName»#«traitClassToConstruct.simpleName»(java.lang.Object«IF !parameterTypeNames.empty», «parameterTypeNames.join(", ")»«ENDIF»)}
-							'''
-
 					}
 
-					// edit body code for checking delegation objects
+					// edit body code for checking delegation objects (if not abstract)
 					var bodyCheckObjectCreation = ""
-					for (traitClassToCheck : traitClassesToConstructDisabled) {
+					if (!newFactoryMethod.abstract) {
 
-						bodyCheckObjectCreation +=
-							'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(newObject, "«traitClassToCheck.delegateObjectName»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClassToCheck.qualifiedName»");
-							'''
+						for (traitClassToCheck : traitClassesToConstructDisabled) {
+
+							bodyCheckObjectCreation +=
+								'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(newObject, "«traitClassToCheck.delegateObjectName»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClassToCheck.qualifiedName»");
+								'''
+
+						}
 
 					}
 
@@ -1679,13 +1737,17 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					// store type argument string
 					val typeArgumentString = '''«IF (annotatedClass.typeParameters.size > 0)»<«newFactoryMethod.typeParameters.map[it.simpleName].join(", ")»>«ENDIF»'''
 
-					// add body to factory method
-					bodySetter.setBody(
-						newFactoryMethod, '''«annotatedClass.qualifiedName» newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
+					// add body to factory method (if not abstract)
+					if (!newFactoryMethod.abstract) {
+
+						bodySetter.setBody(
+							newFactoryMethod, '''«annotatedClass.qualifiedName»«typeArgumentString» newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
 							«bodyDelegationObjectCreation»
 							«bodyCheckObjectCreation»
 							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
 							return newObject;''')
+
+					}
 
 				}
 

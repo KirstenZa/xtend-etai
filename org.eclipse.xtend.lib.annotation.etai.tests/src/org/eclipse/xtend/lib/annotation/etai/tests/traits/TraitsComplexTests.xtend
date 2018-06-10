@@ -35,7 +35,7 @@ abstract class DerivedClass1 extends BaseClass1 {
 @TraitClassAutoUsing
 abstract class BaseTraitClass1 {
 
-	static public def void allowedStaticMethod() {
+	static def void allowedStaticMethod() {
 	}
 
 	@ExclusiveMethod

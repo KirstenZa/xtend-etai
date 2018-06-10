@@ -11,7 +11,7 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IContr
 @ExtractInterface
 @ApplyRules
 @SetAdaptionVariable("%varLevel%=Level")
-public class ControllerBase {
+class ControllerBase {
 
 	public IComponentBase comp;
 	public IControllerBase controllerParent;
@@ -22,17 +22,17 @@ public class ControllerBase {
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.qualified);replace(Controller,intf.IComponent);replace(_CAN_BE_REMOVED,)")
-	public override IComponentBase _comp() {
+	override IComponentBase _comp() {
 		return comp;
 	}
 	
 	@TypeAdaptionRule("apply(IControllerTopLevel);replace(Level,);append(Level);prepend(org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.)")
-	public override IControllerBase getControllerApplyAppendPrepend() {
+	override IControllerBase getControllerApplyAppendPrepend() {
 		return null;
 	}
 	
 	@TypeAdaptionRule("applyVariable(var.class.simple);replace(Level,);appendVariable(%varLevel%);prepend(.);prependVariable(var.package)")
-	public override ControllerBase getControllerApplyAppendPrependVariable() {
+	override ControllerBase getControllerApplyAppendPrependVariable() {
 		return null;
 	}
 	
@@ -40,7 +40,7 @@ public class ControllerBase {
 
 @ExtractInterface
 @ApplyRules
-public class ControllerTopLevel extends ControllerBase {
+class ControllerTopLevel extends ControllerBase {
 
 	new() {
 		super(null)
@@ -50,15 +50,15 @@ public class ControllerTopLevel extends ControllerBase {
 
 @ExtractInterface
 @ApplyRules
-public abstract class ControllerClassPart extends ControllerBase {
+abstract class ControllerClassPart extends ControllerBase {
 }
 
 @ExtractInterface
 @ApplyRules
-public abstract class ControllerFeature extends ControllerClassPart {
+abstract class ControllerFeature extends ControllerClassPart {
 }
 
 @ExtractInterface
 @ApplyRules
-public abstract class ControllerAttribute extends ControllerFeature {
+abstract class ControllerAttribute extends ControllerFeature {
 }

@@ -31,7 +31,7 @@ class ExtractInterfaceDerived extends ExtractInterfaceBaseClassWithoutAnnotation
 class ExtractInterfaceHierarchyTests {
 
 	@Test
-	public def void testInterfaceContent() {
+	def void testInterfaceContent() {
 
 		assertEquals(0, IExtractInterfaceDerived.declaredMethods.filter[name == "method1"].length)
 		assertEquals(1, IExtractInterfaceDerived.declaredMethods.filter[name == "method2"].length)

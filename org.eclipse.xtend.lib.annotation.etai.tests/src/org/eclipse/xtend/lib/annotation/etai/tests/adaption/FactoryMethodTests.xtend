@@ -1,17 +1,20 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
-import org.eclipse.xtend.lib.annotation.etai.ApplyRules
-import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
-import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
 import java.lang.reflect.Modifier
 import java.util.ArrayList
 import java.util.List
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithFactoryMethodReturnInterfaceDerived
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IClassWithFactoryMethodReturnInterface
 
 abstract class ClassWithFactoryMethodBase1 {
 
@@ -104,9 +107,9 @@ class ClassWithFactoryMethodWithParametersDerived4 extends ClassWithFactoryMetho
 @ApplyRules
 @FactoryMethodRule(factoryMethod="create", initMethod="init")
 abstract class ClassWithInitMethodAbstract extends ClassWithFactoryMethodBase1 {
-	
-	protected def void init() 
-	
+
+	protected def void init()
+
 }
 
 @ApplyRules
@@ -195,6 +198,21 @@ class ClassWithFactoryMethodTypeArgs<T, B extends Double> {
 	static def callingMustWork(ClassWithFactoryMethodTypeArgs<Integer, Double> obj) {
 	}
 
+}
+
+@ApplyRules
+@ExtractInterface
+@FactoryMethodRule(factoryMethod="construct", returnTypeAdaptionRule="applyVariable(var.class.qualified);replaceAll(ClassWith,intf.IClassWith)")
+class ClassWithFactoryMethodReturnInterface {
+}
+
+@ApplyRules
+@ExtractInterface
+class ClassWithFactoryMethodReturnInterfaceDerived extends ClassWithFactoryMethodReturnInterface {
+}
+
+@ApplyRules
+class ClassWithFactoryMethodReturnInterfaceDerivedNoInterface extends ClassWithFactoryMethodReturnInterface {
 }
 
 class FactoryMethodTests {
@@ -338,6 +356,13 @@ class FactoryMethodTests {
 		ClassWithFactoryMethodTypeArgs::callingMustWork(obj3)
 
 	}
+	
+	@Test
+	def void testFactoryMethodReturnTypeAdaption() {
+
+		assertEquals(IClassWithFactoryMethodReturnInterface, ClassWithFactoryMethodReturnInterface.getMethod("construct").returnType)
+		assertEquals(IClassWithFactoryMethodReturnInterfaceDerived, ClassWithFactoryMethodReturnInterfaceDerived.getMethod("construct").returnType)
+	}
 
 	@Test
 	def void testinitMethods() {
@@ -419,7 +444,7 @@ class ExtendedClassWithFactoryMethod implements ITraitClassWithFactoryMethod {
 		]
 
 	}
-	
+
 	@Test
 	def void testInitMethodDeclaration() {
 
@@ -506,7 +531,7 @@ abstract class TraitClassWithoutInitMethod {
 
 			// do assertions
 			assertEquals(3, allProblems.size)
-			
+
 			assertEquals(0, problemsClass1.size)
 			assertEquals(0, problemsClass2.size)
 			assertEquals(0, problemsClass3.size)

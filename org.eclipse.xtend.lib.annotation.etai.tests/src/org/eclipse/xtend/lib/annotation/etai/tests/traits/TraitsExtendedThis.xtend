@@ -46,7 +46,7 @@ abstract class TraitClassExtendedHasThisMethod<T> extends TraitClassBaseHasExten
 		TraitClassExtendedHasThisMethod::method($extendedThis)
 	}
 
-	public static def <H> void method(ITraitClassExtendedHasThisMethod<H> x) { x.incX }
+	static def <H> void method(ITraitClassExtendedHasThisMethod<H> x) { x.incX }
 
 }
 

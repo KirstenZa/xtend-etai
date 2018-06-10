@@ -24,37 +24,37 @@ import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 
 @ExtractInterface
 @ApplyRules
-public class MyComponent1 {
+class MyComponent1 {
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replaceMyComponent,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController")
-	public override Object _ctrl1() {
+	override Object _ctrl1() {
 		return null;
 	}
 
 	@TypeAdaptionRule("classTypev;replace(MyComponent,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController)")
-	public override Object _ctrl2() {
+	override Object _ctrl2() {
 		return null;
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);someMethod()")
-	public override Object _ctrl3() {
+	override Object _ctrl3() {
 		return null;
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replace(org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController  )")
-		public override Object _ctrl4() {
+		override Object _ctrl4() {
 			return null;
 		}
 
 	@TypeAdaptionRule(" apply( Test   ) ;replace( MyComponent  ,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController  )")
-	public override Object _ctrl5() {
+	override Object _ctrl5() {
 		return null;
 	}
 
 }
 
 @ApplyRules
-public class MyComponent2 extends MyComponent1 {}
+class MyComponent2 extends MyComponent1 {}
 
 		'''.compile [
 
@@ -102,14 +102,14 @@ import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 
 @ApplyRules
-public class MyComponent {
+class MyComponent {
 
 	@TypeAdaptionRule("applyVariable(var.class.qualified)")
-	static public def Object method1() {
+	static def Object method1() {
 		return null;
 	}
 
-	static public def void method2(@TypeAdaptionRule("applyVariable(var.class.qualified)")
+	static def void method2(@TypeAdaptionRule("applyVariable(var.class.qualified)")
 	Object param) {}
 
 }

@@ -14,32 +14,32 @@ import org.junit.Test
 import static org.junit.Assert.*
 
 @ApplyRules
-public class AutoAdapted1 {
+class AutoAdapted1 {
 }
 
 @ApplyRules
-public class AutoAdapted2 extends AutoAdapted1 {
+class AutoAdapted2 extends AutoAdapted1 {
 }
 
-public class NotAutoAdapted extends AutoAdapted2 {
-}
-
-@ApplyRules
-@TraitClassAutoUsing
-abstract public class AutoAdaptedExtension1 {
+class NotAutoAdapted extends AutoAdapted2 {
 }
 
 @ApplyRules
 @TraitClassAutoUsing
-abstract public class AutoAdaptedExtension2 extends AutoAdaptedExtension1 {
+abstract class AutoAdaptedExtension1 {
+}
+
+@ApplyRules
+@TraitClassAutoUsing
+abstract class AutoAdaptedExtension2 extends AutoAdaptedExtension1 {
 }
 
 @TraitClassAutoUsing
-abstract public class NotAutoAdaptedExtension extends AutoAdaptedExtension2 {
+abstract class NotAutoAdaptedExtension extends AutoAdaptedExtension2 {
 }
 
 @ExtendedByAuto
-public class NotAutoAdaptedExtendedClass implements INotAutoAdaptedExtension {
+class NotAutoAdaptedExtendedClass implements INotAutoAdaptedExtension {
 }
 
 class AdaptionConsistencyTests {
@@ -70,12 +70,12 @@ package virtual
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 
 @ApplyRules
-public class A {}
+class A {}
 
-public class B extends A {}
+class B extends A {}
 
 @ApplyRules
-public class C extends B {}
+class C extends B {}
 
 		'''.compile [
 

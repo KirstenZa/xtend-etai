@@ -5,10 +5,10 @@ import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerAttributeString
 
 @ApplyRules
-class ClassWithFactoryAdaptedTwiceConcreteOtherFile extends ClassWithFactoryAdaptedTwiceDerived {
+class ClassWithFactoryClassAdaptedTwiceConcreteOtherFile extends ClassWithFactoryClassAdaptedTwiceDerived {
 }
 
 @ExtractInterface
 @ApplyRules
-public class ControllerAttributeStringConcrete2 extends ControllerAttributeString {
+class ControllerAttributeStringConcrete2 extends ControllerAttributeString {
 }

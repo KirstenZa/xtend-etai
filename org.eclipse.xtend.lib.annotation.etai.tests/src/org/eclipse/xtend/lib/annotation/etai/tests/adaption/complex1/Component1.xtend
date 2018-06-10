@@ -5,15 +5,15 @@ import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 
 @ExtractInterface
 @ApplyRules
-public class ComponentClassPart extends ComponentBase {
+class ComponentClassPart extends ComponentBase {
 }
 
 @ExtractInterface
 @ApplyRules
-public class ComponentFeature extends ComponentClassPart {
+class ComponentFeature extends ComponentClassPart {
 }
 
 @ExtractInterface
 @ApplyRules	
-public class ComponentEnhanced extends ComponentClassPart {
+class ComponentEnhanced extends ComponentClassPart {
 }

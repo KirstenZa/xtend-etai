@@ -7,15 +7,15 @@ import org.junit.Test
 
 import static org.junit.Assert.*
 
-public class AAAXXXXXXBB {
+class AAAXXXXXXBB {
 }
 
-public class AAAXXXXXXDerivedBB extends AAAXXXXXXBB {
+class AAAXXXXXXDerivedBB extends AAAXXXXXXBB {
 }
 
 @ExtractInterface
 @ApplyRules
-public class TypeAdaptionOverrideRegularExpressionBase {
+class TypeAdaptionOverrideRegularExpressionBase {
 
 	@TypeAdaptionRule("apply(AAAXXXXXXBB);replaceAll(AAA(X*)BB,AAA$1DerivedBB)")
 	override AAAXXXXXXBB method() {
@@ -26,7 +26,7 @@ public class TypeAdaptionOverrideRegularExpressionBase {
 
 @ExtractInterface
 @ApplyRules
-public class TypeAdaptionOverrideRegularExpressionDerived extends TypeAdaptionOverrideRegularExpressionBase {
+class TypeAdaptionOverrideRegularExpressionDerived extends TypeAdaptionOverrideRegularExpressionBase {
 }
 
 class TypeAdaptionRegularExpressionTests {
