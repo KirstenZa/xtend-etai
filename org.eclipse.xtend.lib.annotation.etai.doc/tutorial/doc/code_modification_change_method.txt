@@ -1,0 +1,35 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+
+@ApplyRules
+class Progress {
+
+	@SetterRule(beforeChange="%Change", afterChange="%Changed")
+	double percentage
+
+	@AdderRule(afterAdd="addedToList", single=false, multiple=true)
+	java.util.List<String> log = new java.util.ArrayList<String>
+
+	protected def boolean percentageChange(double newPercentage) {
+		if (newPercentage < 0.0 || newPercentage > 100.0)
+			return false
+		return true
+	}
+
+	protected def void percentageChanged() {
+		System.out.println("Percentage changed!")
+	}
+
+	protected def void addedToList(String fieldname,
+			java.util.List<Integer> indices,
+			java.util.List<String> elements) {
+		for (var i = 0; i < indices.size; i++)
+			System.out.println('''Added "«elements.get(i)»" to list ''' +
+				'''«fieldname» at index «indices.get(i)»''')
+	}
+
+}

@@ -1,0 +1,24 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.NotNullRule
+
+@ApplyRules
+class Person {
+
+	@GetterRule
+	@SetterRule
+	@NotNullRule
+	String name
+	
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@NotNullRule(notNullKeyOrElement=true)
+	java.util.Set<String> addresses = new java.util.HashSet<String>
+
+}

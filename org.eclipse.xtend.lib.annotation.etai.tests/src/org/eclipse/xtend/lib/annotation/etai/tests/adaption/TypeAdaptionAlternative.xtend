@@ -33,7 +33,7 @@ abstract class TypeAdaptionAlternative {
 	def ControllerBase a4() {
 		return null;
 	}
-	
+
 	@TypeAdaptionRule("apply(org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerAttribut);alternative(append(X))")
 	def ControllerBase a5() {
 		return null;
@@ -52,27 +52,27 @@ class TypeAdaptionAlternativeTests {
 	@Test
 	def void testTypeAdaptionAlternative() {
 
-		val declaredMethods = TypeAdaptionAlternativeDerived.declaredMethods.filter([synthetic == false])
+		val declaredMethods = TypeAdaptionAlternativeDerived.declaredMethods.filter[synthetic == false]
 
-		assertEquals(1, declaredMethods.filter([
+		assertEquals(1, declaredMethods.filter[
 			name == "a1"
-		]).size)
-		assertSame(ControllerAttribute, declaredMethods.filter([name == "a1"]).get(0).returnType)
-		assertEquals(1, declaredMethods.filter([
+		].size)
+		assertSame(ControllerAttribute, declaredMethods.filter[name == "a1"].get(0).returnType)
+		assertEquals(1, declaredMethods.filter[
 			name == "a2"
-		]).size)
-		assertSame(ControllerAttribute, declaredMethods.filter([name == "a2"]).get(0).returnType)
-		assertEquals(1, declaredMethods.filter([
+		].size)
+		assertSame(ControllerAttribute, declaredMethods.filter[name == "a2"].get(0).returnType)
+		assertEquals(1, declaredMethods.filter[
 			name == "a3"
-		]).size)
-		assertSame(ControllerAttribute, declaredMethods.filter([name == "a3"]).get(0).returnType)
-		assertEquals(1, declaredMethods.filter([
+		].size)
+		assertSame(ControllerAttribute, declaredMethods.filter[name == "a3"].get(0).returnType)
+		assertEquals(1, declaredMethods.filter[
 			name == "a4"
-		]).size)
-		assertSame(ControllerAttribute, declaredMethods.filter([name == "a4"]).get(0).returnType)
-		assertEquals(0, declaredMethods.filter([
+		].size)
+		assertSame(ControllerAttribute, declaredMethods.filter[name == "a4"].get(0).returnType)
+		assertEquals(0, declaredMethods.filter[
 			name == "a5"
-		]).size)
+		].size)
 
 	}
 
@@ -110,12 +110,12 @@ abstract class TypeAdaptionAlternative {
 			val problemsMethod2 = (clazz.findDeclaredMethod("a2").primarySourceElement as MethodDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(Severity.ERROR, problemsMethod1.get(0).severity)
 			assertTrue(problemsMethod1.get(0).message.contains("end"))
 			assertEquals(Severity.ERROR, problemsMethod2.get(0).severity)
 			assertTrue(problemsMethod2.get(0).message.contains("inside"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

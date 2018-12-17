@@ -1,5 +1,7 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import java.lang.reflect.Modifier
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ComponentFeature
@@ -16,8 +18,7 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.ICompo
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerBase
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerFeature
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.intf.IControllerTopLevel
-import java.lang.reflect.Modifier
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -58,53 +59,49 @@ class TypeAdaptionTests {
 	@Test
 	def void testTypeAdaptionApplyAppendPrepend() {
 
-		assertEquals(1, ControllerTopLevel.declaredMethods.filter[name == "getControllerApplyAppendPrepend"].filter([
-			synthetic == false
-		]).size)
+		assertEquals(1, ControllerTopLevel.declaredMethods.filter [
+			name == "getControllerApplyAppendPrepend" && synthetic == false
+		].size)
 		assertSame(IControllerTopLevel, ControllerTopLevel.declaredMethods.filter [
-			name == "getControllerApplyAppendPrepend"
-		].filter([
-			synthetic == false
-		]).get(0).returnType)
+			name == "getControllerApplyAppendPrepend" && synthetic == false
+		].get(0).returnType)
 
-		assertEquals(1,
-			ControllerTopLevel.declaredMethods.filter[name == "getControllerApplyAppendPrependVariable"].filter([
-				synthetic == false
-			]).size)
-		assertSame(ControllerTopLevel, ControllerTopLevel.declaredMethods.filter [
-			name == "getControllerApplyAppendPrependVariable"
-		].filter([
-			synthetic == false
-		]).get(0).returnType)
+		assertEquals(1, ControllerTopLevel.declaredMethods.filter [
+			name == "getControllerApplyAppendPrependVariable" && synthetic == false
+		].size)
+		assertSame(
+			ControllerTopLevel,
+			ControllerTopLevel.declaredMethods.filter [
+				name == "getControllerApplyAppendPrependVariable" && synthetic == false
+			].get(0).returnType
+		)
 
 	}
 
 	@Test
 	def void testContollerComponentAdaptionsMethods() {
 
-		assertEquals(3, ControllerTopLevel.declaredMethods.filter([synthetic == false]).size)
-		assertEquals(1, ControllerTopLevel.declaredMethods.filter([synthetic == false && name == "_comp"]).size)
+		assertEquals(3, ControllerTopLevel.declaredMethods.filter[synthetic == false].size)
+		assertEquals(1, ControllerTopLevel.declaredMethods.filter[synthetic == false && name == "_comp"].size)
 		assertSame(IComponentTopLevel,
-			ControllerTopLevel.declaredMethods.filter([synthetic == false && name == "_comp"]).get(0).returnType)
+			ControllerTopLevel.declaredMethods.filter[synthetic == false && name == "_comp"].get(0).returnType)
 
-		assertEquals(1, ControllerFeature.declaredMethods.filter([synthetic == false]).size)
-		assertEquals("_comp", ControllerFeature.declaredMethods.filter([synthetic == false]).get(0).name)
-		assertSame(IComponentFeature, ControllerFeature.declaredMethods.filter([synthetic == false]).get(0).returnType)
+		assertEquals(1, ControllerFeature.declaredMethods.filter[synthetic == false].size)
+		assertEquals("_comp", ControllerFeature.declaredMethods.filter[synthetic == false].get(0).name)
+		assertSame(IComponentFeature, ControllerFeature.declaredMethods.filter[synthetic == false].get(0).returnType)
 
-		assertEquals(0, ControllerAttribute.declaredMethods.filter([synthetic == false]).size)
+		assertEquals(0, ControllerAttribute.declaredMethods.filter[synthetic == false].size)
 
-		assertEquals(0, ControllerAttributeStringConcrete1.declaredMethods.filter([synthetic == false]).size)
+		assertEquals(1, ControllerAttributeStringConcrete1.declaredMethods.filter[synthetic == false].size)
 
-		assertEquals(1, ComponentTopLevel.declaredMethods.filter([synthetic == false]).size)
-		assertEquals("_ctrl", ComponentTopLevel.declaredMethods.filter([synthetic == false]).get(0).name)
-		assertSame(IControllerTopLevel,
-			ComponentTopLevel.declaredMethods.filter([synthetic == false]).get(0).returnType)
+		assertEquals(1, ComponentTopLevel.declaredMethods.filter[synthetic == false].size)
+		assertEquals("_ctrl", ComponentTopLevel.declaredMethods.filter[synthetic == false].get(0).name)
+		assertSame(IControllerTopLevel, ComponentTopLevel.declaredMethods.filter[synthetic == false].get(0).returnType)
 
-		assertEquals(1, ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter([synthetic == false]).size)
-		assertEquals("_comp",
-			ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter([synthetic == false]).get(0).name)
+		assertEquals(1, ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter[synthetic == false].size)
+		assertEquals("_comp", ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter[synthetic == false].get(0).name)
 		assertSame(IComponentEnhanced,
-			ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter([synthetic == false]).get(0).returnType)
+			ControllerEnhanced_CAN_BE_REMOVED.declaredMethods.filter[synthetic == false].get(0).returnType)
 
 	}
 
@@ -152,9 +149,8 @@ class TypeAdaptionTests {
 	@Test
 	def void testContollerComponentAdaptionsExtractedInterfaces() {
 
-		assertEquals(1, IComponentTopLevel.declaredMethods.filter([synthetic == false]).size)
-		assertSame(IControllerTopLevel,
-			IComponentTopLevel.declaredMethods.filter([synthetic == false]).get(0).returnType)
+		assertEquals(1, IComponentTopLevel.declaredMethods.filter[synthetic == false].size)
+		assertSame(IControllerTopLevel, IComponentTopLevel.declaredMethods.filter[synthetic == false].get(0).returnType)
 
 	}
 
@@ -204,11 +200,50 @@ class TypeAdaptionFunctionTest {
 			val problemsMethod = (clazz.findDeclaredMethod("get").primarySourceElement as MethodDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsMethod.size)
 			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
 			assertTrue(problemsMethod.get(0).message.contains("not found"))
+
+			assertEquals(1, allProblems.size)
+
+		]
+
+	}
+
+	@Test
+	def void testTypeAdaptionNotOnFields() {
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
+
+import static org.junit.Assert.*
+
+@ApplyRules
+class ClassWithField {
+
+	@TypeAdaptionRule("apply(Something)")
+	Object controller
+
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass("virtual.ClassWithField")
+
+			val problemsFieldController = (clazz.findDeclaredField("controller").
+				primarySourceElement as FieldDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsFieldController.size)
+			assertEquals(Severity.ERROR, problemsFieldController.get(0).severity)
+			assertTrue(problemsFieldController.get(0).message.contains("cannot be applied to a field"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

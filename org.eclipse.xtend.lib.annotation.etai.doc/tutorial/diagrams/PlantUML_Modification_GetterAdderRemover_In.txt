@@ -1,0 +1,22 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class Text <<ApplyRules>> {
+	<<GetterRule(collectionPolicy=UNMODIFIABLE_COPY), AdderRule, RemoverRule(multiple=true)>> -paragraphs:List<String>
+}
+
+class TextDuplicator {
+	+duplicateParagraphs(text:Text)
+}
+
+'Layout
+Text -down[hidden]-> TextDuplicator
+
+@enduml

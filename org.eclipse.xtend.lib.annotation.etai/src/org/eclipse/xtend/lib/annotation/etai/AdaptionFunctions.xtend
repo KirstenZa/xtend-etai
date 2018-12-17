@@ -35,12 +35,20 @@ package class AdaptionFunctions {
 		 */
 		def String apply(String baseString, Declaration typeContext, Map<String, String> variableMap)
 
+		/**
+		 * Prints the function as string (serialization).
+		 * 
+		 * If <code>onlyParameters</code> is set to <code>true</code>, only the parameters of the
+		 * function are printed.
+		 */
+		def String print(boolean onlyParameters)
+
 	}
 
 	/**
 	 * Class implementing type adaption function: apply
 	 */
-	static protected class Apply implements IAdaptionFunction {
+	static class Apply implements IAdaptionFunction {
 
 		String parameter
 
@@ -57,12 +65,16 @@ package class AdaptionFunctions {
 			return parameter
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_APPLY»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: append
 	 */
-	static protected class Append implements IAdaptionFunction {
+	static class Append implements IAdaptionFunction {
 
 		String parameter
 
@@ -79,12 +91,16 @@ package class AdaptionFunctions {
 			return baseString + parameter
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_APPEND»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: prepend
 	 */
-	static protected class Prepend implements IAdaptionFunction {
+	static class Prepend implements IAdaptionFunction {
 
 		String parameter
 
@@ -101,12 +117,16 @@ package class AdaptionFunctions {
 			return parameter + baseString
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_PREPEND»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: applyVariable
 	 */
-	static protected class ApplyVariable implements IAdaptionFunction {
+	static class ApplyVariable implements IAdaptionFunction {
 
 		String parameter
 
@@ -126,12 +146,16 @@ package class AdaptionFunctions {
 				variableMap.get(parameter)
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_APPLY_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: appendVariable
 	 */
-	static protected class AppendVariable implements IAdaptionFunction {
+	static class AppendVariable implements IAdaptionFunction {
 
 		String parameter
 
@@ -151,12 +175,16 @@ package class AdaptionFunctions {
 				variableMap.get(parameter)
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_APPEND_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: prependVariable
 	 */
-	static protected class PrependVariable implements IAdaptionFunction {
+	static class PrependVariable implements IAdaptionFunction {
 
 		String parameter
 
@@ -176,6 +204,10 @@ package class AdaptionFunctions {
 				variableMap.get(parameter) + baseString
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_PREPEND_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
@@ -191,8 +223,8 @@ package class AdaptionFunctions {
 		protected def String applyNestedAdaptionFunctions(String baseString, Declaration typeContext,
 			Map<String, String> variableMap) {
 
-			val appliedTypeAdaptionList = applyAdaptionFunctions(nestedAdaptionFunctions, baseString,
-				typeContext, variableMap)
+			val appliedTypeAdaptionList = applyAdaptionFunctions(nestedAdaptionFunctions, baseString, typeContext,
+				variableMap)
 			if (appliedTypeAdaptionList.size != 1)
 				throw new IllegalArgumentException('''Type adaption rules must not nest the function "alternative"''')
 
@@ -200,12 +232,21 @@ package class AdaptionFunctions {
 
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«adaptionFunctionName»(«ENDIF»«AdaptionFunctions.printFunctions(nestedAdaptionFunctions)»«IF !onlyParameters»)«ENDIF»'''
+		}
+
+		/**
+		 * Returns the name of the adaption function
+		 */
+		abstract def String getAdaptionFunctionName()
+
 	}
 
 	/**
 	 * Class implementing type adaption function: addTypeParam
 	 */
-	static protected class AddTypeParam extends AdaptionFunctionWithNesting {
+	static class AddTypeParam extends AdaptionFunctionWithNesting {
 
 		/**
 		 * This is the constructor method for this type adaption function.
@@ -261,18 +302,21 @@ package class AdaptionFunctions {
 
 		}
 
+		override String getAdaptionFunctionName() {
+			return RULE_FUNC_ADD_TYPE_PARAMS
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: addTypeParamWildcardExtends
 	 */
-	static protected class AddTypeParamWildcardExtends extends AddTypeParam {
+	static class AddTypeParamWildcardExtends extends AddTypeParam {
 
 		/**
 		 * This is the constructor method for this type adaption function.
 		 */
-		static protected def AddTypeParamWildcardExtends create(
-			List<IAdaptionFunction> nestedAdaptionFunctions) {
+		static protected def AddTypeParamWildcardExtends create(List<IAdaptionFunction> nestedAdaptionFunctions) {
 			val newInstance = new AddTypeParamWildcardExtends
 			newInstance.nestedAdaptionFunctions = nestedAdaptionFunctions
 			return newInstance
@@ -282,12 +326,16 @@ package class AdaptionFunctions {
 			return "? extends " + super.getTypeString(baseString, typeContext, variableMap)
 		}
 
+		override String getAdaptionFunctionName() {
+			return RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: addTypeParamWildcardSuper
 	 */
-	static protected class AddTypeParamWildcardSuper extends AddTypeParam {
+	static class AddTypeParamWildcardSuper extends AddTypeParam {
 
 		/**
 		 * This is the constructor method for this type adaption function.
@@ -302,12 +350,16 @@ package class AdaptionFunctions {
 			return "? super " + super.getTypeString(baseString, typeContext, variableMap)
 		}
 
+		override String getAdaptionFunctionName() {
+			return RULE_FUNC_ADD_TYPE_PARAMS_SUPER
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: replace
 	 */
-	static protected class Replace implements IAdaptionFunction {
+	static class Replace implements IAdaptionFunction {
 
 		String target
 		String replacement
@@ -326,12 +378,16 @@ package class AdaptionFunctions {
 			return baseString.replace(target, replacement)
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: replaceAll
 	 */
-	static protected class ReplaceAll implements IAdaptionFunction {
+	static class ReplaceAll implements IAdaptionFunction {
 
 		String target
 		String replacement
@@ -350,12 +406,16 @@ package class AdaptionFunctions {
 			return baseString.replaceAll(target, replacement)
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE_ALL»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: replaceFirst
 	 */
-	static protected class ReplaceFirst implements IAdaptionFunction {
+	static class ReplaceFirst implements IAdaptionFunction {
 
 		String target
 		String replacement
@@ -374,12 +434,16 @@ package class AdaptionFunctions {
 			return baseString.replaceFirst(target, replacement)
 		}
 
+		override String print(boolean onlyParameters) {
+			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE_FIRST»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+		}
+
 	}
 
 	/**
 	 * Class implementing type adaption function: alternative
 	 */
-	static protected class Alternative extends AdaptionFunctionWithNesting {
+	static class Alternative extends AdaptionFunctionWithNesting {
 
 		/**
 		 * This is the constructor method for this type adaption function.
@@ -394,6 +458,10 @@ package class AdaptionFunctions {
 
 			return this.applyNestedAdaptionFunctions(baseString, typeContext, variableMap)
 
+		}
+
+		override String getAdaptionFunctionName() {
+			return RULE_FUNC_ALTERNATIVE
 		}
 
 	}
@@ -449,8 +517,8 @@ package class AdaptionFunctions {
 	 * 
 	 * @see IAdaptionFunction#apply
 	 */
-	static def List<String> applyAdaptionFunctions(List<IAdaptionFunction> AdaptionFunctions,
-		String baseString, Declaration typeContext, Map<String, String> variableMap) {
+	static def List<String> applyAdaptionFunctions(List<IAdaptionFunction> AdaptionFunctions, String baseString,
+		Declaration typeContext, Map<String, String> variableMap) {
 
 		val result = new ArrayList<String>
 		result.add(baseString)
@@ -462,8 +530,7 @@ package class AdaptionFunctions {
 				result.add(result.get(result.size - 1))
 
 			// apply current function and store as result
-			result.set(result.size - 1,
-				AdaptionFunction.apply(result.get(result.size - 1), typeContext, variableMap))
+			result.set(result.size - 1, AdaptionFunction.apply(result.get(result.size - 1), typeContext, variableMap))
 
 		}
 
@@ -473,11 +540,21 @@ package class AdaptionFunctions {
 
 	/**
 	 * The method takes a complete type adaption rule (as string) and returns a list of created
-	 * type adaption functions. If there is an error, the (optionally) passed error list will be extended.
+	 * type adaption functions (deserialization). If there is an error, the (optionally) passed error
+	 * list will be extended .
 	 */
 	static def List<IAdaptionFunction> createFunctions(String completeRule, List<String> errors) {
 
 		return createFunctionsInternal(completeRule, errors, true)
+
+	}
+
+	/**
+	 * The method prints the given functions again in rule string format (serialization).
+	 */
+	static def String printFunctions(List<IAdaptionFunction> functions) {
+
+		return functions.map[print(false)].join(";")
 
 	}
 
@@ -501,8 +578,7 @@ package class AdaptionFunctions {
 				if (rule.endsWith(")") && indexOfParameterStart != -1) {
 
 					val functionName = rule.substring(0, indexOfParameterStart)
-					val functionParameterString = rule.substring(indexOfParameterStart + 1,
-						rule.length - 1)
+					val functionParameterString = rule.substring(indexOfParameterStart + 1, rule.length - 1)
 					val functionParameters = if (functionParameterString.isNullOrEmpty)
 							new ArrayList<String>
 						else

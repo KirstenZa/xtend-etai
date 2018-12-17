@@ -1,26 +1,42 @@
 package org.eclipse.xtend.lib.annotation.etai
 
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
-import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
-import org.eclipse.xtend.lib.annotation.etai.utils.TypeUtils
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 import java.util.ArrayList
+import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Map
 import java.util.Set
 import java.util.regex.Pattern
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllToIndexed
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddToIndexed
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_PutAllTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_PutTo
+import org.eclipse.xtend.lib.annotation.etai.GetterRuleProcessor.MethodDeclarationFromGetter
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_Clear
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveAllFrom
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFrom
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFromIndexed
+import org.eclipse.xtend.lib.annotation.etai.SetterRuleProcessor.MethodDeclarationFromSetter
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
+import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
+import org.eclipse.xtend.lib.annotation.etai.utils.TypeUtils
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.InterfaceDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableInterfaceDeclaration
+import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtend.lib.macro.file.FileLocations
@@ -68,7 +84,8 @@ annotation ExtractInterface {
  * 
  * @see ExtractInterface
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD, ElementType.FIELD)
+@Active(NoInterfaceExtractProcessor)
 annotation NoInterfaceExtract {
 }
 
@@ -84,6 +101,45 @@ annotation ExtractedInterface {
 	 * Stores the class the interface has been extracted from
 	 */
 	Class<?> extractedClass
+
+}
+
+/**
+ * Active Annotation Processor for {@link NoInterfaceExtract}
+ * 
+ * @see NoInterfaceExtract
+ */
+class NoInterfaceExtractProcessor extends AbstractMemberProcessor {
+
+	protected override Class<?> getProcessedAnnotationType() {
+		NoInterfaceExtractProcessor
+	}
+
+	override boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement) {
+		return annotatedNamedElement instanceof FieldDeclaration || annotatedNamedElement instanceof MethodDeclaration
+	}
+
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
+
+		super.doValidate(annotatedMember, context)
+
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
+
+		if (xtendMember instanceof FieldDeclaration) {
+
+			if (!xtendMember.hasAnnotation(GetterRule) && !xtendMember.hasAnnotation(SetterRule) &&
+				!xtendMember.hasAnnotation(AdderRule) && !xtendMember.hasAnnotation(RemoverRule))
+				xtendMember.
+					addError('''Annotation @«processedAnnotationType.simpleName» can only be applied to methods or fields which trigger method generation''')
+
+		}
+
+		// annotation @NoInterfaceExtract must not be used in trait classes
+		if ((xtendMember.declaringType as ClassDeclaration).isTraitClass)
+			xtendMember.
+				addError('''Annotation @«processedAnnotationType.simpleName» must not be used within trait classes''')
+
+	}
 
 }
 
@@ -104,7 +160,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	/**
 	 * Returns <code>true</code>, if the interface extracted by {@link ExtractInterface} is still unprocessed.
-	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
+	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
 	 * processed specifically. 
 	 */
 	static def boolean isUnprocessedMirrorInterface(String interfaceName) {
@@ -118,7 +174,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	/**
 	 * Returns <code>true</code>, if the class annotated by {@link ExtractInterface} is still unprocessed.
-	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
+	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
 	 * processed specifically. 
 	 */
 	static def boolean isUnprocessedClassExtraction(String className) {
@@ -278,13 +334,13 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	 * which must be removed in a later step. 
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getMethodExtractionCandidates(
-		ClassDeclaration annotatedClass, TypeMap typeMap, extension T context) {
+		ClassDeclaration annotatedClass, boolean resolveUnprocessed, TypeMap typeMap, extension T context) {
 
 		// collect methods which must be added to the mirror interface
 		// (also methods from supertypes are considered, if they do not have an ExtractInterface annotation)
 		val methods = annotatedClass.getMethodClosure([
 			it.qualifiedName != Object.canonicalName && (it === annotatedClass || !it.hasAnnotation(ExtractInterface))
-		], [false], true, context)
+		], [false], true, false, false, true, context)
 
 		val result = new ArrayList<MethodDeclaration>
 
@@ -293,6 +349,93 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 			visibility == Visibility.PUBLIC && static == false && !hasAnnotation(NoInterfaceExtract)
 		]) {
 			result.add(method)
+		}
+
+		// add some methods which have not been generated, yet
+		if (resolveUnprocessed) {
+
+			// add getter/setter/adder/remover methods virtually
+			for (field : annotatedClass.declaredFields) {
+
+				if (field.hasAnnotation(GetterRule) &&
+					GetterRuleProcessor.getGetterInfo(field, context).visibility == Visibility.PUBLIC &&
+					!field.hasAnnotation(NoInterfaceExtract))
+					result.add(new MethodDeclarationFromGetter(field, Visibility.PUBLIC, null, context))
+
+				if (field.hasAnnotation(SetterRule) &&
+					SetterRuleProcessor.getSetterInfo(field, context).visibility == Visibility.PUBLIC &&
+					!field.hasAnnotation(NoInterfaceExtract))
+					result.add(new MethodDeclarationFromSetter(field, Visibility.PUBLIC, context))
+
+				if (field.hasAnnotation(AdderRule) && !field.hasAnnotation(NoInterfaceExtract)) {
+
+					val adderInfo = AdderRuleProcessor.getAdderInfo(field, context)
+					if (adderInfo.visibility == Visibility.PUBLIC) {
+
+						if (context.newTypeReference(Collection).isAssignableFrom(field.type)) {
+
+							if (adderInfo.single == true) {
+
+								result.add(new MethodDeclarationFromAdder_AddTo(field, Visibility.PUBLIC, context))
+								if (context.newTypeReference(List).isAssignableFrom(field.type))
+									result.add(
+										new MethodDeclarationFromAdder_AddToIndexed(field, Visibility.PUBLIC, context))
+
+							}
+
+							if (adderInfo.multiple == true) {
+
+								result.add(new MethodDeclarationFromAdder_AddAllTo(field, Visibility.PUBLIC, context))
+								if (context.newTypeReference(List).isAssignableFrom(field.type))
+									result.add(
+										new MethodDeclarationFromAdder_AddAllToIndexed(field, Visibility.PUBLIC,
+											context))
+
+							}
+
+						} else if (context.newTypeReference(Map).isAssignableFrom(field.type)) {
+
+							if (adderInfo.single == true)
+								result.add(new MethodDeclarationFromAdder_PutTo(field, Visibility.PUBLIC, context))
+
+							if (adderInfo.multiple == true)
+								result.add(new MethodDeclarationFromAdder_PutAllTo(field, Visibility.PUBLIC, context))
+
+						}
+
+					}
+
+				}
+
+				if (field.hasAnnotation(RemoverRule) && !field.hasAnnotation(NoInterfaceExtract)) {
+
+					val removerInfo = RemoverRuleProcessor.getRemoverInfo(field, context)
+					if (removerInfo.visibility == Visibility.PUBLIC) {
+
+						if (removerInfo.single == true) {
+
+							result.add(new MethodDeclarationFromRemover_RemoveFrom(field, Visibility.PUBLIC, context))
+							if (context.newTypeReference(List).isAssignableFrom(field.type))
+								result.add(
+									new MethodDeclarationFromRemover_RemoveFromIndexed(field, Visibility.PUBLIC,
+										context))
+
+						}
+
+						if (removerInfo.multiple == true) {
+
+							result.add(
+								new MethodDeclarationFromRemover_RemoveAllFrom(field, Visibility.PUBLIC, context))
+							result.add(new MethodDeclarationFromRemover_Clear(field, Visibility.PUBLIC, context))
+
+						}
+
+					}
+
+				}
+
+			}
+
 		}
 
 		return result
@@ -312,14 +455,15 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		extension TransformationContext context
 	) {
 
-		val interfaceMethods = interfaceDeclaration.getMethodClosure([true], false, context)
+		val interfaceMethods = interfaceDeclaration.getMethodClosure([true], true, false, false, false, context)
 
 		for (method : methods) {
 
 			// do only add, if there is no other method with same name, parameters and
 			// return type in this interface or any super interface already
 			if (!interfaceMethods.exists [
-				it.methodEquals(method, TypeMatchingStrategy.MATCH_INVARIANT, typeMap, context)
+				it.methodEquals(method, TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_INVARIANT,
+					false, typeMap, context)
 			]) {
 
 				val newMethod = interfaceDeclaration.addMethod(method.simpleName) [
@@ -335,7 +479,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 				]
 
-				method.copyParameters(newMethod, 0, typeMap, context)
+				method.copyParameters(newMethod, 0, false, typeMap, context)
 
 			}
 
@@ -399,7 +543,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	}
 
-	override doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
+	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
 
@@ -409,7 +553,8 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		// workaround: add type parameters to registered interface
 		addTypeParametersDuringRegistration(annotatedClass, context)
 
-		// track if class (and interface) has already been processed, i.e. the type hierarchy has been set correctly
+		// track if class (and interface) has already been processed,
+		// i.e. the type hierarchy has been set correctly and methods have been generated
 		MIRROR_INTERFACE_TO_BE_PROCESSED.put(interfaceName, annotatedClass)
 		EXTRACT_INTERFACE_TO_BE_PROCESSED.add(annotatedClass.qualifiedName)
 
@@ -418,7 +563,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	}
 
-	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+	override void doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 
 		super.doTransform(annotatedClass, context)
 
@@ -487,12 +632,13 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		annotatedClass.implementedInterfaces = annotatedClass.implementedInterfaces + #[mirrorInterfaceTypeRef]
 
 		// collect methods which must be added to the mirror interface
-		val methodsExtractionCandidates = getMethodExtractionCandidates(annotatedClass, typeMap, context)
+		val methodsExtractionCandidates = getMethodExtractionCandidates(annotatedClass, false, typeMap, context)
 
 		// add the public methods to the interface
 		mirrorInterfaceType.addMethodsToInterface(
-			methodsExtractionCandidates.unifyMethodDeclarations(TypeMatchingStrategy.MATCH_COVARIANT, null, typeMap,
-				context), typeMap, context)
+			methodsExtractionCandidates.unifyMethodDeclarations(
+				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE, null,
+				false, typeMap, context), typeMap, context)
 
 		// add documentation
 		mirrorInterfaceType.docComment = (if (annotatedClass.docComment !== null)
@@ -502,7 +648,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 
@@ -531,15 +677,8 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 			xtendClass.
 				addError('''Annotation @«getProcessedAnnotationType.simpleName» must not be used for classes within the default package''')
 
-		// annotation @NoInterfaceExtract must not be used in trait classes
-		if (xtendClass.isTraitClass)
-			if (xtendClass.getDeclaredMethodsResolved(context).exists [
-				it.hasAnnotation(NoInterfaceExtract)
-			])
-				xtendClass.addError('''Annotation @NoInterfaceExtract must not be used for trait classes''')
-
 		// methods must not have an inferred return type
-		for (method : xtendClass.getDeclaredMethodsResolved(context).withoutNoInterfaceExtract) {
+		for (method : xtendClass.getDeclaredMethodsResolved(true, false, false, context).withoutNoInterfaceExtract) {
 
 			if ((method.returnType === null || method.returnType.inferred) && method.visibility == Visibility.PUBLIC)
 				method.

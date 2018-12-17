@@ -1,0 +1,24 @@
+package virtual;
+
+public class City {
+
+	private Country location;
+
+	public Country getLocation() {
+		return location;
+	}
+
+	public boolean setLocation(Country $location) {
+		if (this.location != $location) {
+			Country oldValue = this.location;
+			this.location = $location;
+			if (oldValue != null)
+				oldValue.removeFromCities(this);
+			if ($location != null)
+				$location.addToCities(this);
+			return true;
+		}
+		return false;
+	}
+
+}

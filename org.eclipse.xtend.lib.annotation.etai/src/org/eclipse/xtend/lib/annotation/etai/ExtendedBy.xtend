@@ -1,10 +1,5 @@
 package org.eclipse.xtend.lib.annotation.etai
 
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckInit
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
-import org.eclipse.xtend.lib.annotation.etai.utils.StringUtils
-import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 import java.util.ArrayList
@@ -12,6 +7,11 @@ import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Set
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckInit
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
+import org.eclipse.xtend.lib.annotation.etai.utils.StringUtils
+import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
@@ -37,11 +37,11 @@ import static extension org.eclipse.xtend.lib.annotation.etai.ConstructRuleDisab
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructRuleProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.EnvelopeMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExclusiveMethodProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitMethodRedirectionProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ProcessedMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.RequiredMethodProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitMethodRedirectionProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
@@ -164,7 +164,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	final static public String TRAIT_CLASS_CONSTRUCTOR_CALL_NAME_PREFIX = "new$"
 	final static public String EXTENDED_METHOD_IMPL_NAME_SEPARATOR = "__$beforeExtended$__"
 
-	final static public Set<ClassDeclaration> EXTENDED_CLASS_TO_BE_PROCESSED = new HashSet<ClassDeclaration>
+	final static public Set<String> EXTENDED_CLASS_TO_BE_PROCESSED = new HashSet<String>
 
 	/**
 	 * Predicate for a flexible type comparison, which considers two types as equal, if they have a common super type (trait class).
@@ -283,7 +283,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	/**
 	 * Returns <code>true</code>, if the extended class is still unprocessed.
-	 * If it returns <code>true</code>, the type hierarchy is not complete, so type checks must be
+	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
 	 * processed specifically. 
 	 */
 	static def boolean isUnprocessedExtendedClass(String annotatedClass) {
@@ -668,7 +668,9 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			foundMethod = methodClosureCache.getMatchingMethod(
 				methodDeclarationToAnalyze,
-				TypeMatchingStrategy.MATCH_COVARIANT,
+				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+				TypeMatchingStrategy.MATCH_INHERITANCE,
+				false,
 				typeMap,
 				context
 			)
@@ -713,19 +715,20 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	override doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
+	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
 
-		// track if class has already been processed, i.e. the type hierarchy has been set correctly
-		EXTENDED_CLASS_TO_BE_PROCESSED.add(annotatedClass)
+		// track if class (and interface) has already been processed,
+		// i.e. the type hierarchy has been set correctly and methods have been generated
+		EXTENDED_CLASS_TO_BE_PROCESSED.add(annotatedClass.qualifiedName)
 
 		// start processing of this element
 		ProcessQueue.startTrack(ProcessQueue.PHASE_EXTENDED_BY, annotatedClass, annotatedClass.qualifiedName)
 
 	}
 
-	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+	override void doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 
 		super.doTransform(annotatedClass, context)
 
@@ -807,7 +810,9 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// cache method closure (of non-abstract and implemented methods)
 			val methodClosureCache = annotatedClass.getMethodClosure(null, [
 				false
-			], true, context).unifyMethodDeclarations(TypeMatchingStrategy.MATCH_COVARIANT, null, typeMap, context)
+			], true, false, false, true, context).unifyMethodDeclarations(
+				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE, null,
+				false, typeMap, context)
 
 			// do specific transformations for each relevant trait method
 			val traitClassMethods = traitClass.getTraitMethodsToApply(typeMap, context)
@@ -854,12 +859,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// add parameters
 				val paramNameList = constructorMethod.parametersNames
-				constructorMethod.copyParameters(constructionHelperMethod, 0, typeMap, context)
+				constructorMethod.copyParameters(constructionHelperMethod, 0, false, typeMap, context)
 
 				// call constructor and set delegation object of extended object
 				bodySetter.setBody(
 					constructionHelperMethod, '''assert «traitClass.delegateObjectName» == null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_ALREADY_CONSTRUCTED_ERROR, "«traitClass.qualifiedName»");
-							this.«traitClass.delegateObjectName» = new «traitClass.qualifiedName»(this«IF (paramNameList.size > 0)», «ENDIF»«paramNameList.join(", ")»);''')
+							this.«traitClass.delegateObjectName» = new «traitClass.qualifiedName»(this«IF (paramNameList.size > 0)», «ENDIF»«paramNameList.join(", ")»);''',
+					context)
 
 			}
 
@@ -901,7 +907,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	def doTransformForTraitClassMethod(MutableClassDeclaration annotatedClass, ClassDeclaration traitClass,
+	def void doTransformForTraitClassMethod(MutableClassDeclaration annotatedClass, ClassDeclaration traitClass,
 		MethodDeclaration traitClassMethod, List<MethodDeclaration> methodClosureCache, TypeMap typeMap,
 		BodySetter bodySetter, extension TransformationContext context) {
 
@@ -1063,18 +1069,26 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			else
 				getMaximalVisibility(traitClassMethodRedirected.visibility, originalVisibility)
 
+		// determine where to get parameter info
+		val executableDeclarationWithParameterInfo = if (existingMethod !== null)
+				existingMethod
+			else
+				traitClassMethodRedirected
+
 		// create parameter name list
-		val paramNameList = traitClassMethodRedirected.parametersNames
-		val paramTypeNameListJavadoc = traitClassMethodRedirected.getParametersTypeNames(true, true, context)
+		val paramNameList = executableDeclarationWithParameterInfo.parametersNames
+		val paramTypeNameListJavadoc = executableDeclarationWithParameterInfo.getParametersTypeNames(true, true,
+			context)
 
 		if (!methodRedirected) {
 
 			// calculate visibility: adjust to public, if found within an interface
 			if (targetVisibility != Visibility.PUBLIC) {
-				if (annotatedClass.getMethodClosure(null, null, false, context).filter [
+				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).filter [
 					it.declaringType instanceof InterfaceDeclaration
-				].getMatchingMethod(traitClassMethodRedirected, TypeMatchingStrategy.MATCH_COVARIANT, typeMap,
-					context) !== null)
+				].getMatchingMethod(traitClassMethodRedirected,
+					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+					false, typeMap, context) !== null)
 					targetVisibility = Visibility.PUBLIC
 			}
 
@@ -1088,19 +1102,20 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			var MethodDeclaration existingMethodOriginal = methodClosureCache.
 				getExistingMethodForExtension(annotatedClass, traitClassMethodInListTemp, false, typeMap, context)
 			if (existingMethodOriginal.visibility != Visibility.PUBLIC)
-				if (annotatedClass.getMethodClosure(null, null, false, context).filter [
+				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).filter [
 					it.declaringType instanceof InterfaceDeclaration
-				].getMatchingMethod(existingMethodOriginal, TypeMatchingStrategy.MATCH_COVARIANT, typeMap, context) !==
-					null) {
+				].getMatchingMethod(existingMethodOriginal, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+					TypeMatchingStrategy.MATCH_INHERITANCE, false, typeMap, context) !== null) {
 
 					// copy original method (without redirection
 					val originalMethodWrapper = annotatedClass.copyMethod(existingMethodOriginal, true, false, true,
-						typeMap, context)
+						false, false, false, typeMap, context)
 					originalMethodWrapper.visibility = Visibility.PUBLIC
 
 					// just call functionality of superclass
 					bodySetter.setBody(
-						originalMethodWrapper, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«traitClassMethod.simpleName»(«paramNameList.join(", ")»);''')
+						originalMethodWrapper, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«traitClassMethod.simpleName»(«paramNameList.join(", ")»);''',
+						context)
 
 				}
 
@@ -1129,7 +1144,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				targetReturnType.typeReferenceEquals(originalReturnType, null, false, typeMapLocal, null))
 				null
 			else
-				annotatedClass.copyMethod(traitClassMethodRedirected, true, true, true, typeMapLocal, context)
+				annotatedClass.copyMethod(traitClassMethodRedirected, true, true, true, false, false, false,
+					typeMapLocal, context)
 
 		if (delegationMethod === null)
 			return;
@@ -1170,13 +1186,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				implMethod.docComment = existingMethod.docComment
 
 				// move body from previously existing method
-				bodySetter.moveBody(implMethod, existingMethod)
+				bodySetter.moveBody(implMethod, existingMethod, context)
 
 			} else {
 
 				// create another method, which can then call the method in the supertype
-				implMethod = annotatedClass.copyMethod(traitClassMethodRedirected, true, false, true, typeMapLocal,
-					context)
+				implMethod = annotatedClass.copyMethod(traitClassMethodRedirected, true, false, true, false, false,
+					false, typeMapLocal, context)
 				implMethod.abstract = false
 
 				// documentation
@@ -1184,7 +1200,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// just call functionality of superclass
 				bodySetter.setBody(
-					implMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''')
+					implMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					context)
 
 			}
 
@@ -1224,7 +1241,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				delegationMethod.docComment = '''This is a generated method for calling the supertype method {@link «(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«existingMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}.'''
 
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''')
+					delegationMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					context)
 
 			}
 
@@ -1241,8 +1259,9 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				if (existingMethodOnlyInSuperClass || (existingMethodInCurrentClass && originalOverride))
 					delegationMethod.addAnnotation(Override.newAnnotationReference)
 				else {
-					if (annotatedClass.getMethodClosure(null, null, false, context).getMatchingMethod(delegationMethod,
-						TypeMatchingStrategy.MATCH_COVARIANT, typeMapLocal, context) !== null)
+					if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).
+						getMatchingMethod(delegationMethod, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+							TypeMatchingStrategy.MATCH_INHERITANCE, false, typeMapLocal, context) !== null)
 						delegationMethod.addAnnotation(Override.newAnnotationReference)
 				}
 
@@ -1275,16 +1294,42 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// set body (simply call trait class functionality)
 			val delegationMethodFinal = delegationMethod
 			bodySetter.setBody(
-				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''')
+				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, false, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''',
+				context)
 
 			return;
 
 		}
 
+		var String methodBody = ""
+
+		// prepare list of argument values
+		val paramNameListDelegationMethod = delegationMethod.parametersNames
+		if (paramNameListDelegationMethod.size == 0) {
+
+			methodBody = '''java.util.List<Object> internal$arguments = null;'''
+
+		} else {
+
+			methodBody = '''java.util.List<Object> internal$arguments = new java.util.ArrayList<Object>();'''
+
+			for (paramNameDelegationMethod : paramNameListDelegationMethod)
+				methodBody += "\n" + '''internal$arguments.add(«paramNameDelegationMethod»);'''
+		}
+
+		// construct parameter passing code
+		val paramCallList = new ArrayList<String>
+		var paramCounter = 0
+		for (paramNameDelegationMethod : paramNameListDelegationMethod) {
+			paramCallList.
+				add('''(«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, false, false, false,context)») getArgument(«paramCounter++»)''')
+		}
+
 		// lazy evaluation of functionality in trait class
-		var String methodBody = '''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation lazyValueExtension = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluation() {
+		methodBody += "\n" +
+			'''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation internal$lazyValueExtension = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluationAbstract(«traitClass.delegateObjectName», internal$arguments) {
 					public Object eval() {
-						«IF !isVoid»return «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);
+						«IF !isVoid»return «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramCallList.join(", ")»);
 						«IF isVoid»return null;«ENDIF»
 					}
 				};'''
@@ -1306,19 +1351,19 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// lazy evaluation of functionality in extended class
 		if (processorMustCallExtendedMethod)
-			methodBody += "\n" + '''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation lazyValueExtended = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluation() {
+			methodBody += "\n" + '''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation internal$lazyValueExtended = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluationAbstract(this, internal$arguments) {
 					public Object eval() {
-						«IF !isVoid»return «ENDIF»«existingMethodCall»(«paramNameList.join(", ")»);
+						«IF !isVoid»return «ENDIF»«existingMethodCall»(«paramCallList.join(", ")»);
 						«IF isVoid»return null;«ENDIF»
 					}
 				};'''
 
 		// trait method processor call
-		val processorCall = '''resultTraitMethodProcessor.call(lazyValueExtension, «IF processorMustCallExtendedMethod»lazyValueExtended«ELSE»null«ENDIF»)'''
+		val processorCall = '''internal$resultTraitMethodProcessor.call(internal$lazyValueExtension, «IF processorMustCallExtendedMethod»internal$lazyValueExtended«ELSE»null«ENDIF»)'''
 
 		// compute result via trait method processor
 		methodBody += "\n" +
-			'''org.eclipse.xtend.lib.annotation.etai.TraitMethodProcessor resultTraitMethodProcessor = new «processor.qualifiedName»();'''
+			'''org.eclipse.xtend.lib.annotation.etai.TraitMethodProcessor internal$resultTraitMethodProcessor = new «processor.qualifiedName»();'''
 
 		// check if return conversion (in case of arrays) is required
 		var boolean returnArrayConversionRequired = false
@@ -1343,17 +1388,17 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (returnArrayConversionRequired) {
 
 			val traitClassMethodReturnType = traitClassMethod.returnType.getTypeReferenceAsString(true, false, false,
-				context)
+				false, context)
 
 			// specific handling of array types (cannot be simply casted in case of covariance)
 			methodBody += "\n" +
-				'''«traitClassMethodReturnType» resultArray = («traitClassMethodReturnType») «processorCall»;'''
+				'''«traitClassMethodReturnType» internal$resultArray = («traitClassMethodReturnType») «processorCall»;'''
 			methodBody += "\n" +
-				'''return java.util.Arrays.copyOf(resultArray, resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, false, false, context)».class);'''
+				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)».class);'''
 
 		} else {
 			methodBody += "\n" +
-				'''«IF !isVoid»return («delegationMethod.returnType.getTypeReferenceAsString(true, false, false, context)») «ENDIF»«processorCall»;'''
+				'''«IF !isVoid»return («delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)») «ENDIF»«processorCall»;'''
 
 		}
 
@@ -1365,11 +1410,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			<p>via processor «processor.getJavaDocLinkTo(context)»</p>'''
 
 		// apply method body
-		bodySetter.setBody(delegationMethod, methodBody)
+		bodySetter.setBody(delegationMethod, methodBody, context)
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 

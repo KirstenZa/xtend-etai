@@ -34,7 +34,7 @@ The generated mirror interface *ILion* gets all ***public*** methods (abstract a
 
 > Please note, that methods which shall be extracted must already be declared with ***override*** not *def*, even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
 
-##### Limitations
+##### Limitation
 
 > A class using *@ExtractInterface* must **not be placed in the default package**.
 >
@@ -70,7 +70,11 @@ The following example shows how both the usage of *@NoInterfaceExtract* and sett
 
 ![](images/PlantUML_ExtractInterface_Adapting_Out.png)
 
-##### Limitations
+##### Hint
+
+*@NoInterfaceExtract* can also be used for fields, if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
+
+##### Limitation
 
 *@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
 

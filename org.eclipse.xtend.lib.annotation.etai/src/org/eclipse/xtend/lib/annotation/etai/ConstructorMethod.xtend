@@ -1,13 +1,11 @@
 package org.eclipse.xtend.lib.annotation.etai
 
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
-import java.util.List
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.ValidationContext
-import org.eclipse.xtend.lib.macro.ValidationParticipant
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
@@ -53,7 +51,11 @@ annotation ConstructorMethod {
  * 
  * @see ConstructorMethod
  */
-class ConstructorMethodProcessor implements ValidationParticipant<MethodDeclaration> {
+class ConstructorMethodProcessor extends AbstractMethodProcessor {
+
+	protected override getProcessedAnnotationType() {
+		ConstructorMethodProcessor
+	}
 
 	/**
 	 * Check if method is a trait class constructor
@@ -61,7 +63,7 @@ class ConstructorMethodProcessor implements ValidationParticipant<MethodDeclarat
 	static def isConstructorMethod(MethodDeclaration annotatedMethod) {
 		annotatedMethod.hasAnnotation(ConstructorMethod)
 	}
-	
+
 	/**
 	 * Copies the annotation (compatible to this processor) from the given source including
 	 * all attributes and returns a new annotation reference
@@ -73,23 +75,20 @@ class ConstructorMethodProcessor implements ValidationParticipant<MethodDeclarat
 
 	}
 
-	override doValidate(List<? extends MethodDeclaration> annotatedMethods, extension ValidationContext context) {
+	override void doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
 
-		for (annotatedMethod : annotatedMethods)
-			if (!(annotatedMethod.declaringType instanceof ClassDeclaration) ||
-				!(annotatedMethod.declaringType as ClassDeclaration).isTraitClass)
-				annotatedMethod.
-					addError('''Trait class constructor can only be declared within a trait class (annotated with @TraitClass or @TraitClassAutoUsing)''')
-			else
-				doValidate(annotatedMethod, context)
-
-	}
-
-	def doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+		super.doValidate(annotatedMethod, context)
 
 		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
 
-		// check, if trait methods has valid properties
+		if (!(xtendMethod.declaringType instanceof ClassDeclaration) ||
+			!(xtendMethod.declaringType as ClassDeclaration).isTraitClass) {
+			annotatedMethod.
+				addError('''Trait class constructor can only be declared within a trait class (annotated with @TraitClass or @TraitClassAutoUsing)''')
+			return
+		}
+
+		// check if trait methods has valid properties
 		if (xtendMethod.visibility != Visibility.PROTECTED)
 			xtendMethod.addError("Trait class constructors must be declared protected")
 		if (xtendMethod.static == true)
@@ -105,10 +104,8 @@ class ConstructorMethodProcessor implements ValidationParticipant<MethodDeclarat
 			val parameterName = parameter.simpleName
 			if (parameterName !== null && (parameterName == TraitClassProcessor.EXTENDED_THIS_FIELD_NAME ||
 				parameterName.startsWith(ProcessUtils.IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)))
-				xtendMethod.addError(
-					String.format("Parameter name \"%s\" is not allowed for trait class constructors",
-						parameter.simpleName))
-
+				xtendMethod.
+					addError('''Parameter name "«parameter.simpleName»" is not allowed for trait class constructors''')
 		}
 
 	}

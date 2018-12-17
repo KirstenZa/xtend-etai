@@ -1,18 +1,21 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import java.lang.reflect.Modifier
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IComponentWithGenericsBase
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IComponentWithGenericsTopLevel
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IControllerWithGenericsBase
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IControllerWithGenericsClassPart
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IControllerWithGenericsTopLevel
-import java.lang.reflect.Modifier
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
-import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IComponentWithGenericsTopLevel
 
 @ExtractInterface
 @ApplyRules
@@ -22,8 +25,7 @@ class ControllerWithGenericsBase<T> {
 	public IControllerWithGenericsBase<T> controllerParent;
 
 	@CopyConstructorRule
-	new(
-		IControllerWithGenericsBase<T> controllerParent) {
+	new(IControllerWithGenericsBase<T> controllerParent) {
 		this.controllerParent = controllerParent;
 	}
 
@@ -48,8 +50,7 @@ class ControllerWithGenericsBase<T> {
 class ControllerWithGenericsTopLevel<B, C> extends ControllerWithGenericsBase<C> {
 
 	new() {
-		super(
-			null)
+		super(null)
 	}
 
 }
@@ -67,7 +68,7 @@ class ComponentWithGenericsBase<T> {
 	public IControllerWithGenericsBase<T> controller;
 
 	new(
-		@TypeAdaptionRule("applyVariable(var.class.simple);replace(Component,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController);addTypeParams()")
+		@TypeAdaptionRule("applyVariable(var.class.simple);replace(Component,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController);addTypeParam(applyVariable(var.class.typeparameter.1));addTypeParam(applyVariable(var.class.typeparameter.2))")
 		IControllerWithGenericsBase<T> controller,
 		IComponentWithGenericsBase<T> componentParent
 	) {
@@ -102,7 +103,32 @@ class ComponentWithGenericsTopLevel<B, C> extends ComponentWithGenericsBase<C> {
 class ComponentWithGenericsClassPart extends ComponentWithGenericsBase<Integer> {
 }
 
+@ApplyRules
+class TypeAdaptionWithGenericsMainTypeBase<T extends Number> {
+
+	T x
+
+	def void setTU(
+		@TypeAdaptionRule("apply(U)")
+		T newX
+	) {
+		x = newX
+	}
+
+	@TypeAdaptionRule("apply(U)")
+	def T getTU() {
+		return x
+	}
+
+}
+
+@ApplyRules
+class TypeAdaptionWithGenericsMainTypeDerived<U extends Integer, V extends Integer> extends TypeAdaptionWithGenericsMainTypeBase<U> {
+}
+
 class TypeAdaptionWithGenericsTests {
+
+	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
 	@Test
 	def void testAdaptionWithGenericsConstructors() {
@@ -152,6 +178,68 @@ class TypeAdaptionWithGenericsTests {
 		assertNotNull(controllerWithGenericsTopLevel)
 		assertNotNull(controllerWithGenericsClassPartBase)
 		assertNotNull(controllerWithGenericsTopLevelBase)
+
+	}
+
+	@Test
+	def void testAdaptionWithGenericsMainType() {
+
+		// must compile, if type is adapted correctly
+		val obj = new TypeAdaptionWithGenericsMainTypeDerived<Integer, Integer>()
+		obj.setTU(new Integer(10))
+		assertEquals(10, obj.getTU().intValue)
+
+	}
+
+	@Test
+	def void testAdaptionWithGenericsMainTypeMismatch() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
+
+@ApplyRules
+class TypeAdaptionWithGenericsMainTypeBase<T extends java.lang.Number> {
+
+	T x
+
+	def void setTV(
+		@TypeAdaptionRule("apply(V)")
+		T newX
+	) {
+		x = newX
+	}
+
+	@TypeAdaptionRule("apply(V)")
+	def T getTV() {
+		return x
+	}
+
+}
+
+@ApplyRules
+class TypeAdaptionWithGenericsMainTypeDerived<U extends java.lang.Integer, V extends java.lang.Integer> extends TypeAdaptionWithGenericsMainTypeBase<U> {
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass('virtual.TypeAdaptionWithGenericsMainTypeDerived')
+
+			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsClass.size)
+			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
+			assertTrue(problemsClass.get(0).message.contains("type parameter"))
+
+			assertEquals(1, allProblems.size)
+
+		]
 
 	}
 

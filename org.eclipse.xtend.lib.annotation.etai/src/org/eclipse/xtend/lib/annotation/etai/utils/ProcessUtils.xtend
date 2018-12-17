@@ -1,14 +1,25 @@
 package org.eclipse.xtend.lib.annotation.etai.utils
 
-import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
-import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRuleProcessor
-import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Map
 import java.util.Set
+import org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor
+import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.NoInterfaceExtract
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
@@ -23,6 +34,7 @@ import org.eclipse.xtend.lib.macro.declaration.MutableAnnotationTarget
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableConstructorDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableExecutableDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Type
@@ -36,11 +48,16 @@ import org.eclipse.xtend.lib.macro.services.ProblemSupport
 import org.eclipse.xtend.lib.macro.services.TypeLookup
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
+import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructorMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRuleProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.StringUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
-import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
+import org.eclipse.xtend.lib.annotation.etai.AssertParameterType
 
 class ProcessUtils {
 
@@ -60,20 +77,33 @@ class ProcessUtils {
 		final static public String DUMMY_VARIABLE_NAME = DUMMY_VARIABLE_NAME_PREFIX + "$setExtendedThis"
 	}
 
+	final static public String WARNING_PREFIX = "Warning: "
+
 	/**
 	 * Enumeration which allows for choosing different matching strategies for return types.
 	 */
 	static enum TypeMatchingStrategy {
 		MATCH_INVARIANT,
-		MATCH_COVARIANT,
+		MATCH_COVARIANCE,
+		MATCH_COVARIANCE_CONSTRUCTOR_METHOD,
+		MATCH_INHERITANCE,
+		MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
 		MATCH_ALL
 	}
 
 	/**
 	 * Predicate for a flexible type comparison, which considers two types as equal, if they are
-	 * one is the supertype of the other type.
+	 * one is the supertype of the other type (whereas the first one must be the super class).
 	 */
 	static public (TypeLookup, Type, Type)=>Boolean flexibleTypeComparisonCovariance = [
+		$1.isAssignableFromConsiderUnprocessed($2, $0)
+	]
+
+	/**
+	 * Predicate for a flexible type comparison, which considers two types as equal, if they are
+	 * one is the supertype of the other type (no matter which one is the super class).
+	 */
+	static public (TypeLookup, Type, Type)=>Boolean flexibleTypeComparisonInheritance = [
 		$1.isAssignableFromConsiderUnprocessed($2, $0) || $2.isAssignableFromConsiderUnprocessed($1, $0)
 	]
 
@@ -100,11 +130,11 @@ class ProcessUtils {
 	]
 
 	/**
-	 * <p>Determines if the type represented by this <code>Type</code> object is either the same as,
-	 * or is a supertype of, the type represented by the specified <code>Type</code> parameter.</p>
+	 * <p>Determines if the type represented by <code>type1</code> is either the same as,
+	 * or is a supertype of, the type specified by <code>type2</code>.</p>
 	 * 
-	 * <p>If this <code>Type</code> object represents a primitive type, this method returns <code>true</code>
-	 * if the specified <code>Type</code> parameter is exactly this Type object; otherwise it returns
+	 * <p>If <code>type1</code> represents a primitive type, this method returns <code>true</code>
+	 * if <code>type2</code> parameter is exactly the same; otherwise it returns
 	 * <code>false</code>.</p>
 	 * 
 	 * <p>In addition to this, the method is able to resolve type hierarchies, which
@@ -136,8 +166,7 @@ class ProcessUtils {
 						else if (context instanceof ValidationContext)
 							context
 						else
-							throw new IllegalArgumentException(
-				'''Given context not supported''')
+							throw new IllegalArgumentException('''Given context not supported''')
 					)
 
 			for (extendedInterface : mirrorInterfaceExtends) {
@@ -204,10 +233,80 @@ class ProcessUtils {
 	}
 
 	/**
+	 * <p>Returns the declared methods of the given type. This method automatically considers additional
+	 * mechanics like trait methods, method extraction, etc., even if the class/interface has not been 
+	 * processed, yet.</p>
+	 * 
+	 * <p>The flags <code>resolveUnprocessedMirrorInterfaces</code>, <code>resolveUnprocessedTraitClasses</code> and
+	 * <code>resolveUnprocessedExtendedClasses</code> determine, if methods of the according unresolved class/interface
+	 * shall also be considered.</p>
+	 */
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> Iterable<? extends MethodDeclaration> getDeclaredMethodsResolved(
+		TypeDeclaration typeDeclaration,
+		boolean resolveUnprocessedMirrorInterfaces,
+		boolean resolveUnprocessedTraitClasses,
+		boolean resolveUnprocessedExtendedClasses,
+		extension T context
+	) {
+
+		if (resolveUnprocessedMirrorInterfaces && typeDeclaration instanceof InterfaceDeclaration &&
+			typeDeclaration.qualifiedName.isUnprocessedMirrorInterface) {
+
+			return typeDeclaration.qualifiedName.classOfUnprocessedMirrorInterface.
+				getMethodExtractionCandidates(true, null, context)
+
+		} else {
+
+			if (resolveUnprocessedTraitClasses && typeDeclaration instanceof ClassDeclaration &&
+				typeDeclaration.qualifiedName.isUnprocessedTraitClass) {
+
+				val result = new ArrayList<MethodDeclaration>(typeDeclaration.declaredMethods.toList)
+
+				for (traitClass : (typeDeclaration as ClassDeclaration).
+					getTraitClassesUsedByTraitClassClosure(null, context))
+					for (traitMethod : (traitClass.type as ClassDeclaration).getTraitMethodClosure(null, context))
+						result.add(traitMethod)
+
+				return result
+
+			} else {
+
+				if (resolveUnprocessedExtendedClasses && typeDeclaration instanceof ClassDeclaration &&
+					typeDeclaration.qualifiedName.isUnprocessedExtendedClass) {
+
+					val result = new ArrayList<MethodDeclaration>(typeDeclaration.declaredMethods.toList)
+
+					// add trait methods
+					// hint: method redirection is performed as a first transformation step, so these should
+					// have been added to extended classes already 
+					for (traitClass : (typeDeclaration as ClassDeclaration).
+						getTraitClassesAppliedToExtended(null, context))
+						for (traitMethod : (traitClass.type as ClassDeclaration).getTraitMethodClosure(null, context))
+							result.add(traitMethod)
+
+					return result
+
+				} else {
+
+					return typeDeclaration.declaredMethods
+
+				}
+
+			}
+
+		}
+
+	}
+
+	/**
 	 * <p>Returns all methods of a class (directly or indirectly).</p>
 	 * 
 	 * <p>The predicate can be used in order to determine, if the algorithm shall
 	 * consider the given interface declaration (and also follow recursively).</p>
+	 * 
+	 * <p>The flags <code>resolveUnprocessedMirrorInterfaces</code>, <code>resolveUnprocessedTraitClasses</code> and
+	 * <code>resolveUnprocessedExtendedClasses</code> determine, if methods of the according unresolved class/interface
+	 * shall also be considered.</p>
 	 * 
 	 * <p>The flag <code>addSelf</code> determines, if methods of the passed interface declaration shall be included.</p>
 	 * 
@@ -218,6 +317,9 @@ class ProcessUtils {
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getMethodClosure(
 		InterfaceDeclaration interfaceDeclaration,
 		(InterfaceDeclaration)=>Boolean interfacePredicate,
+		boolean resolveUnprocessedMirrorInterfaces,
+		boolean resolveUnprocessedTraitClasses,
+		boolean resolveUnprocessedExtendedClasses,
 		boolean addSelf,
 		extension T context
 	) {
@@ -228,32 +330,11 @@ class ProcessUtils {
 		// go through all types and add methods
 		val methodList = new ArrayList<MethodDeclaration>
 		for (type : listTypes)
-			methodList.addAll(type.getDeclaredMethodsResolved(context))
+			methodList.addAll(
+				type.getDeclaredMethodsResolved(resolveUnprocessedMirrorInterfaces, resolveUnprocessedTraitClasses,
+					resolveUnprocessedExtendedClasses, context))
 
 		return methodList
-
-	}
-
-	/**
-	 * <p>Returns the declared methods of the given type. This method automatically considers additional
-	 * mechanics like method extraction, even if the interface has not been built, yet.</p>
-	 */
-	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> Iterable<? extends MethodDeclaration> getDeclaredMethodsResolved(
-		TypeDeclaration typeDeclaration,
-		extension T context
-	) {
-
-		if (typeDeclaration instanceof InterfaceDeclaration &&
-			typeDeclaration.qualifiedName.isUnprocessedMirrorInterface) {
-
-			return typeDeclaration.qualifiedName.classOfUnprocessedMirrorInterface.
-				getMethodExtractionCandidates(null, context)
-
-		} else {
-
-			return typeDeclaration.declaredMethods
-
-		}
 
 	}
 
@@ -262,6 +343,10 @@ class ProcessUtils {
 	 * 
 	 * <p>The predicates can be used in order to determine, if the algorithm shall
 	 * consider the given class/interface declaration (and also follow recursively).</p>
+	 * 
+	 * <p>The flags <code>resolveUnprocessedMirrorInterfaces</code>, <code>resolveUnprocessedTraitClasses</code> and
+	 * <code>resolveUnprocessedExtendedClasses</code> determine, if methods of the according unresolved class/interface
+	 * shall also be considered.</p>
 	 * 
 	 * <p>The flag <code>addSelf</code> determines, if methods of the passed class declaration shall be included.</p>
 	 * 
@@ -273,6 +358,9 @@ class ProcessUtils {
 		ClassDeclaration classDeclaration,
 		(ClassDeclaration)=>Boolean classPredicate,
 		(InterfaceDeclaration)=>Boolean interfacePredicate,
+		boolean resolveUnprocessedMirrorInterfaces,
+		boolean resolveUnprocessedTraitClasses,
+		boolean resolveUnprocessedExtendedClasses,
 		boolean addSelf,
 		extension T context
 	) {
@@ -289,7 +377,9 @@ class ProcessUtils {
 		// go through all types and add methods
 		val methodList = new ArrayList<MethodDeclaration>
 		for (type : listTypes)
-			methodList.addAll(type.getDeclaredMethodsResolved(context))
+			methodList.addAll(
+				type.getDeclaredMethodsResolved(resolveUnprocessedMirrorInterfaces, resolveUnprocessedTraitClasses,
+					resolveUnprocessedExtendedClasses, context))
 
 		return methodList
 
@@ -491,6 +581,7 @@ class ProcessUtils {
 		ConstructorDeclaration constructor1,
 		ConstructorDeclaration constructor2,
 		TypeMatchingStrategy typeMatchingStrategy,
+		boolean useAssertParameterType,
 		TypeMap typeMap,
 		TypeLookup context
 	) {
@@ -509,8 +600,8 @@ class ProcessUtils {
 			localMethodTypeDeclarationMatch.put(typeParam1, typeParam2)
 		}
 
-		if (!constructor1.parameters.parametersEquals(constructor2.parameters, typeMatchingStrategy, typeMap,
-			localMethodTypeDeclarationMatch, context))
+		if (!constructor1.parameters.parametersEquals(constructor2.parameters, typeMatchingStrategy,
+			useAssertParameterType, typeMap, localMethodTypeDeclarationMatch, context))
 			return false
 
 		return true
@@ -521,14 +612,23 @@ class ProcessUtils {
 	 * <p>Returns true, if two methods shall be considered equal, i.e., the methods have the
 	 * same name, parameters and return type.</p>
 	 * 
+	 * <p>The parameter <code>parameterTypeMatchingStrategy</code> determines, how the parameter types are matched.</p>
+	 * 
 	 * <p>The parameter <code>returnTypeMatchingStrategy</code> determines, how the return type is matched.</p>
 	 * 
 	 * <p>The method internally uses {@link #parametersEquals}.</p>
 	 * 
 	 * @see #parametersEquals
 	 */
-	static def boolean methodEquals(MethodDeclaration method1, MethodDeclaration method2,
-		TypeMatchingStrategy returnTypeMatchingStrategy, TypeMap typeMap, TypeLookup context) {
+	static def boolean methodEquals(
+		MethodDeclaration method1,
+		MethodDeclaration method2,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
+		TypeMatchingStrategy returnTypeMatchingStrategy,
+		boolean useAssertParameterType,
+		TypeMap typeMap,
+		TypeLookup context
+	) {
 
 		if (method1 === method2)
 			return true
@@ -547,16 +647,9 @@ class ProcessUtils {
 			localMethodTypeDeclarationMatch.put(typeParam1, typeParam2)
 		}
 
-		// covariance for parameters is not considered unless constructor methods shall be compared
-		var TypeMatchingStrategy parameterTypeMatchingStrategy = if (method1.isConstructorMethod &&
-				method2.isConstructorMethod)
-				returnTypeMatchingStrategy
-			else
-				TypeMatchingStrategy.MATCH_INVARIANT
-
 		// check equality of parameters
-		if (!method1.parameters.parametersEquals(method2.parameters, parameterTypeMatchingStrategy, typeMap,
-			localMethodTypeDeclarationMatch, context))
+		if (!method1.parameters.parametersEquals(method2.parameters, parameterTypeMatchingStrategy,
+			useAssertParameterType, typeMap, localMethodTypeDeclarationMatch, context))
 			return false
 
 		// if any return types is inferred, methods are considered equal
@@ -566,7 +659,9 @@ class ProcessUtils {
 		if (returnTypeMatchingStrategy != TypeMatchingStrategy.MATCH_ALL) {
 
 			val (Type, Type)=>Boolean flexibleTypeComparison = if (returnTypeMatchingStrategy ==
-					TypeMatchingStrategy.MATCH_COVARIANT)
+					TypeMatchingStrategy.MATCH_INHERITANCE)
+					flexibleTypeComparisonInheritance.curry(context)
+				else if (returnTypeMatchingStrategy == TypeMatchingStrategy.MATCH_COVARIANCE)
 					flexibleTypeComparisonCovariance.curry(context)
 				else
 					null
@@ -591,9 +686,15 @@ class ProcessUtils {
 	 * 
 	 * @see #typeReferenceEquals
 	 */
-	static def boolean parametersEquals(Iterable<? extends ParameterDeclaration> params1,
-		Iterable<? extends ParameterDeclaration> params2, TypeMatchingStrategy typeMatchingStrategy, TypeMap typeMap,
-		Map<TypeParameterDeclaration, TypeParameterDeclaration> localMethodTypeDeclarationMatch, TypeLookup context) {
+	static def boolean parametersEquals(
+		Iterable<? extends ParameterDeclaration> params1,
+		Iterable<? extends ParameterDeclaration> params2,
+		TypeMatchingStrategy typeMatchingStrategy,
+		boolean useAssertParameterType,
+		TypeMap typeMap,
+		Map<TypeParameterDeclaration, TypeParameterDeclaration> localMethodTypeDeclarationMatch,
+		TypeLookup context
+	) {
 
 		if (params1 === params2)
 			return true
@@ -601,18 +702,49 @@ class ProcessUtils {
 		if (params1.size != params2.size)
 			return false
 
+		if (params1.size == 0)
+			return true
+
+		val executable1 = params1.get(0).declaringExecutable
+		val executable2 = params2.get(0).declaringExecutable
+
 		if (typeMatchingStrategy != TypeMatchingStrategy.MATCH_ALL) {
 
 			val (Type, Type)=>Boolean flexibleTypeComparison = if (typeMatchingStrategy ==
-					TypeMatchingStrategy.MATCH_COVARIANT)
+					TypeMatchingStrategy.MATCH_INHERITANCE) {
+					flexibleTypeComparisonInheritance.curry(context)
+				} else if (typeMatchingStrategy == TypeMatchingStrategy.MATCH_COVARIANCE) {
 					flexibleTypeComparisonCovariance.curry(context)
-				else
+				} else if (typeMatchingStrategy == TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD) {
+					if (executable1 instanceof MethodDeclaration && executable2 instanceof MethodDeclaration &&
+						(executable1 as MethodDeclaration).isConstructorMethod &&
+						(executable2 as MethodDeclaration).isConstructorMethod)
+						flexibleTypeComparisonInheritance.curry(context)
+					else
+						null
+				} else if (typeMatchingStrategy == TypeMatchingStrategy.MATCH_COVARIANCE_CONSTRUCTOR_METHOD) {
+					if (executable1 instanceof MethodDeclaration && executable2 instanceof MethodDeclaration &&
+						(executable1 as MethodDeclaration).isConstructorMethod &&
+						(executable2 as MethodDeclaration).isConstructorMethod)
+						flexibleTypeComparisonCovariance.curry(context)
+					else
+						null
+				} else {
 					null
+				}
 
 			val iter2 = params2.iterator
 			for (param1 : params1) {
 				val param2 = iter2.next
-				if (!typeReferenceEquals(param1.type, param2.type, flexibleTypeComparison, false, typeMap,
+				var type1 = param1.type
+				var type2 = param2.type
+				if (useAssertParameterType) {
+					if (param1.hasAnnotation(AssertParameterType))
+						type1 = param1.getAnnotation(AssertParameterType).getClassValue("value")
+					if (param2.hasAnnotation(AssertParameterType))
+						type2 = param2.getAnnotation(AssertParameterType).getClassValue("value")
+				}
+				if (!typeReferenceEquals(type1, type2, flexibleTypeComparison, false, typeMap,
 					localMethodTypeDeclarationMatch))
 					return false
 			}
@@ -754,18 +886,49 @@ class ProcessUtils {
 	 * 
 	 * @see #methodEquals
 	 */
-	static def getMatchingMethod(
+	static def MethodDeclaration getMatchingMethod(
 		Iterable<? extends MethodDeclaration> methods,
 		MethodDeclaration methodToFind,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
 		TypeMatchingStrategy returnTypeMatchingStrategy,
+		boolean useAssertParameterType,
 		TypeMap typeMap,
 		TypeLookup context
 	) {
 
 		for (method : methods)
-			if (method.methodEquals(methodToFind, returnTypeMatchingStrategy, typeMap, context))
+			if (method.methodEquals(methodToFind, parameterTypeMatchingStrategy, returnTypeMatchingStrategy,
+				useAssertParameterType, typeMap, context))
 				return method
 		return null
+
+	}
+
+	/**
+	 * <p>Returns all method in collection, which match the given declaration.</p>
+	 * 
+	 * <p>The method internally uses {@link #methodEquals}.</p>
+	 * 
+	 * @see #methodEquals
+	 */
+	static def List<MethodDeclaration> getMatchingMethods(
+		Iterable<? extends MethodDeclaration> methods,
+		MethodDeclaration methodToFind,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
+		TypeMatchingStrategy returnTypeMatchingStrategy,
+		boolean useAssertParameterType,
+		TypeMap typeMap,
+		TypeLookup context
+	) {
+
+		val result = new ArrayList<MethodDeclaration>
+
+		for (method : methods)
+			if (method.methodEquals(methodToFind, parameterTypeMatchingStrategy, returnTypeMatchingStrategy,
+				useAssertParameterType, typeMap, context))
+				result.add(method)
+
+		return result
 
 	}
 
@@ -776,18 +939,47 @@ class ProcessUtils {
 	 * 
 	 * @see #constructorEquals
 	 */
-	static def getMatchingConstructor(
+	static def ConstructorDeclaration getMatchingConstructor(
 		Iterable<? extends ConstructorDeclaration> constructors,
 		ConstructorDeclaration constructorToFind,
 		TypeMatchingStrategy typeMatchingStrategy,
+		boolean useAssertParameterType,
 		TypeMap typeMap,
 		TypeLookup context
 	) {
 
 		for (constructor : constructors)
-			if (constructor.constructorEquals(constructorToFind, typeMatchingStrategy, typeMap, context))
+			if (constructor.constructorEquals(constructorToFind, typeMatchingStrategy, useAssertParameterType, typeMap,
+				context))
 				return constructor
 		return null
+
+	}
+
+	/**
+	 * <p>Returns all constructors in collection, which match the given declaration.</p>
+	 * 
+	 * <p>The method internally uses {@link #constructorEquals}.</p>
+	 * 
+	 * @see #constructorEquals
+	 */
+	static def List<ConstructorDeclaration> getMatchingConstructors(
+		Iterable<? extends ConstructorDeclaration> constructors,
+		ConstructorDeclaration constructorToFind,
+		TypeMatchingStrategy typeMatchingStrategy,
+		boolean useAssertParameterType,
+		TypeMap typeMap,
+		TypeLookup context
+	) {
+
+		val result = new ArrayList<ConstructorDeclaration>
+
+		for (constructor : constructors)
+			if (constructor.constructorEquals(constructorToFind, typeMatchingStrategy, useAssertParameterType, typeMap,
+				context))
+				result.add(constructor)
+
+		return result
 
 	}
 
@@ -800,14 +992,23 @@ class ProcessUtils {
 	 * 
 	 * <p>The method internally uses {@link #getMatchingMethod} and {@link #getMatchingConstructor}.</p>
 	 * 
+	 * <p>The flags <code>resolveUnprocessedMirrorInterfaces</code>, <code>resolveUnprocessedTraitClasses</code> and
+	 * <code>resolveUnprocessedExtendedClasses</code> determine, if methods of the according unresolved class/interface
+	 * shall also be considered.</p>
+	 * 
 	 * @see #getMatchingMethod
 	 * @see #getMatchingConstructor
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> ExecutableDeclaration getMatchingExecutableInClass(
 		ClassDeclaration classDeclaration,
 		ExecutableDeclaration executable,
-		TypeMatchingStrategy typeMatchingStrategy,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
+		TypeMatchingStrategy returnTypeMatchingStrategy,
 		boolean recursive,
+		boolean useAssertParameterType,
+		boolean resolveUnprocessedMirrorInterfaces,
+		boolean resolveUnprocessedTraitClasses,
+		boolean resolveUnprocessedExtendedClasses,
 		TypeMap typeMap,
 		T context
 	) {
@@ -820,11 +1021,14 @@ class ProcessUtils {
 
 			// check for matching method or constructor
 			if (executable instanceof MethodDeclaration) {
-				result = currentClassDeclaration.getDeclaredMethodsResolved(context).getMatchingMethod(
-					executable as MethodDeclaration, typeMatchingStrategy, typeMap, context)
+				result = currentClassDeclaration.getDeclaredMethodsResolved(resolveUnprocessedMirrorInterfaces,
+					resolveUnprocessedTraitClasses, resolveUnprocessedExtendedClasses, context).getMatchingMethod(
+					executable as MethodDeclaration, parameterTypeMatchingStrategy, returnTypeMatchingStrategy,
+					useAssertParameterType, typeMap, context)
 			} else if (executable instanceof ConstructorDeclaration) {
 				result = currentClassDeclaration.declaredConstructors.getMatchingConstructor(
-					executable as ConstructorDeclaration, typeMatchingStrategy, typeMap, context)
+					executable as ConstructorDeclaration, parameterTypeMatchingStrategy, useAssertParameterType,
+					typeMap, context)
 			}
 
 			if (recursive == false || result !== null)
@@ -836,28 +1040,6 @@ class ProcessUtils {
 		}
 
 		return null
-
-	}
-
-	/**
-	 * <p>Returns the matching executable (method or constructor inside a class) in the superclass or null,
-	 * if it has not been found.</p>
-	 * 
-	 * <p>The method internally uses {@link #getMatchingExecutableInClass}.</p>
-	 * 
-	 * @see #getMatchingExecutableInClass
-	 */
-	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> ExecutableDeclaration getMatchingExecutableInSuperClass(
-		ExecutableDeclaration executable,
-		TypeMatchingStrategy returnTypeMatchingStrategy,
-		boolean recursive,
-		TypeMap typeMap,
-		T context
-	) {
-
-		return getMatchingExecutableInClass(
-			(executable.declaringType as ClassDeclaration).extendedClass?.type as ClassDeclaration, executable,
-			returnTypeMatchingStrategy, recursive, typeMap, context)
 
 	}
 
@@ -947,10 +1129,18 @@ class ProcessUtils {
 	 * 
 	 * @see #getMatchingMethod
 	 */
-	static def methodListContains(Iterable<? extends MethodDeclaration> methods, MethodDeclaration methodToFind,
-		TypeMatchingStrategy returnTypeMatchingStrategy, TypeMap typeMap, TypeLookup context) {
+	static def methodListContains(
+		Iterable<? extends MethodDeclaration> methods,
+		MethodDeclaration methodToFind,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
+		TypeMatchingStrategy returnTypeMatchingStrategy,
+		boolean useAssertParameterType,
+		TypeMap typeMap,
+		TypeLookup context
+	) {
 
-		return getMatchingMethod(methods, methodToFind, returnTypeMatchingStrategy, typeMap, context) !== null
+		return getMatchingMethod(methods, methodToFind, parameterTypeMatchingStrategy, returnTypeMatchingStrategy,
+			useAssertParameterType, typeMap, context) !== null
 
 	}
 
@@ -965,11 +1155,13 @@ class ProcessUtils {
 		Iterable<? extends ConstructorDeclaration> constructors,
 		ConstructorDeclaration constructorToFind,
 		TypeMatchingStrategy typeMatchingStrategy,
+		boolean useAssertParameterType,
 		TypeMap typeMap,
 		TypeLookup context
 	) {
 
-		return getMatchingConstructor(constructors, constructorToFind, typeMatchingStrategy, typeMap, context) !== null
+		return getMatchingConstructor(constructors, constructorToFind, typeMatchingStrategy, useAssertParameterType,
+			typeMap, context) !== null
 
 	}
 
@@ -1016,8 +1208,10 @@ class ProcessUtils {
 	 */
 	static def List<MethodDeclaration> unifyMethodDeclarations(
 		Iterable<? extends MethodDeclaration> methodDeclarations,
+		TypeMatchingStrategy parameterTypeMatchingStrategy,
 		TypeMatchingStrategy returnTypeMatchingStrategy,
 		(MethodDeclaration, MethodDeclaration)=>MethodDeclaration keepDecision,
+		boolean useAssertParameterType,
 		TypeMap typeMap,
 		TypeLookup context
 	) {
@@ -1039,8 +1233,8 @@ class ProcessUtils {
 			} else {
 
 				// if matching method is contained, the given predicate must decide which method to keep
-				val matchingMethod = result.getMatchingMethod(methodDeclaration, returnTypeMatchingStrategy, typeMap,
-					context)
+				val matchingMethod = result.getMatchingMethod(methodDeclaration, parameterTypeMatchingStrategy,
+					returnTypeMatchingStrategy, useAssertParameterType, typeMap, context)
 				if (matchingMethod !== null) {
 
 					if (keepDecision !== null) {
@@ -1063,6 +1257,60 @@ class ProcessUtils {
 		}
 
 		return result
+
+	}
+
+	/**
+	 * Sorts the given methods and returns the sorted list.
+	 */
+	static def List<MethodDeclaration> getMethodsSorted(Iterable<MethodDeclaration> methods,
+		TypeReferenceProvider context) {
+
+		return methods.sortWith([
+
+			// compare names
+			val nameCompare = $0.simpleName.compareTo($1.simpleName)
+			if (nameCompare != 0)
+				return nameCompare
+
+			// compare parameter count
+			val parameterCountCompare = if ($0.parameters.size < $1.parameters.size)
+					-1
+				else if ($0.parameters.size > $1.parameters.size)
+					1
+				else
+					0
+
+			if (parameterCountCompare != 0)
+				return parameterCountCompare
+
+			// compare return type
+			val returnTypeCompare = $0.returnType.getTypeReferenceAsString(true, false, false, false, context).
+				compareTo($1.returnType.getTypeReferenceAsString(true, false, false, false, context))
+			if (returnTypeCompare != 0)
+				return returnTypeCompare
+
+			// compare parameters
+			val param0iterator = $0.parameters.iterator
+			val param1iterator = $1.parameters.iterator
+			while (param0iterator.hasNext) {
+
+				val param0 = param0iterator.next
+				val param1 = param1iterator.next
+				val paramCompare = param0.simpleName.compareTo(param1.simpleName)
+				if (paramCompare != 0)
+					return paramCompare
+
+				val paramTypeCompare = param0.type.getTypeReferenceAsString(true, false, false, false, context).
+					compareTo(param1.type.getTypeReferenceAsString(true, false, false, false, context))
+				if (paramTypeCompare != 0)
+					return paramTypeCompare
+
+			}
+
+			return 0
+
+		])
 
 	}
 
@@ -1097,20 +1345,12 @@ class ProcessUtils {
 	 */
 	static def moveParameter(MutableExecutableDeclaration executable, int targetIndex, int sourceIndex) {
 
-		// access internal list
-		val listField = executable.parameters.class.getDeclaredField("fromList")
-		listField.accessible = true
-		try {
+		val listParameter = ReflectUtils.getPrivateFieldValue(executable.parameters, "fromList") as List<Object>
 
-			val listParameter = listField.get(executable.parameters) as List<Object>
-
-			// move parameter by removing and adding
-			val source = listParameter.get(sourceIndex)
-			listParameter.remove(sourceIndex)
-			listParameter.add(targetIndex, source)
-		} finally {
-			listField.accessible = false
-		}
+		// move parameter by removing and adding
+		val source = listParameter.get(sourceIndex)
+		listParameter.remove(sourceIndex)
+		listParameter.add(targetIndex, source)
 
 	}
 
@@ -1130,6 +1370,15 @@ class ProcessUtils {
 			return true
 		}
 		return false
+
+	}
+
+	/**
+	 * Copies annotation of the given type from source to target.
+	 */
+	static def copyAnnotation(AnnotationTarget src, MutableAnnotationTarget dest, Class<?> annotationType) {
+
+		dest.addAnnotation(src.getAnnotation(annotationType))
 
 	}
 
@@ -1225,15 +1474,28 @@ class ProcessUtils {
 	 * which will not be copied by the <code>skip</code> parameter.</p>
 	 * 
 	 * <p>If the <code>skip</code> counter is set, the first number of parameters will not be copied.</p>
+	 * 
+	 * <p>If <code>keepAnnotationTypeAdaption</code> is set to <code>true</code>, the method will copy any annotations
+	 * declaring type adaption.</p>
+	 * 
 	 */
 	static def void copyParameters(ExecutableDeclaration source, MutableExecutableDeclaration target, int skip,
-		TypeMap typeMap, extension TransformationContext context) {
+		boolean keepAnnotationTypeAdaption, TypeMap typeMap, extension TransformationContext context) {
 
 		// copy parameters, but exclude skipped
 		var int counter = 0
 		for (parameter : source.parameters)
-			if (counter++ >= skip)
-				target.addParameter(parameter.simpleName, parameter.type.copyTypeReference(typeMap, context))
+			if (counter++ >= skip) {
+
+				val newParameter = target.addParameter(parameter.simpleName,
+					parameter.type.copyTypeReference(typeMap, context))
+
+				// add annotation for type adaption
+				if (keepAnnotationTypeAdaption)
+					if (parameter.hasAnnotation(TypeAdaptionRule))
+						newParameter.addAnnotation(TypeAdaptionRuleProcessor.copyAnnotation(parameter, context))
+
+			}
 
 		target.varArgs = source.isVarArgsFixed
 
@@ -1279,7 +1541,7 @@ class ProcessUtils {
 		extension TypeReferenceProvider context) {
 
 		executable.parameters.map [
-			type.getTypeReferenceAsString(true, typeErasure, javadocHtml, context)
+			type.getTypeReferenceAsString(true, typeErasure, javadocHtml, false, context)
 		].toList
 
 	}
@@ -1292,28 +1554,62 @@ class ProcessUtils {
 	static def String getMethodAsString(MethodDeclaration methodDeclaration, boolean qualified,
 		extension TypeReferenceProvider context) {
 
-		return methodDeclaration.returnType.getTypeReferenceAsString(qualified, false, false, context) + " " +
+		return methodDeclaration.returnType.getTypeReferenceAsString(qualified, false, false, false, context) + " " +
 			methodDeclaration.simpleName + "(" + methodDeclaration.parameters.map [
-				type.getTypeReferenceAsString(qualified, false, false, context)
+				type.getTypeReferenceAsString(qualified, false, false, false, context)
 			].join(", ") + ")"
 
 	}
 
 	/**
-	 * Returns name of type reference as string.
+	 * Returns type as string.
 	 * 
 	 * Flags can control the generation of the output, e.g. if the qualified name shall be used, the output format
-	 * shall be HTML or type erasure shall be applied.
+	 * shall be HTML, type erasure shall be applied or primitive types shall be replaced by their wrapper classes.
+	 */
+	static def String getTypeAsString(TypeDeclaration typeDeclaration, boolean qualified, boolean javadocHtml,
+		extension TypeReferenceProvider context) {
+
+		var String result
+
+		if (qualified)
+			result = typeDeclaration.qualifiedName
+		else
+			result = typeDeclaration.simpleName
+
+		if (typeDeclaration instanceof ClassDeclaration)
+			if (typeDeclaration.typeParameters !== null && typeDeclaration.typeParameters.size > 0) {
+
+				val typeParamList = new ArrayList<String>
+				for (typeParam : typeDeclaration.typeParameters)
+					typeParamList.add(typeParam.qualifiedName)
+
+				val symbolLt = if(javadocHtml) '&lt;' else '<'
+				val symbolGt = if(javadocHtml) '&gt;' else '>'
+
+				result = result + symbolLt + typeParamList.join(',') + symbolGt
+
+			}
+
+		return result
+
+	}
+
+	/**
+	 * Returns type reference as string.
+	 * 
+	 * Flags can control the generation of the output, e.g. if the qualified name shall be used, the output format
+	 * shall be HTML, type erasure shall be applied or primitive types shall be replaced by their wrapper classes.
 	 */
 	static def String getTypeReferenceAsString(TypeReference typeReference, boolean qualified, boolean typeErasure,
-		boolean javadocHtml, extension TypeReferenceProvider context) {
+		boolean javadocHtml, boolean useWrapperClasses, extension TypeReferenceProvider context) {
 
 		var String result
 
 		if (typeReference.isArray) {
 
 			result = ProcessUtils.getTypeReferenceAsString(typeReference.arrayComponentType, qualified, typeErasure,
-				javadocHtml, context) + '[]'
+				javadocHtml, useWrapperClasses, context) + '[]'
 
 		} else if (typeReference.isWildCard) {
 
@@ -1323,13 +1619,13 @@ class ProcessUtils {
 				Object.canonicalName) {
 
 				val additionalBounds = typeReference.upperBound.getTypeReferenceAsString(qualified, typeErasure,
-					javadocHtml, context)
+					javadocHtml, useWrapperClasses, context)
 				result = result + ' extends ' + additionalBounds
 
 			} else if (typeReference.lowerBound !== null && typeReference.lowerBound.type !== null) {
 
 				val additionalBounds = typeReference.lowerBound.getTypeReferenceAsString(qualified, typeErasure,
-					javadocHtml, context)
+					javadocHtml, useWrapperClasses, context)
 				result = result + ' super ' + additionalBounds
 
 			}
@@ -1340,7 +1636,7 @@ class ProcessUtils {
 
 				if ((typeReference.type as TypeParameterDeclaration).upperBounds.size == 1)
 					result = (typeReference.type as TypeParameterDeclaration).upperBounds.get(0).
-						getTypeReferenceAsString(qualified, typeErasure, javadocHtml, context)
+						getTypeReferenceAsString(qualified, typeErasure, javadocHtml, useWrapperClasses, context)
 				else {
 
 					if (qualified)
@@ -1352,7 +1648,23 @@ class ProcessUtils {
 
 			} else {
 
-				if (typeReference.type === null) {
+				if (useWrapperClasses && typeReference == context.primitiveBoolean)
+					result = if(qualified) "java.lang.Boolean" else "Boolean"
+				else if (useWrapperClasses && typeReference == context.primitiveInt)
+					result = if(qualified) "java.lang.Integer" else "Integer"
+				else if (useWrapperClasses && typeReference == context.primitiveDouble)
+					result = if(qualified) "java.lang.Double" else "Double"
+				else if (useWrapperClasses && typeReference == context.primitiveFloat)
+					result = if(qualified) "java.lang.Float" else "Float"
+				else if (useWrapperClasses && typeReference == context.primitiveChar)
+					result = if(qualified) "java.lang.Character" else "Character"
+				else if (useWrapperClasses && typeReference == context.primitiveLong)
+					result = if(qualified) "java.lang.Long" else "Long"
+				else if (useWrapperClasses && typeReference == context.primitiveShort)
+					result = if(qualified) "java.lang.Short" else "Short"
+				else if (useWrapperClasses && typeReference == context.primitiveByte)
+					result = if(qualified) "java.lang.Byte" else "Byte"
+				else if (typeReference.type === null) {
 
 					if (qualified)
 						result = Object.canonicalName
@@ -1374,18 +1686,17 @@ class ProcessUtils {
 
 				val typeArgList = new ArrayList<String>
 				for (typeArg : typeReference.actualTypeArguments) {
-					typeArgList.add(typeArg.getTypeReferenceAsString(qualified, typeErasure, javadocHtml, context))
+					if (typeErasure)
+						typeArgList.add("?")
+					else
+						typeArgList.add(
+							typeArg.getTypeReferenceAsString(qualified, typeErasure, javadocHtml, useWrapperClasses,
+								context))
 				}
 
-				if (!javadocHtml) {
-
-					// in javadoc HTML this is not even needed as parameterized types are NOT part of the method's signature
-					val symbolLt = if(javadocHtml) '&lt;' else '<'
-					val symbolGt = if(javadocHtml) '&gt;' else '>'
-
-					result = result + symbolLt + typeArgList.join(',') + symbolGt
-
-				}
+				// in javadoc HTML this is not even needed as parameterized types are NOT part of the method's signature
+				if (!javadocHtml)
+					result += '<' + typeArgList.join(',') + '>'
 
 			}
 
@@ -1409,7 +1720,7 @@ class ProcessUtils {
 			""
 		else {
 			'''<«typeParameterDeclarator.getActualTypeArgumentsUsingTypeMap(typeMap, context).map [
-							it.getTypeReferenceAsString(qualified, false, false, context)
+							it.getTypeReferenceAsString(qualified, false, false, true, context)
 						].join(
 							", ")»>'''
 
@@ -1455,13 +1766,37 @@ class ProcessUtils {
 	 * 
 	 * <p>The type map will be extended by method type parameter mappings, if the <code>modifyTypeMap</code> flag
 	 * is set to <code>true</code>.</p>
+	 * 
+	 * <p>If <code>keepAnnotationAdaptedMethod</code> is set to <code>true</code>, the method will copy
+	 * the {@link AdaptedMethod} annotation.</p>
+	 * 
+	 * <p>If <code>keepAnnotationNoInterfaceExtraction</code> is set to <code>true</code>, the method will copy 
+	 * the {@link NoInterfaceExtract} annotation.</p>
+	 * 
+	 * <p>If <code>keepAnnotationTraitMethod</code> is set to <code>true</code>, the method will copy any annotations
+	 * declaring a trait method.</p>
+	 * 
+	 * <p>If <code>keepAnnotationTypeAdaption</code> is set to <code>true</code>, the method will copy any annotations
+	 * declaring type adaption.</p>
+	 * 
+	 * @see ImplAdaptionRule
+	 * @see TypeAdaptionRule
+	 * @see NoInterfaceExtract
+	 * @see ExclusiveMethod
+	 * @see RequiredMethod
+	 * @see ProcessedMethod
+	 * @see EnvelopeMethod
+	 * @see AdaptedMethod
 	 */
 	static def MutableMethodDeclaration copyMethod(
 		MutableClassDeclaration clazz,
 		MethodDeclaration source,
 		boolean copyParameters,
 		boolean modifyTypeMap,
-		boolean keepTypeAdaption,
+		boolean keepAnnotationAdaptedMethod,
+		boolean keepAnnotationNoInterfaceExtraction,
+		boolean keepAnnotationTraitMethod,
+		boolean keepAnnotationTypeAdaption,
 		TypeMap typeMap,
 		extension TransformationContext context
 	) {
@@ -1496,13 +1831,29 @@ class ProcessUtils {
 
 		// copy parameters
 		if (copyParameters)
-			source.copyParameters(newMethod, 0, typeParameterDeclarationMapClone, context)
+			source.copyParameters(newMethod, 0, keepAnnotationTypeAdaption, typeParameterDeclarationMapClone, context)
 
-		// add annotation (this method shall not stop type adaption)
-		if (keepTypeAdaption)
-			if (source.hasAnnotation(AdaptedMethod) || ImplAdaptionRuleProcessor.hasImplAdaptionRule(source) ||
-				TypeAdaptionRuleProcessor.hasTypeAdaptionRule(source))
+		// add annotation for type adaption (this method shall not stop type adaption)
+		if (keepAnnotationAdaptedMethod)
+			if (source.hasAnnotation(AdaptedMethod) || source.hasImplAdaptionRule ||
+				(source.hasTypeAdaptionRule && !source.hasAnnotation(GetterRule) && !source.hasAnnotation(SetterRule) &&
+					!source.hasAnnotation(AdderRule) && !source.hasAnnotation(RemoverRule)))
 				newMethod.addAnnotation(AdaptedMethod.newAnnotationReference)
+
+		// add annotation for interface extraction
+		if (keepAnnotationNoInterfaceExtraction)
+			if (source.hasAnnotation(NoInterfaceExtract))
+				newMethod.addAnnotation(NoInterfaceExtract.newAnnotationReference)
+
+		// add annotation for trait methods
+		if (keepAnnotationTraitMethod)
+			if (source.isTraitMethod)
+				newMethod.addAnnotation(AbstractTraitMethodAnnotationProcessor.copyAnnotation(source, context))
+
+		// add annotation for type adaption
+		if (keepAnnotationTypeAdaption)
+			if (source.hasAnnotation(TypeAdaptionRule))
+				newMethod.addAnnotation(TypeAdaptionRuleProcessor.copyAnnotation(source, context))
 
 		return newMethod
 
@@ -1656,8 +2007,12 @@ class ProcessUtils {
 
 		val hasErrors = !errors.isNullOrEmpty
 		if (errors !== null) {
-			for (error : errors)
-				element.addError(error)
+			for (error : errors) {
+				if (error.startsWith(WARNING_PREFIX))
+					element.addWarning(error.substring(WARNING_PREFIX.length, error.length))
+				else
+					element.addError(error)
+			}
 			errors.clear
 		}
 		return hasErrors
@@ -1673,7 +2028,7 @@ class ProcessUtils {
 
 		// resolve parameter type names
 		val paramTypeNameList = if (element instanceof ExecutableDeclaration)
-				getParametersTypeNames(element, true, true, context)
+				getParametersTypeNames(element, false, true, context)
 			else
 				null
 

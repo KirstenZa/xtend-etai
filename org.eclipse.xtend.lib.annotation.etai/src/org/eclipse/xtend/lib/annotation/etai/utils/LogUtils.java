@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import org.eclipse.xtend.lib.macro.services.Problem.Severity;
 
 /**
- * Utility class providing logging utilities.
+ * Utility class providing logging support.
  */
 public class LogUtils {
 

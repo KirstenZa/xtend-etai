@@ -1,0 +1,29 @@
+package virtual;
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.BidirectionalRule
+
+@ApplyRules
+class City {
+
+	@GetterRule
+	@SetterRule
+	@BidirectionalRule("cities")
+	Country location
+
+}
+
+@ApplyRules
+class Country {
+
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@BidirectionalRule("location")
+	java.util.Set<City> cities = new java.util.HashSet<City>
+
+}

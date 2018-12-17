@@ -7,26 +7,32 @@
     * [Basic Usage of Interface Extraction](#basic-usage-of-interface-extraction)
     * [Adapt Interface Extraction](#adapt-interface-extraction)
     * [Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
-  * [Automatic Adaption of Classes](#automatic-adaption-of-classes)
+  * [Automatic Modification of Classes](#automatic-modification-of-classes)
     * [Overview](#overview-1)
-    * [Generate the Implementation of Methods/Constructors](#generate-the-implementation-of-methods-constructors)
-    * [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructor-method-parameters-and-return-types)
-    * [Reimplement Constructors](#reimplement-constructors)
-    * [Deactivate and Change Adaption Rules](#deactivate-and-change-adaption-rules)
-    * [Use Adaption Variables](#use-adaption-variables)
+    * [Generate Accessors and Mutators](#generate-accessors-and-mutators)
+      * [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)
+      * [Generate Adder and Remover Methods](#generate-adder-and-remover-methods)
+      * [Getter Methods for Collections and Maps: *collectionPolicy*](#getter-methods-for-collections-and-maps-collectionpolicy)
+      * [*null* Checks](#-null--checks)
+      * [Change Methods](#change-methods)
+      * [Bidirectional Connections](#bidirectional-connections)
+      * [Multi-Threading and Mutators](#multi-threading-and-mutators)
+    * [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods)
+    * [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)
+      * [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)
+    * [Deactivate and Change Rules](#deactivate-and-change-rules)
     * [Generate Factory Methods](#generate-factory-methods)
       * [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
       * [Factory Method](#factory-method)
     * [Generate Factories](#generate-factories)
+    * [Generate Default Implementations of Missing Methods](#generate-default-implementations-of-missing-methods)
     * [Adaption Rule Specification](#adaption-rule-specification)
       * [Adaption Functions](#adaption-functions)
       * [Predefined Adaption Variables](#predefined-adaption-variables)
-      * [Adaption Function: *alternative*](#adaption-function---alternative-)
-  * [Default Implementation](#default-implementation)
-    * [Overview](#overview-2)
-    * [Basic Usage of Default Implementation](#basic-usage-of-default-implementation)
+      * [Adaption Function: *alternative*](#adaption-function-alternative)
+    * [Use Adaption Variables](#use-adaption-variables)
   * [Traits](#traits)
-    * [Overview](#overview-3)
+    * [Overview](#overview-2)
     * [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)
     * [Exclusive Methods](#exclusive-methods)
     * [Required Methods](#required-methods)
@@ -36,14 +42,14 @@
     * [Envelope Methods](#envelope-methods)
       * [Default Value Provider](#default-value-provider)
     * [Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
-      * [Flag: *required*](#flag---required-)
-      * [Flag: *setFinal*](#flag---setfinal-)
+      * [Flag: *required*](#flag-required)
+      * [Flag: *setFinal*](#flag-setfinal)
     * [Redirection of Trait Methods](#redirection-of-trait-methods)
     * [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
       * [Automatic Generation of Constructors](#automatic-generation-of-constructors)
-    * [*this* within Trait Classes](#-this--within-trait-classes)
+    * [*this* within Trait Classes](#this-within-trait-classes)
       * [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
-      * [Usage of *\$extendedThis*](#usage-of----extendedthis-)
+      * [Usage of *\$extendedThis*](#usage-of-extendedthis)
     * [Trait Classes and Inheritance](#trait-classes-and-inheritance)
       * [Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
       * [Base Trait Classes](#base-trait-classes)
@@ -53,7 +59,7 @@
 
 ## Introduction
 
-The ETAI library contains several [Active Annotations for Xtend](https://eclipse.org/xtend/documentation/204_activeannotations.html). The major purpose of the provided Active Annotations is to avoid boilerplate code by providing different means. These means include the automatic **extraction** of interfaces from classes, an extension mechanism for classes by methods of so-called **trait** classes, and the automatic **adaption** and **implementation** of methods and constructors in derived classes. Based on these keywords, this Active Annotation library is called ETAI.
+The ETAI library contains several [Active Annotations for Xtend](https://eclipse.org/xtend/documentation/204_activeannotations.html). The major purpose of the provided Active Annotations is to avoid boilerplate code by providing different means. These means include the automatic **extraction** of interfaces from classes, an extension mechanism for classes by methods of so-called **trait** classes, and the automatic **adaption** and **implementation** of methods and constructors. Based on these keywords, this Active Annotation library is called ETAI.
 
 ## Interface Extraction
 
@@ -110,7 +116,7 @@ class Lion {
 
 > Please note, that methods which shall be extracted must already be declared with ***override*** not *def*, even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
 
-##### Limitations
+##### Limitation
 
 > A class using *@ExtractInterface* must **not be placed in the default package**.
 >
@@ -168,7 +174,11 @@ class Dog implements IAnimal {
 
 ![](images/PlantUML_ExtractInterface_Adapting_Out.png)
 
-##### Limitations
+##### Hint
+
+*@NoInterfaceExtract* can also be used for fields, if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
+
+##### Limitation
 
 *@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
 
@@ -203,7 +213,7 @@ abstract class BigCat extends Cat implements ILargeAnimal {
 
 @ExtractInterface
 class Lion extends BigCat {
-	override String getHome() { "Afrika" }
+	override String getHome() { "Africa" }
 	override void huntInPack() {}
 }
 ```
@@ -232,29 +242,583 @@ interface IMammalPredator extends IPredator, IMammal {}
 
 ![](images/PlantUML_ExtractInterface_Hierarchy_Out.png)
 
-## Automatic Adaption of Classes
+## Automatic Modification of Classes
 
 ### Overview
 
-The ETAI library supports many options for automatically adapting classes and their methods, especially when deriving them.
+The ETAI library provides several means for modifying classes and derived classes automatically, especially for generating boilerplate code.
 
-A collection of different means is provided in this context. Thereby, the adaption of classes is driven by **rules** which support the following use cases:
+The modification is usually driven by **rules** which support the following use cases:
 
-- generating **factory methods and classes**,
-- **evolving return types and parameter types** of methods and constructors based on class hierarchies and
-- **evolving the implementation of methods and constructors** based on class hierarchies.
+- generation of **factory methods and factory classes**,
+- generation of **getter, setter, adder and remover methods** for regular fields, collections and maps including features like *null*-checks, calling methods on changes or maintaining bidirectional connections
+- **adaption of return types and parameter types** of methods/constructors based on the current class in the class hierarchy and
+- **adaption of the methods/constructors implementations** based on the current class in the class hierarchy.
 
-In order to enable the adaption of classes based on rules, it is necessary to attach ***@ApplyRules*** to the class which specifies such rules as well as derived classes which shall be adapted.
+In order to enable the modification of classes and derived classes based on rules, it is necessary to attach ***@ApplyRules*** to the class which specifies such rules as well as to any derived class.
 
-The feature for automatized generation of default implementations of methods found in interfaces is also related to the idea of adapting classes. However, these default implementations are not based on rules and do not require *@ApplyRules*, so this topic is described in [Default Implementation](#default-implementation).
+The **generation of default implementations of methods found in interfaces** is also possible with the ETAI library and described in the following. However, this generation is not based on rules and does not require *@ApplyRules* therefore.
 
 ##### Important
 
-> Please note, that once *@ApplyRules* is attached to a class all derived classes must also use this annotation. This is also checked during runtime.
+> Please note, that once *@ApplyRules* is attached to a class all derived classes **must** also use this annotation. This will be checked via assertions during runtime.
 
-### Generate the Implementation of Methods/Constructors
+### Generate Accessors and Mutators
 
-It is possible to generate method or constructor implementations in derived classes based on an adaption rule specified in a parent class. This rule is annotated on an abstract or non-abstract method by using ***@ImplAdaptionRule***. By default, each derived class will implement this method then using this rule.
+Coding getter and setter methods is common in object-oriented programming and especially Java. For example, there is usually a method *getAge* for accessing field *age* or a method *setName* for changing field *name*. This is a requirement for keeping the principle of encapsulation.
+
+However, such methods are a prototype of boilerplate code and as a consequence many code generation technologies support the automatic generation. Even Xtend provides some exemplary active annotations, which perform this job.
+
+The ETAI library also provides some active annotations. In contrast to the basic implementation, which is shipping with Xtend, there are more features and the annotations will fit to other mechanisms of the ETAI library. 
+
+In order to enable the **generation of getter and setter**, specific rules (active annotations) must be attached to the fields of a class. Available rules will be explained in the following sub sections.
+
+Besides getters and setters the ETAI library also supports a special treatment for fields, which have the type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) and *java.util.Map* (or any derived type). The usage of such types allows the **generation of so-called adder and remover** methods, which can be used to add/put or remove values to/from the collections/maps.
+
+In the following, getter methods will also be referenced as **accessors**. Setter, adder and remover methods will also be called **mutators**. 
+
+Active annotations for generating accessors and mutators can only be applied to **non-*public* fields**. However, the methodology supports *static* fields. In this case, the generated methods will also be *static*. 
+
+The generated methods will perform their basic job, of course. In addition, they are able to
+
+- perform ***null* checks**, e.g. fields can require that will never get the value *null*,
+- **call other methods on changes**, e.g. in order to trigger additional effects,
+- synchronize with an "opposite" field in case of **bidirectional connections**.
+
+All topics will be covered by later sub sections.
+
+##### Hint
+
+> Some annotations like *@ExclusiveMethod* (or other trait methods, see [Traits](#traits)), *@TypeAdaptionRule* (see [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)) or *@NoInterfaceExtract* (see [Adapt Interface Extraction](#adapt-interface-extraction)) are related to methods and must annotate methods therefore. However, they can also annotate fields, if these fields apply annotations for generating accessors or mutators. In such a case, the annotations behave as if they would be annotated to the generated methods.
+>
+> For example, if *@ExclusiveMethod* and *@GetterRule* are used together for a field in a trait class, a getter method will be generated as exclusive trait method of that trait class, i.e. each class extended by this trait class will receive this getter method.
+
+#### Generate Getter and Setter Methods
+
+The generation of getter and setter methods can be triggered by the annotation of ***@GetterRule*** and ***@SetterRule***. Both annotations can be used independently, i.e., if only *@GetterRule* is used, only a getter method will be generated.
+
+In contrast to the common pattern, the generated setter method will return a *boolean* value. A result of *true* means that the actual value of the field has been changed. On contrary, *false* means that the value has not been changed. This can happen, if the new value (resp. reference) would have been the same as the old one. However, there are also other possibilities that the value is not changed in context of [change methods](#change-methods).
+
+The following example shows class *Person* which specifies the field *name* and uses *@GetterRule* and *@SetterRule* for it. Therefore, the methods *getName* and *setName* are generated. They allow for accessing the field's value and modifying the field's value.
+
+The example also shows the usage of parameter ***visibility***. It is available for all rules for generating accessors and mutators, i.e. not only getter and setter methods, but also adder and remover methods. The parameter can be set to *PUBLIC* and *PROTECTED*. In the example, *@SetterRule* requires the generated setter to be *protected*. By default, all generated accessors and mutators are generated *public*.  
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+
+@ApplyRules
+class Person {
+
+	@GetterRule
+	@SetterRule(visibility=PROTECTED)
+	String name
+
+}
+```
+
+
+##### Input (Diagram)
+
+![](images/PlantUML_Modification_GetterSetter_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Modification_GetterSetter_Out.png)
+
+##### Hint
+
+> The names for generating getter and setter methods are based on the name of the field and cannot be adjusted. Of course, the naming rules consider the most common pattern, e.g. like specified for JavaBeans (see [JavaBeans](http://download.oracle.com/otndocs/jcp/7224-javabeans-1.01-fr-spec-oth-JSpec/), chapter "Design Patterns for Properties"). The according naming conventions are also supported by [Xtend](https://www.eclipse.org/xtend/documentation/) (see "Property Access").
+>
+> The example above shows that the field *name* leads to the getter *getName* and setter *setName*. However, in case of a *boolean* field *X* (not *Boolean*) the generated getter would be called *isX*.
+
+#### Generate Adder and Remover Methods
+
+If a field has type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) or *java.util.Map* (or any derived type), it is possible to apply the annotations ***@AdderRule*** and ***@RemoverRule***. They trigger the generation of methods for adding resp. removing elements to/from the *Collection*/*Map*.
+
+Both annotations support the *boolean* parameters ***single*** and ***multiple***. They control which types of methods will be generated: if *single* is *true*, methods for adding/removing single elements are generated, if *multiple* is *true*, methods for adding/removing multiple elements are generated. At least one of both options must be set to *true*.   
+
+The following tables show which methods are generated for a field named *X* based on the type (with element type *E* resp. key/value types *K*/*V*) and the applied annotation. 
+
+| Method (*@AdderRule*)        | *single* /<br>*multiple* | Type  | Description                         |
+| -------------------------- |:------:|:--------:|------------------------------------:|
+| ***boolean addToX(E element)*** | *single* | *Collection* | *element* will be added to collection *X* (if the type is *List*, it will be added to the end of the list) |
+| ***boolean addToX(int index, E element)*** | *single* | *List* | *element* will be added to list *X* at the specified *index* |
+| ***V putToX(K key, V value)*** | *single* | *Map* | *value* for *key* will be put to to map *X*, the old value (resp. *null* if not available) will be replaced and returned by the method |
+| ***boolean addAllToX(Collection&lt;E&gt; c)*** | *multiple* | *Collection* | the whole collection *c* will be added to collection *X* (if the type is *List*, it will be added to the end of the list) |
+| ***boolean addAllToX(int index, Collection&lt;E&gt; c)*** | *multiple* | *List* | the whole collection *c* will be added to list *X* at the specified *index* |
+| ***void putAllToX(Map&lt;? extends K,? extends V&gt; m)*** | *multiple* | *Map* | all entries of map *m* will be put to map<nobr>&nbsp;<nobr>*X* |
+
+| Method (*@RemoverRule*)      | *single* /<br>*multiple* | Type  | Description                         |
+| -------------------------- |:------:|:--------:|------------------------------------:|
+| ***boolean removeFromX(int index)*** | *single* | *List* | the element with the specified *index* will be removed from list *X* |
+| ***boolean removeFromX(E element)*** | *single* | *Collection* | *element* will be removed from collection *X* (if the element is contained multiple times, the first occurrence will be replaced) |
+| ***V removeFromX(K key)*** | *single* | *Map* | the entry for the given *key* will be removed from map *X* (returns the removed value or *null* if it did not exist) |
+| ***boolean removeAllFromX(Collection&lt;E&gt; c)*** | *multiple* | *Collection* | all elements in collection *c* will be removed from collection *X* (if an element is contained multiple times, all occurrences will be removed) |
+| ***boolean/void clearX()*** | *multiple* | *Collection*<nobr>&nbsp;<nobr>/<br>*Map* | the whole collection / map *X* will be emptied |
+
+All methods which return a *boolean* value will report, if there has been any change in the *Collection* (this is not available for *Map*). This can happen, for example, if the new element has already been contained in a *Set*. However, there are also other possibilities in context of [change methods](#change-methods).
+
+An example will be shown in the following sections.
+
+##### Important
+
+> The generated methods do not check or take care that the used *Collection* or *Map* exists or is constructed. It should be ensured that the field is initialized directly or inside the constructor and never gets *null*.
+
+##### Limitation
+
+> It is not recommended to use wildcards and upper bounds for the field's collection type, e.g. *java.util.List<? extends Object>*. Basically, it would not be possible to generate concrete methods in order to add or remove elements then. For example, it is not sure that the given concrete type (*Object* in the example) can be put into the collection. Even using method *add* for the connection itself is not possible. However, the ETAI will still generate methods with the given upper bound. The correct usage must be ensured by the programmer therefore.
+
+#### Getter Methods for Collections and Maps: *collectionPolicy*
+
+Adder and remover methods as shown in the previous section can be used in order to modify collections/maps. However, there usually is the need to access elements of these collections/maps as well.
+
+This can be achieved by applying a *@GetterRule* to the collection/map. Once it is returned by the getter, it can be used to access its elements. However, this might bypass the idea of encapsulation, because the returned reference can also be used to modify the collection/map without using the generated adder and remover methods.
+
+Therefore, *@GetterRule* supports a parameter called ***collectionPolicy***. Setting this parameter can influence how the collection/map is returned, and it can be protected this way. The following values are supported and have the described effect:
+
+- ***UNMODIFIABLE*** (default): the collection/map is returned inside of a read-only wrapper.
+- ***UNMODIFIABLE_COPY***: a copy of the collection/map is returned inside of a read-only wrapper.
+- ***DIRECT***: the collection/map is returned directly, i.e., there is no protection.
+
+Returning a collection/map inside of a read-only wrapper means that an unmodifiable collection/map is constructed via *java.util.Collections*. Depending on the type of the collection/map the method *unmodifiableList*, *unmodifiableSet*, *unmodifiableSortedSet*, *unmodifiableCollection*, *unmodifiableMap* or *unmodifiableSortedMap* is used. 
+
+The following example shows the usage of *@GetterRule*, *@AdderRule* and *@RemoverRule* together with a list called *paragraphs*. Both *@AdderRule* and *@RemoverRule* have the parameter *single* set to *true*, which is the default. Parameter *multiple*, however, is set to *true* only for *@RemoverRule*. These settings together with type *java.util.List* result in the generated methods shown in the output diagram. 
+
+The parameter *collectionPolicy* is set to *UNMODIFIABLE_COPY* for the generation of the getter. This means that the getter shall return a read-only copy of the list. This way, there is no problem with concurrent modifications when iterating through the elements of *paragraphs* (or rather a snapshot of it) and changing it at the same time. Therefore, the exemplary code shown in *duplicateParagraph* works without exception.
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+
+@ApplyRules
+class Text {
+
+	@GetterRule(collectionPolicy=UNMODIFIABLE_COPY)
+	@AdderRule
+	@RemoverRule(multiple=true)
+	java.util.List<String> paragraphs = new java.util.ArrayList<String>
+	
+
+}
+
+class TextDuplicator {
+	
+	def duplicateParagraphs(Text text) {		
+		for (paragraph : text.paragraphs)
+			text.addToParagraphs("COPY: " + paragraph)
+	}
+
+}
+```
+
+
+##### Input (Diagram)
+
+![](images/PlantUML_Modification_GetterAdderRemover_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Modification_GetterAdderRemover_Out.png)
+
+#### *null* Checks
+
+In context of accessors (*@GetterRule*) and mutators (*@SetterRule* and *@AdderRule*) it is possible to **protect against setting fields to *null*, adding *null* to collections/maps or retrieving a *null* value from the field or even the collection/map**. This protection can be activated by annotating the according field with ***@NotNullRule*** in addition.
+
+The annotation supports three *boolean* parameters:
+
+- ***notNullSelf*** (default *true*): the value of the field itself must not be set to *null* (via setter) and when retrieving the value (via getter), it must not be *null*.
+- ***notNullKeyOrElement*** (default *false*): it is not allowed to add a *null* element to a collection resp. to add a *null* key to a map (via adder).
+- ***notNullValue*** (default *false*): it is not allowed to add a *null* value to a map (via adder).
+
+If the specified *null* rule is violated, which can detected during the according method call (getter, setter or adder method), an *AssertionError* will be thrown. This requires assertions to be activated (see [Enabling and Disabling Assertions](https://docs.oracle.com/javase/7/docs/technotes/guides/language/assert.html#enable-disable)).
+
+The code example below shows the usage of *NotNullRule* twice. Firstly, it is not possible to set the name of a *Person* object to *null*. In addition, if a name with value *null* is be retrieved via getter (actually the field has this value directly after the object has been constructed), an error will be thrown.
+
+Secondly, the set *addresses* cannot retrieved, if it is *null* or contains a *null* element. When adding new elements to the set, it is checked that they are not *null* as well.
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.NotNullRule
+
+@ApplyRules
+class Person {
+
+	@GetterRule
+	@SetterRule
+	@NotNullRule
+	String name
+	
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@NotNullRule(notNullKeyOrElement=true)
+	java.util.Set<String> addresses = new java.util.HashSet<String>
+
+}
+```
+
+
+##### Hint
+
+It is also ensured that only non-*null* values/keys can be retrieved from collections/maps using the generated getter method. This can only be achieved by checking each element of the collection/map before returning the reference. As this is a very time consuming operation this feature should be considered as convenient helper for testing purposes and only be used for small collections/maps.  
+
+##### Important
+
+There is no protection, if the field/collection/map is modified or accessed directly without getter, setter or adder.
+
+#### Change Methods
+
+Before/after the value of a field or the content of a collection is changed, it is sometimes necessary to **trigger some additional checks or actions**. In this case, it is possible to write a non-generated mutator method accordingly. However, triggering additional checks or actions is also possible, if generating mutators via *@SetterRule*, *@AdderRule* or *@RemoverRule*.
+
+All rules for generating mutator methods support some additional parameters of type *String*, e.g. parameter *afterChange* is supported by *@SetterRule*. Their purpose is to hold the name of a method, which must be available in context of the generated mutator method (*static* or non-*static*). The method must also comply with one of several allowed signatures. If such a parameter is set, the referenced method is called inside the generated mutator method. It is even possible to block a change.
+
+The specified method name can use the *%* symbol. This symbol will be replaced automatically by the field's name applying also the camel case schema.
+
+The following table shows an overview of available parameters together with the point in time in which the referenced method is called:
+
+| Rule        | Parameter | Trigger                             |
+| ----------- |-----------|------------------------------------:|
+| *@SetterRule* | *beforeChange* | before the field's value is going to be changed |
+| *@SetterRule* | *afterChange* | after the field's value has been changed |
+| *@AdderRule* | *beforeAdd* | before one or more elements are going to be added to the collection |
+| *@AdderRule* | *beforeElementAdd* | before an element is going to be added to the collection |
+| *@AdderRule* | *afterElementAdd* | after an element has been added to the collection |
+| *@AdderRule* | *afterAdd* | after one or more elements have been added to the collection |
+| *@RemoverRule* | *beforeRemove* | before one or more elements is going to be removed from the collection |
+| *@RemoverRule* | *beforeElementRemove* | before an element is going to be removed from the collection |
+| *@RemoverRule* | *afterElementRemove* | after an element has been removed from the collection |
+| *@RemoverRule* | *afterRemove* | after one or more elements have been removed from the collection |
+
+Please note, that multiple methods can be called during one call of a generated mutator. For example, if a field's value is going to be set to a new value, i.e. the value differs from the old one, the method referenced by *beforeChange* will be called before the actual change, and the *boolean* result of this call can even block the change. After the change has been performed the method referenced by *afterChange* will be called.
+
+If adding multiple elements to a collection, the method referenced by *beforeAdd* will be called. Afterwards, the method referenced by *beforeElementAdd* is called **for each element**. Thereby, adding elements can be blocked entirely or individually. For each element, which has actually been added, the method referenced by *afterElementAdd* will be called then. Finally, *afterAdd* will be called, if there are elements, which have been added. For removing elements the same schema is applied.
+
+All referenced methods must have one of multiple possible signatures. Depending on the signature, information about the change will be available inside the method. The following table shows all supported signatures. The meaning of the individual signature elements will be explained below the table.
+
+| Parameter     | Signature of the called method                   |
+|---------------|-------------------------------------------------:|
+| *beforeChange* /<br>*afterChange* | *void X()*
+| *beforeChange* /<br>*afterChange* | *void X(T newValue)*
+| *beforeChange* /<br>*afterChange* | *void X(T oldValue, T newValue)*
+| *beforeChange* /<br>*afterChange* | *void X(String fieldName, T oldValue, T newValue)*
+| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X()*
+| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(List&lt;T&gt; elements)*
+| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(String fieldName, List&lt;T&gt; elements)*
+| supported for *List* only:<br>*beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| supported for *List* only:<br>*beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| *beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove*&nbsp;/<br>*afterElementRemove* | *void X(T element)*
+| *beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(String fieldName, T element)*
+| supported for *List* only:<br>*beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(int index, T element)*
+| supported for *List* only:<br>*beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(String fieldName, int index, T element)*
+
+The following elements are used in the table above:
+
+- *X*: the name of the called method
+- *T*: the type of the annotated field resp. the type of the collection's element
+- *fieldName*: the name of the field/collection which shall be changed
+- *oldValue*: the old value of the field
+- *newValue*: the new value of the field (which has or has not already been set)
+- *element* / *elements*: the element(s) which shall be added/removed to/from the collection
+- *index* / *indices*: the index/indices of the elements(s) which shall be added/removed to/from the collection
+
+All methods which are triggered before a change also support return type *boolean* in addition to *void*. If *boolean* is used, the return value of the method will **control, if the change is allowed and shall be performed**. If *false* is returned, the change will be aborted. In case of methods called for individual elements of a bigger change (e.g. *beforeElementAdd*) only adding/removing this particular element will be skipped.
+
+Please note, that not all kind of actions should be performed within change methods. For example, throwing exceptions might be problematic (see [Bidirectional Connections](#bidirectional-connections)). Also the currently changed value resp. the currently altered collection should not be changed again within the change method. This might lead to (endless) recursive calls. Therefore, there is even a protection against concurrent changes at least if mutator methods are called. For example, inside a change method for a field *A* triggered by setter *setA* another call of *setA* will not change *A* and return *false*.
+
+The following code example shows how change methods can be used and also how a (logically) equivalent Java code would look like. It applies *beforeChange* and *afterChange* together with *@SetterRule* (field *percentage*) and *afterAdd* together with *@AdderRule* (field *log*).
+
+In case of *percentage* the *beforeChange* method *percentageChange* checks, if the new value is between 0 and 100. If not, it will not be applied (but also no error is thrown). If the value is actually changed, method *percentageChanged* will be called. In the example, this method does not need any information and just wants to report a change, so no parameter is specified.
+
+Field *log* is a *String* list. After new strings have been added, *afterAdd* method *addedToList* is called. It gets information about all added strings and their indices within *log*, and it reports these changes as well.
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+
+@ApplyRules
+class Progress {
+
+	@SetterRule(beforeChange="%Change", afterChange="%Changed")
+	double percentage
+
+	@AdderRule(afterAdd="addedToList", single=false, multiple=true)
+	java.util.List<String> log = new java.util.ArrayList<String>
+
+	protected def boolean percentageChange(double newPercentage) {
+		if (newPercentage < 0.0 || newPercentage > 100.0)
+			return false
+		return true
+	}
+
+	protected def void percentageChanged() {
+		System.out.println("Percentage changed!")
+	}
+
+	protected def void addedToList(String fieldname,
+			java.util.List<Integer> indices,
+			java.util.List<String> elements) {
+		for (var i = 0; i < indices.size; i++)
+			System.out.println('''Added "«elements.get(i)»" to list ''' +
+				'''«fieldname» at index «indices.get(i)»''')
+	}
+
+}
+```
+
+
+##### Output (Code - Logical)
+
+```java
+package virtual;
+
+public class Progress {
+
+	private double percentage;
+	private java.util.List<String> log = new java.util.ArrayList<String>();
+
+	public boolean setPercentage(double $percentage) {
+		if (this.percentage != $percentage) {
+			if (!percentageChange($percentage))
+				return false;
+			this.percentage = $percentage;
+			percentageChanged();
+			return true;
+		}
+		return false;
+	}
+
+	public boolean addAllToLog(int $index, java.util.Collection<? extends String> $c) {
+		if ($c.isEmpty())
+			return false;
+		java.util.List<String> addedElements = new java.util.ArrayList<String>($c);
+		java.util.List<Integer> addedIndices = new java.util.ArrayList<Integer>();
+		for (int i = $index; i < $index + $c.size(); i++)
+			addedIndices.add(i);
+		log.addAll($index, $c);
+		return true;
+	}
+
+	public boolean addAllToLog(java.util.Collection<? extends String> $c) {
+		return addAllToLog(log.size(), $c);
+	}
+
+    protected void percentageChanged() {
+        System.out.println("Percentage changed!");
+    }
+    
+    protected void addedToList(final String fieldname, final List<Integer> indices, final List<String> elements) {
+        for (int i = 0; (i < indices.size()); i++)
+        	System.out.println("Added \"" + elements.get(i) + "\" to list " +
+                fieldname + " at index " + indices.get(i));
+    }
+
+}
+```
+
+
+##### Limitation
+
+> It is not possible to use change methods for maps.
+
+#### Bidirectional Connections
+
+In object-oriented data models it is often required that two objects link to each other (bidirectional connection). In object-oriented programming this would mean that a reference is set from both sides, e.g. by calling a setter method for both objects. If it is known that a bidirectional connection must be established, however, it would be sufficient to call one setter, because **setting the bidirectional connection from the other side (opposing side) can be done automatically**.
+
+The ETAI library supports the generation of mutator methods, which can handle bidirectional connections automatically, i.e., setting a reference on one side is sufficient. To enable this feature it is necessary to add rule ***@BidirectionalRule*** to a field, which references to another (opposing) object. As value of the rule a string must be provided. The string designated the field in the opposing object, which represents the opposing side of the bidirectional connection. 
+
+If the mutator of a field annotated by *@BidirectionalRule* is called, also the opposing object will get according information about the connection. This information will be stored inside the field named in *@BidirectionalRule* by calling an appropriate mutator of the opposing object. This way, both objects contain a reference to each other and a bidirectional connection is established.
+
+In object-oriented data modeling (bidirectional) associations with **0..1:1, 0..1:n and m:n multiplicities** can be modeled. These schemas can be reproduced via *@BidirectionalRule*. If both sides use a simple reference, the 0..1:1 schema will be applied and setter methods on both sides are expected (e.g. via *@SetterRule*). If one side uses a simple reference and the other side a set of references (*java.util.Set*), the 0..1:n schema will be applied. The side containing a set of references is required to have adder and remover methods for single references (e.g. via *@AdderRule*/*@RemoverRule* and *single* set to *true*), the other side is required to have a setter method again. Finally, if both sides have a set of references, the m:n schema will be applied and adder/remover methods are required on both sides.
+
+An example for realizing a 0..1:n association is shown below. On one side, there is field *location* in class *City*, and on the other side, there is field *cities* in class *Country* and they refer to each other. If a *City* object sets a *Country* object as *location*, this *City* object will be added to the *cities* set within the *Country* object. The *City* object will also be removed from any *cities* set it has been before. The other way around, if a *Country* object adds a *City* object to *cities*, this *Country* object will be set as *location* for the *City* object. This behavior is also reflected in the exemplary output code shown below.
+
+##### Input (Code)
+
+```java
+package virtual;
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.BidirectionalRule
+
+@ApplyRules
+class City {
+
+	@GetterRule
+	@SetterRule
+	@BidirectionalRule("cities")
+	Country location
+
+}
+
+@ApplyRules
+class Country {
+
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@BidirectionalRule("location")
+	java.util.Set<City> cities = new java.util.HashSet<City>
+
+}
+```
+
+
+##### Output (Code - Logical)
+
+```java
+package virtual;
+
+public class City {
+
+	private Country location;
+
+	public Country getLocation() {
+		return location;
+	}
+
+	public boolean setLocation(Country $location) {
+		if (this.location != $location) {
+			Country oldValue = this.location;
+			this.location = $location;
+			if (oldValue != null)
+				oldValue.removeFromCities(this);
+			if ($location != null)
+				$location.addToCities(this);
+			return true;
+		}
+		return false;
+	}
+
+}
+```
+
+
+```java
+package virtual;
+
+public class Country {
+
+	private java.util.Set<City> cities = new java.util.HashSet<City>();
+
+	public java.util.Set<City> getCities() {
+		return java.util.Collections.unmodifiableSet(cities);
+	}
+
+	public boolean addToCities(City $element) {
+		if (cities.contains($element))
+			return false;
+		cities.add($element);
+		$element.setLocation(this);
+		return true;
+	}
+
+	public boolean removeFromCities(City $element) {
+		if (!cities.contains($element))
+			return false;
+		cities.remove($element);
+		$element.setLocation(null);
+		return true;
+	}
+
+}
+```
+
+
+##### Hint
+
+> It is not necessary that both sides declare a *@BidirectionalRule*. This way, it is possible to implement the mutator(s) on one side manually. Setting up the bidirectional connection from this side, however, should also be coded manually then.
+
+##### Limitation
+
+> If a new bidirectional connection shall be established, potential old connections must be cut. With the currently implemented logic this would mean that some fields must be set to *null* at least temporarily. Therefore, it is not possible to perfectly reproduce 1:1 or 1:n associations, e.g. by using *@NotNullRule* in addition (see [*null* Checks](#null-checks)). 
+>
+> In addition to this, if bidirectional connections are used, the usage of [change methods](#change-methods), which are called before a change, might be restricted. For example, during the call of such a change methods the current connection state might be inconsistent, because the internal algorithms are still processing a consistent connection state using mutator methods. Therefore, throwing exceptions there should be avoided.
+
+#### Multi-Threading and Mutators
+
+Calling generated mutators cannot be seen as atomic operation. Mutators can have complex operations behind, e.g. in order to create a consistent state of bidirectional connections (see [Bidirectional Connections](#bidirectional-connections)). Therefore, generated accessors and mutators should not be used in multi-threading scenarios except additional **synchronization mechanisms** are added. Such mechanisms can be added by applying annotation ***@SynchronizationRule***.
+
+If this rule is applied, the generated accessor and mutator functionality will be embedded in a block with a fair reentrant read/write lock (*java.util.concurrent.locks.ReentrantReadWriteLock*). This means that multiple calls of one accessor from different thread can run in parallel, but one call of a mutator will block all accessor and mutator calls from other threads (not from this thread) until the change has been finalized.
+
+*@SynchronizationRule* must specify the name of the lock via its *value*. The applied name is used to acquire a lock from a global namespace. This means that fields using *@SynchronizationRule* with the same name actually use the same lock. In general, the locking mechanism does not work object-centric but class-centric, so accessing the same field of two different objects in different threads can block each other.
+
+If the example from the section for [bidirectional connections](#bidirectional-connections) is used in a multi-threading environment, it should apply *@SynchronizationRule* for *location* and *cities* with the same lock name. This is shown in the code below.
+
+##### Input (Code)
+
+```java
+package virtual;
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.BidirectionalRule
+import org.eclipse.xtend.lib.annotation.etai.SynchronizationRule
+
+@ApplyRules
+class City {
+
+	@GetterRule
+	@SetterRule
+	@BidirectionalRule("cities")
+	@SynchronizationRule("virtual.CityCountry")
+	Country location
+
+}
+
+@ApplyRules
+class Country {
+
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@BidirectionalRule("location")
+	@SynchronizationRule("virtual.CityCountry")
+	java.util.Set<City> cities = new java.util.HashSet<City>
+
+}
+```
+
+
+##### Hint
+
+In particular, the usage of a shared lock name in *@SynchronizationRule* can be very important, if using *@BidirectionalRule* in a multi-threading environment. If changes are initiated from different threads, deadlocks can occur. This problem can be resolved by using the same lock (name) on both sides.
+
+### Generate the Implementation of Constructors and Methods
+
+It is possible to **generate method or constructor implementations in derived classes based on an adaption rule** specified in a parent class. This rule is annotated on an abstract or non-abstract method by using ***@ImplAdaptionRule***. By default, each derived class will implement this method then using this rule.
 
 The adaption rule is given by a string assigned to the ***value*** of *@ImplAdaptionRule*. It must follow the schema described in [Adaption Rule Specification](#adaption-rule-specification). The string will be evaluated during code generation and the evaluation result will be the (Java) code of the generated method's body.
 
@@ -315,15 +879,15 @@ class AnimalZebra extends Animal {}
 
 ##### Input (Diagram)
 
-![](images/PlantUML_Adaption_Implementation_In.png)
+![](images/PlantUML_Modification_Implementation_In.png)
 
 ##### Output (Diagram)
 
-![](images/PlantUML_Adaption_Implementation_Out.png)
+![](images/PlantUML_Modification_Implementation_Out.png)
 
-### Adapt Types of Constructor/Method Parameters and Return Types
+### Reimplement Constructors and Methods with Adapted Parameter and Return Types
 
-With type adaption rules it is possible to **adjust the return type of a method** within derived classes. This means that wrapper method with the adapted types are generated, i.e., they are simply calling the method of the super class and returning its result, but they have another return type. For **parameter types the same principle can be used for constructors**.
+With type adaption rules it is possible to **adjust the return type of a method** within derived classes. This means that wrapper method with the adapted types are generated, i.e., they are simply calling the method of the super class and returning its result, but they have another return type. For **parameter types the same principle can be used for constructors** (i.e. it is also possible for [Constructor Methods](#constructor-methods-and-construction-process)) **or *static* methods, which also apply *@ImplAdaptionRule***.
 
 Usually, the reason for adapting types by such rules is to reflect the limitation of the returned type in the derived class's method or the limitation of a parameter type when constructing an object of the derived class (see [Covariance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science))).
 
@@ -385,25 +949,39 @@ class AnimalZebra extends Animal {}
 
 ##### Input (Diagram)
 
-![](images/PlantUML_Adaption_Type_In.png)
+![](images/PlantUML_Modification_Type_In.png)
 
 ##### Output (Diagram)
 
-![](images/PlantUML_Adaption_Type_Out.png)
+![](images/PlantUML_Modification_Type_Out.png)
 
-### Reimplement Constructors
+##### Important
 
-The example in [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types) shows how constructors in derived classes, which basically have no functionality in addition, can be implemented automatically based on constructors in the parent class. This can be triggered by the type adaption rule on a parameter.
+> The type resulting from the [Adaption Rule Specification](#adaption-rule-specification) should be fully qualified in order to avoid namespace problems.
+
+##### Hint
+
+> The described methodology does not only work within regular class hierarchies. Also classes extended by trait classes with (trait) methods using *@TypeAdaptionRule* will apply such rules and types will be adapted in further processing.
+
+##### Limitation
+
+> The adaption of type parameters within generic types is usually only possible, if using wildcards. For example, the return type *java.util.List<Sound>* cannot be adapted to *java.util.List<SoundDog>*, but *java.util.List<? extends Sound>* can be adapted to *java.util.List<? extends SoundDog>*.
+>
+> This must also be respected, if using collection types, *@TypeAdaptionRule* and the generation of accessors and mutators (see [Generate Accessors and Mutators](#generate-accessors-and-mutators)) together.
+
+#### Reimplement Constructors without Parameters
+
+The example in [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types) shows how constructors in derived classes, which basically have no functionality in addition, can be implemented automatically based on constructors in the parent class. This can be triggered by the type adaption rule on a parameter.
 
 However, this use case can be valid even without adapting parameter types. For this, there is the annotation ***CopyConstructorRule***, which can be applied to several constructors in the base class. Each **annotated constructor will be implemented automatically in derived classes**, if there is no other manually implemented constructor.
 
 An example can be found in the following section.
 
-### Deactivate and Change Adaption Rules
+### Deactivate and Change Rules
 
-Adaption rules are usually applied for each derived class. However, there are several rules to avoid or change automatic adaption and even to stop for further derived classes.
+Rules are usually applied for each derived class. However, there are several rules to avoid or change automatic class modification and even to stop for further derived classes.
 
-In case of **methods, adaption is affected** (relating to further derivation) as soon as a derived class overrides it, i.e., there is a (manual) implementation. In the class with the overridden method, there will be no adaption, of course. For further derived classes there are three possibilities:
+In case of **methods, adaption is affected** (relating to further derivation) as soon as a derived class overrides it, i.e., there is a (manual) implementation of a method with the same name. In the class with the overridden method, there will be no adaption, of course. For further derived classes there are three possibilities:
 
 1. Adaption will be **changed**, if the implemented method applies another adaption rule, i.e., the new adaption rule is applied.
 2. Adaption will be **continued** unchanged, if the implemented method applies the annotation ***@AdaptedMethod***.
@@ -413,7 +991,7 @@ In case of **constructors, adaption is affected** (relating to further derivatio
 
 The example below shows some of these cases. Method *getSound* in class *Animal* is annotated by *@TypeAdaptionRule*. It is already overridden in class *AnimalCarnivora*. However, it is annotated by *@AdaptedMethod* there, so adaption is not stopped and the method gets automatically generated in *AnimalFelidae*. The same method is overridden again in *AnimalLion*, but not annotated by *@AdaptedMethod* this time. Therefore, in the derived class *AnimalLionSouthAfrica* it is not generated.
 
-Also the behavior for constructors is shown. Adaption is in place because *@TypeAdaptionRule* and *@CopyConstructorRule* (see [Reimplement Constructors](#reimplement-constructors)) are applied to the two constructors in *Animal*, so both constructors are generated in *AnimalCarnivora* and *AnimalFelidae*. Later, in class *AnimalLion* there is one constructor implemented manually. Therefore, no constructor is generated in *AnimalLionSouthAfrika*, which is why a constructor must be implemented there by hand. 
+Also the behavior for constructors is shown. Adaption is in place because *@TypeAdaptionRule* and *@CopyConstructorRule* (see [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)) are applied to the two constructors in *Animal*, so both constructors are generated in *AnimalCarnivora* and *AnimalFelidae*. Later, in class *AnimalLion* there is one constructor implemented manually. Therefore, no constructor is generated in *AnimalLionSouthAfrica*, which is why a constructor must be implemented there by hand. 
 
 ##### Input (Code)
 
@@ -500,77 +1078,21 @@ class AnimalLionSouthAfrican extends AnimalLion {
 
 ##### Input (Diagram)
 
-![](images/PlantUML_Adaption_Deactivate_In.png)
+![](images/PlantUML_Modification_Deactivate_In.png)
 
 ##### Output (Diagram)
 
-![](images/PlantUML_Adaption_Deactivate_Out.png)
-
-### Use Adaption Variables
-
-Within adaption rule specifications it is possible to access so-called **adaption variables**, e.g. via function *appendVariable* (see [Adaption Functions](#adaption-functions)). There are predefined adaption variables (see [Predefined Adaption Variables](#predefined-adaption-variables)), but it also possible to define own adaption variables and set values.
-
-In order to set an adaption variable, the annotation ***@SetAdaptionVariable*** must be applied to a class. The variables which are set this way will be available for rule specifications within the annotated class and any derived class. Of course, a derived class can also override the value of the adaption variable using *@SetAdaptionVariable* again.
-
-The following example shows how to set and override the adaption variables *var.cat.female* and *var.cat.striped*. They are also used in an *@ImplAdaptionRule*.
-
-##### Input (Code)
-
-```java
-package virtual
-
-import org.eclipse.xtend.lib.annotation.etai.ApplyRules
-import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
-import org.eclipse.xtend.lib.annotation.etai.SetAdaptionVariable
-
-@ApplyRules
-@SetAdaptionVariable("
-	var.cat.striped=false")
-abstract class AnimalCat {
-
-	@ImplAdaptionRule("
-		apply(return \");
-		appendVariable(var.cat.female);
-		append(\";)")
-	static def String getFemaleName() { return "Queen"; }
-	
-	@ImplAdaptionRule("
-		apply(return );
-		appendVariable(var.cat.striped);
-		append(;)")
-	abstract def boolean isStriped()
-
-}
-
-@ApplyRules
-@SetAdaptionVariable("
-	var.cat.female=Tigress,
-	var.cat.striped=true")
-class AnimalTiger extends AnimalCat {}
-
-@ApplyRules
-@SetAdaptionVariable("var.cat.female=Lioness")
-class AnimalLion extends AnimalCat {}
-```
-
-
-##### Input (Diagram)
-
-![](images/PlantUML_Adaption_Variables_In.png)
-
-##### Output (Diagram)
-
-![](images/PlantUML_Adaption_Variables_Out.png)
+![](images/PlantUML_Modification_Deactivate_Out.png)
 
 ### Generate Factory Methods
 
-The ETAI library supports the **generation of factory methods**, i.e. methods for creating an object instead of using constructors. This feature enables [Constructor Methods](#constructor-methods-and-construction-process) in trait classes (see [Automatic Generation of Constructors](#automatic-generation-of-constructors)), it can be useful, if additional code shall be executed automatically after object construction (see [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)), or the factory methods become part of a factory (see [Generate Factories](#generate-factories)).
+The ETAI library supports the **generation of factory methods**, i.e. methods for creating an object instead of using constructors. This feature enables [Constructor Methods](#constructor-methods-and-construction-process) in trait classes (see [Automatic Generation of Constructors](#automatic-generation-of-constructors)), and it can be useful, if additional code shall be executed automatically after object construction (see [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)), or the factory methods become part of a factory (see [Generate Factories](#generate-factories)).
 
 In order to generate factory methods, a class and derived classes must enable adaption (*@ApplyRules*). Afterwards, the first class in the type hierarchy, which shall get a factory method, must be annotated by a rule represented by ***@FactoryMethodRule***. All derived classes will also get a factory method according to the same rule. However, the rule can be changed by derived classes by annotating it again with other options. It can even be deactivated by annotating *@FactoryMethodRule* to a derived class and setting parameter *factoryMethod* to an empty string.
 
 The annotation *@FactoryMethodRule* supports several parameters, which allow for different patterns, e.g. a naming pattern or if the method shall be generated inside a factory class (see [Generate Factories](#generate-factories)). The name of the generated factory method can be defined by parameter ***factoryMethod***. It supports a special character *%*, which is replaced by the name of the class, in which the factory method is generated.
 
-The generated factory methods will reflect the parameters of the given constructors and factory methods will call them accordingly. This also works in scenarios, where this rule is combined with other rules and concepts of the ETAI library, i.e., it might be that constructors are not present in the Xtend code, because they will be generated as well (cp. [Reimplement Constructors](#reimplement-constructors) or [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)).
+The generated factory methods will reflect the parameters of the given constructors and factory methods will call them accordingly. This also works in scenarios, where this rule is combined with other rules and concepts of the ETAI library, i.e., it might be that constructors are not present in the Xtend code, because they will be generated as well (cp. [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters) or [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)).
 
 As soon as factory methods are generated, **constructors become *protected***, i.e., classes usually can only be created via factory method from outside.
 
@@ -609,11 +1131,11 @@ class Animal {
 
 ##### Input (Diagram)
 
-![](images/PlantUML_Adaption_Factory_Method_In.png)
+![](images/PlantUML_Modification_Factory_Method_In.png)
 
 ##### Output (Diagram)
 
-![](images/PlantUML_Adaption_Factory_Method_Out.png)
+![](images/PlantUML_Modification_Factory_Method_Out.png)
 
 #### Factory Method  
 
@@ -627,7 +1149,7 @@ If the application of the adaption rule specification would lead to a string, wh
 
 Another parameter of *@FactoryMethodRule* (see [Generate Factory Methods](#generate-factory-methods)) is ***factoryInstance***. If it is non-empty, an inner class *Factory* (*private*) will be generated for all adapted classes. This class represents a **factory class** (see [Factory](https://en.wikipedia.org/wiki/Factory_(object-oriented_programming))). In this case, the factory method will not be in the adapted class directly, but inside the factory class.
 
-A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. The variable will be declarerd *final* (or read-only) unless parameter ***factoryInstanceFinal*** of *@FactoryMethodRule* is explicitly set to *false*.
+A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. The variable will be declared *final* (or read-only) unless parameter ***factoryInstanceFinal*** of *@FactoryMethodRule* is explicitly set to *false*.
 
 If generating factory classes, it can also be helpful to provide an interface for them, which allows for supporting the [Abstract Factory Pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern). The type of such an interface can be specified by setting the ***factoryInterface*** parameter.
 
@@ -679,100 +1201,25 @@ class App {
 
 ##### Input (Diagram)
 
-![](images/PlantUML_Adaption_Factory_Class_In.png)
+![](images/PlantUML_Modification_Factory_Class_In.png)
 
 ##### Output (Diagram)
 
-![](images/PlantUML_Adaption_Factory_Class_Out.png)
+![](images/PlantUML_Modification_Factory_Class_Out.png)
 
-### Adaption Rule Specification
-
-An adaption rule specification is stored in a string, which contains **adaption function calls**. Thereby, each adaption function call looks similar to a regular Java function call. Multiple adaption function calls are separated by ";".
-
-When applying an adaption rule the adaption function calls are executed sequentially and each function manipulates the **current value**, which is a string and starts *empty*. After the last adaption function call, this value represents also the *result*.
-
-The following diagram describes this principle. The basis is this adaption rule specification:
-
-| **apply(Test);append(MyWorld);replace(My,Hello)** |
-|:-------------------------:|
-
-![](images/PlantUML_AdaptionFunctions_Principle.png)
-
-#### Adaption Functions
-
-The following table lists supported *adaption functions*:
-
-| Function                  | Description                                                    |
-| ------------------------- |---------------------------------------------------------------:|
-| ***apply(x)*** | *x* will replace the *current value* |
-| ***append(x)*** | *x* will be appended to the *current value* |
-| ***prepend(x)*** | *x* will be prepended to the *current value* |
-| ***applyVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and replace the *current value* |
-| ***appendVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be appended to the *current value* |
-| ***prependVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be prepended to the *current value* |
-| ***replace(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* |
-| ***replaceAll(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
-| ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
-| ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* |
-| ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
-| ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
-| ***alternative(x)*** | see [Adaption Function: *alternative*](#adaption-function-alternative) |
-
-#### Predefined Adaption Variables
-
-Within adaption rule specifications it is possible to access the values of **adaption variables**. They can be set and changed freely in context of a class hierarchy (see [Use Adaption Variables](#use-adaption-variables)). However, there are also predefined variables, which are usually automatically set in relation to the current generation context. An example can be found here: [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types).
-
-The following table shows existing predefined adaption variables:
-
-| Adaption Variable         | Value                                                    |
-| ------------------------- |---------------------------------------------------------------:|
-| ***var.package*** | the package name |
-| ***var.class.simple*** | the class name (unqualified) |
-| ***var.class.qualified*** | the fully qualified class name |
-| ***var.class.abstract*** | if the class is abstract "true", otherwise "false" |
-| ***var.class.typeparameters*** | the name of all type parameter (comma-separated) |
-| ***var.class.typeparameters.count*** | the number of type parameters |
-| ***var.class.typeparameter.1*** | the name of type parameter *#1* (if available) |
-| ***var.class.typeparameter.2*** | the name of type parameter *#2* (if available) |
-| *...* | |
-| ***var.class.typeparameter.x*** | the name of type parameter *#x* (if available) |
-| ***const.bracket.round.open*** | round bracket, open, "("<br>(enables workaround to access this character in specific situations) |
-| ***const.bracket.round.close*** | round bracket, closed, "("<br>(enables workaround to access this character in specific situations) |
-
-#### Adaption Function: *alternative*
-
-The adaption function *alternative* can only be applied for type adaption rules (see [Adapt Types of Constructor/Method Parameters and Return Types](#adapt-types-of-constructormethod-parameters-and-return-types)) and is special. It **must be the last call** within an adaption rule specification (except other *alternative* calls) and opens an **alternative result path**. In general, within *alternative(x)* another adaption rule specification can be nested.
-
-If the evaluation of the adaption rule until an *alternative* call does not result in a string which represents a valid type, the adaption rule within *alternative* will be evaluated and used as result (if valid).
-
-The following diagram exemplifies this adaption rule specification:
-
-| **apply(X1);alternative(replace(1,2));alternative(replace(2,3))** |
-|:-------------------------:|
-
-![](images/PlantUML_AdaptionFunctions_Alternative.png)
-
-##### Limitations
-
-> The adaption function *alternative* is applicable only on top-level (no further nesting).
-
-## Default Implementation
-
-### Overview
+### Generate Default Implementations of Missing Methods
 
 The default implementation feature of the ETAI library can be used for **generating default implementations of methods automatically**. This is useful for simplifying the implementation of mock classes in testing scenarios, for example.
 
-In order to use this feature, a non-abstract class is annotated by *@ImplementDefault*. Afterwards, **default methods** are generated in the Java code for all **missing methods**.
+In order to use this feature, a non-abstract class is annotated by *@ImplementDefault*. Afterwards, **default methods** are generated in the Java code for all **missing methods**. Please note, that this feature is not based on rules and therefore does not require *@ApplyRules*.
 
-Thereby, the term "missing methods" refers methods, that they are declared *abstract* in a parent class or in an implemented interface, and that they are not implemented, yet. On the other side, a "default method" is empty and not doing anything in general. At least an appropriate value will be returned, if the method specifies a return type.
+The term "missing methods" refers to methods, which are declared *abstract* in a parent class (or in an implemented interface) and are not implemented, yet. The term "default method" means a method, which is empty and does not do anything in general. At least an appropriate value will be returned, if the method specifies a return type.
 
 For all numerical return types the returned value is a representation of zero. For *boolean* the value *false* is returned. And finally for all non-primitive types, *null* is returned, e.g. for *String* or even *Integer*.  
 
-### Basic Usage of Default Implementation
-
 The following example shows how to enable default implementation. The class *ElephantMock* does not implement any method. Because of the abstract method in the parent class *AnimalBase* and obligations due to the implemented interface *IElephant*, some methods like *getWeight* must be implemented. However, this is done automatically, so after applying ***@ImplementDefault*** there actually exists a (default) method *getWeight* which returns zero.
 
-Please note, that the automatically implemented default methods are annotated by ***@DefaultImplementation***, which might be available using reflection during runtime. 
+Please note, that generated default methods are annotated by ***@DefaultImplementation***, which might be available using reflection during runtime. 
 
 ##### Input (Code)
 
@@ -803,6 +1250,135 @@ class Elephant extends AnimalBase implements IElephant {
 ##### Output (Diagram)
 
 ![](images/PlantUML_ImplementDefault_Simple_Out.png)
+
+### Adaption Rule Specification
+
+Some features of the ETAI library require the specification of an *adaption rule* (cp. [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods) or [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)).
+
+An adaption rule specification is stored in a string, which contains **adaption function calls**. Thereby, each adaption function call looks similar to a regular Java function call. Multiple adaption function calls are separated by ";".
+
+When applying an adaption rule the adaption function calls are executed sequentially and each function manipulates the **current value**, which is a string and starts *empty*. After the last adaption function call, this value represents also the *result*.
+
+The following diagram describes this principle. The basis is this adaption rule specification:
+
+| **apply(Test);append(MyWorld);replace(My,Hello)** |
+|:-------------------------:|
+
+![](images/PlantUML_AdaptionFunctions_Principle.png)
+
+#### Adaption Functions
+
+The following table lists supported *adaption functions*:
+
+| Function                  | Description                                                    |
+| ------------------------- |---------------------------------------------------------------:|
+| ***apply(x)*** | *x* will replace the *current value* |
+| ***append(x)*** | *x* will be appended to the *current value* |
+| ***prepend(x)*** | *x* will be prepended to the *current value* |
+| ***applyVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and replace the *current value* |
+| ***appendVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be appended to the *current value* |
+| ***prependVariable(x)*** | adaption variable *x* (see [Use Adaption Variables](#use-adaption-variables)) will be queried and be prepended to the *current value* |
+| ***replace(x,y)*** | in the *current value* all occurrences of *x* will be replaced by<nobr>&nbsp;<nobr>*y* |
+| ***replaceAll(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
+| ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
+| ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* |
+| ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
+| ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
+| ***alternative(x)*** | see [Adaption Function: *alternative*](#adaption-function-alternative) |
+
+#### Predefined Adaption Variables
+
+Within adaption rule specifications it is possible to access the values of **adaption variables**. They can be set and changed freely in context of a class hierarchy (see [Use Adaption Variables](#use-adaption-variables)). However, there are also predefined variables, which are usually automatically set in relation to the current generation context. An example can be found here: [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types).
+
+The following table shows existing predefined adaption variables:
+
+| Adaption Variable         | Value                                                    |
+| ------------------------- |---------------------------------------------------------------:|
+| ***var.package*** | the package name |
+| ***var.class.simple*** | the class name (unqualified) |
+| ***var.class.qualified*** | the fully qualified class name |
+| ***var.class.abstract*** | if the class is abstract "true", otherwise "false" |
+| ***var.class.typeparameters*** | the name of all type parameter (comma-separated) |
+| ***var.class.typeparameters.count*** | the number of type parameters |
+| ***var.class.typeparameter.1*** | the name of type parameter *#1* (if available) |
+| ***var.class.typeparameter.2*** | the name of type parameter *#2* (if available) |
+| *...* | |
+| ***var.class.typeparameter.x*** | the name of type parameter *#x* (if available) |
+| ***const.bracket.round.open*** | round bracket, open, "("<br>(enables workaround to access this character in specific situations) |
+| ***const.bracket.round.close*** | round bracket, closed, "("<br>(enables workaround to access this character in specific situations) |
+
+#### Adaption Function: *alternative*
+
+The adaption function *alternative* can only be applied for type adaption rules (see [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)) and is special. It **must be the last call** within an adaption rule specification (except other *alternative* calls) and opens an **alternative result path**. In general, within *alternative(x)* another adaption rule specification can be nested.
+
+If the evaluation of the adaption rule until an *alternative* call does not result in a string which represents a valid type, the adaption rule within *alternative* will be evaluated and used as result (if valid).
+
+The following diagram exemplifies this adaption rule specification:
+
+| **apply(X1);alternative(replace(1,2));alternative(replace(2,3))** |
+|:-------------------------:|
+
+![](images/PlantUML_AdaptionFunctions_Alternative.png)
+
+##### Limitation
+
+> The adaption function *alternative* is applicable only on top-level (no further nesting).
+
+### Use Adaption Variables
+
+Within adaption rule specifications it is possible to access so-called **adaption variables**, e.g. via function *appendVariable* (see [Adaption Functions](#adaption-functions)). There are predefined adaption variables (see [Predefined Adaption Variables](#predefined-adaption-variables)), but it also possible to define own adaption variables and set values.
+
+In order to set an adaption variable, the annotation ***@SetAdaptionVariable*** must be applied to a class. The variables which are set this way will be available for rule specifications within the annotated class and any derived class. Of course, a derived class can also override the value of the adaption variable using *@SetAdaptionVariable* again.
+
+The following example shows how to set and override the adaption variables *var.cat.female* and *var.cat.striped*. They are also used in an *@ImplAdaptionRule*.
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.SetAdaptionVariable
+
+@ApplyRules
+@SetAdaptionVariable("
+	var.cat.striped=false")
+abstract class AnimalCat {
+
+	@ImplAdaptionRule("
+		apply(return \");
+		appendVariable(var.cat.female);
+		append(\";)")
+	static def String getFemaleName() { return "Queen"; }
+	
+	@ImplAdaptionRule("
+		apply(return );
+		appendVariable(var.cat.striped);
+		append(;)")
+	abstract def boolean isStriped()
+
+}
+
+@ApplyRules
+@SetAdaptionVariable("
+	var.cat.female=Tigress,
+	var.cat.striped=true")
+class AnimalTiger extends AnimalCat {}
+
+@ApplyRules
+@SetAdaptionVariable("var.cat.female=Lioness")
+class AnimalLion extends AnimalCat {}
+```
+
+
+##### Input (Diagram)
+
+![](images/PlantUML_Modification_Variables_In.png)
+
+##### Output (Diagram)
+
+![](images/PlantUML_Modification_Variables_Out.png)
 
 ## Traits
 
@@ -1086,6 +1662,14 @@ Objects of type *LazyEvaluation* offer method *eval*. If calling this method for
 
 If the original method has return type *void*, *call* is simply expected to return *null*.
 
+Besides method *eval* type *LazyEvaluation* offers the following methods:
+
+- *int getNumberOfArguments()*: returns the number of arguments bound to the call of the original method
+- *Object getArgument(int index)*: returns the argument (with the specified *index*) bound to the call
+- *void setArgument(int index, Object value)*: changes the argument (with the specified *index*) bound to the call
+- *Object getExecutingObject()*: returns the object executing the original method
+- *java.lang.reflect.Method getMethod()*: returns the original method (e.g. can be used to check the method name)
+
 The following code shows an exemplary trait method processor *ProcessorStringCommaSeparated*. It shall execute the original method of the extended class first and the original method of the trait class afterwards. It concatenates both resulting strings with a separating comma in between and returns the concatenated string.
 
 This trait method processor is used for method *getCharacteristics* of all three trait classes *XFlying*, *XTalking* and *XColorful*. Class *Parrot* is extended by these trait classes, so in the end, it gets a method *getCharacteristics* which returns *"flying,talking,colorful"*, i.e. the individual results combined by *ProcessorStringCommaSeparated*.
@@ -1291,7 +1875,7 @@ It is possible to specify **rules so that a trait method is renamed** before it 
 
 If a method in the extended class is annotated by ***@TraitMethodRedirection***, which specifies a new method name via *String* *value*, each matching trait method will be renamed to this name before it is extending the class. In addition, it will become a new visibility, which is also specified by *@TraitMethodRedirection* via parameter *visibility* (default: *PROTECTED*). 
 
-The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive will be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
+The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive can be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
 
 However, **trait methods can ignore the redirection**. For this, there is a parameter *disableRedirection*, which can be specified together with *@EnvelopeMethod*, *@ProcessedMethod* or *@ExclusiveMethod*. If the flag is set to to *true*, which is the default value for *@EnvelopeMethod*, any setting by *@TraitMethodRedirection* is ignored.
 
@@ -1453,12 +2037,12 @@ class Cat implements IXWithName {
 
 #### Automatic Generation of Constructors
 
-In combination with [adaption features](#automatic-adaption-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
+In combination with [modification features](#automatic-modification-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
 
 - the construction helper methods are called at the end of the constructor and
 - the parameters needed by construction helper methods are added to the constructor's parameter lists and later passed to the construction helper methods.
 
-If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Adaption of Classes](#automatic-adaption-of-classes)).
+If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Modification of Classes](#automatic-modification-of-classes)).
 
 Parameters of constructor methods are fully supported by this technique. They are simply added to the generated factory methods. In the trivial case that there is only one constructor method in the trait class and one constructor in the extended class, the parameters of the constructor methods are added to the end of the constructor's parameter list and then transferred to the generated factory method. In cases where multiple constructor methods, multiple (or no) constructors in the extended class or even multiple trait classes exist, cross products are calculated during code generation in order to generate factory methods and their parameter lists. The order of parameters is based on the order of applying trait classes, whereas parameters of the extended class's constructor always start the parameter list.
 
@@ -1771,4 +2355,4 @@ class Bird extends Animal implements IXExtendedAttributes {}
 
 ##### Hint
 
-> Specifying the usage of other trait classes is also possible via parameter *using* of *@TraitClass*. The annotation *@TraitClassAutoUsing* is just a way to avoid a manual declaration by scanning the listed interfaces and using all trait classes found via their mirror interface (cp. with *@ExtendedByAuto* and *@ExtendedBy* in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)). 
+> Specifying the usage of other trait classes is also possible via parameter *using* of *@TraitClass*. The annotation *@TraitClassAutoUsing* is just a way to avoid a manual declaration by scanning the listed interfaces and using all trait classes found via their mirror interface (cp. with *@ExtendedByAuto* and *@ExtendedBy* in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).

@@ -1,17 +1,14 @@
 package org.eclipse.xtend.lib.annotation.etai
 
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
-import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
-import java.util.List
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.MethodDeclarationRenamed
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
+import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
-import org.eclipse.xtend.lib.macro.RegisterGlobalsParticipant
 import org.eclipse.xtend.lib.macro.TransformationContext
-import org.eclipse.xtend.lib.macro.TransformationParticipant
 import org.eclipse.xtend.lib.macro.ValidationContext
-import org.eclipse.xtend.lib.macro.ValidationParticipant
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
@@ -23,7 +20,6 @@ import static org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
 
 import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
-import org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.MethodDeclarationRenamed
 
 /**
  * <p>Via this annotation the application of a trait method can be redirected to
@@ -66,7 +62,7 @@ annotation TraitMethodRedirection {
  * 
  * @see TraitMethodRedirection
  */
-class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<MethodDeclaration>, ValidationParticipant<MethodDeclaration>, TransformationParticipant<MutableMethodDeclaration>, QueuedTransformationParticipant<MutableMethodDeclaration> {
+class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements QueuedTransformationParticipant<MutableMethodDeclaration> {
 
 	/** 
 	 * Helper class for storing information about trait method redirection.
@@ -76,6 +72,10 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 		public String redirectedMethodName = null
 		public Visibility redirectedVisibility = Visibility.PROTECTED
 
+	}
+
+	protected override Class<?> getProcessedAnnotationType() {
+		TraitMethodRedirectionProcessor
 	}
 
 	/**
@@ -98,15 +98,9 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 
 	}
 
-	override void doRegisterGlobals(List<? extends MethodDeclaration> annotatedMethods,
-		extension RegisterGlobalsContext context) {
+	override void doRegisterGlobals(MethodDeclaration annotatedMethod, RegisterGlobalsContext context) {
 
-		for (annotatedMethod : annotatedMethods)
-			doRegisterGlobals(annotatedMethod, context);
-
-	}
-
-	def doRegisterGlobals(MethodDeclaration annotatedMethod, RegisterGlobalsContext context) {
+		super.doRegisterGlobals(annotatedMethod, context)
 
 		if (annotatedMethod.declaringType instanceof ClassDeclaration) {
 
@@ -121,26 +115,23 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 
 	}
 
-	override void doTransform(List<? extends MutableMethodDeclaration> annotatedMethods,
-		extension TransformationContext context) {
+	override void doTransform(MutableMethodDeclaration annotatedMethod, extension TransformationContext context) {
 
-		for (annotatedMethod : annotatedMethods)
-			if (annotatedMethod.declaringType instanceof ClassDeclaration)
-				doTransform(annotatedMethod, context)
+		super.doTransform(annotatedMethod, context)
 
-	}
+		if (annotatedMethod.declaringType instanceof ClassDeclaration) {
 
-	def doTransform(MutableMethodDeclaration annotatedMethod, extension TransformationContext context) {
+			val classWithAnnotatedMethod = annotatedMethod.declaringType as MutableClassDeclaration
 
-		val classWithAnnotatedMethod = annotatedMethod.declaringType as MutableClassDeclaration
+			// queue processing
+			ProcessQueue.processTransformation(ProcessQueue.PHASE_EXTENSION_REDIRECTION, this, annotatedMethod,
+				classWithAnnotatedMethod.qualifiedName, context)
 
-		// queue processing
-		ProcessQueue.processTransformation(ProcessQueue.PHASE_EXTENSION_REDIRECTION, this, annotatedMethod,
-			classWithAnnotatedMethod.qualifiedName, context)
+		}
 
 	}
 
-	override doTransformQueued(int phase, MutableMethodDeclaration annotatedMethod, BodySetter bodySetter,
+	override boolean doTransformQueued(int phase, MutableMethodDeclaration annotatedMethod, BodySetter bodySetter,
 		extension TransformationContext context) {
 
 		val classWithAnnotatedMethod = annotatedMethod.declaringType as MutableClassDeclaration
@@ -153,10 +144,11 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 		// create a new method to which the annotated method is redirecting to (abstract), if not already declared
 		val annotatedMethodRedirected = new MethodDeclarationRenamed(annotatedMethod,
 			extensionRedirectionInfo.redirectedMethodName, extensionRedirectionInfo.redirectedVisibility)
-		if (classWithAnnotatedMethod.getMethodClosure(null, null, true, context).getMatchingMethod(
-			annotatedMethodRedirected, TypeMatchingStrategy.MATCH_INVARIANT, typeMap, context) === null) {
-			val methodRedirectedTo = classWithAnnotatedMethod.copyMethod(annotatedMethod, true, false, false, typeMap,
-				context)
+		if (classWithAnnotatedMethod.getMethodClosure(null, null, true, false, false, true, context).getMatchingMethod(
+			annotatedMethodRedirected, TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_INVARIANT,
+			false, typeMap, context) === null) {
+			val methodRedirectedTo = classWithAnnotatedMethod.copyMethod(annotatedMethod, true, false, false, false,
+				false, false, typeMap, context)
 			methodRedirectedTo.simpleName = extensionRedirectionInfo.redirectedMethodName
 			methodRedirectedTo.visibility = extensionRedirectionInfo.redirectedVisibility
 			methodRedirectedTo.abstract = true
@@ -166,20 +158,17 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 
 	}
 
-	override doValidate(List<? extends MethodDeclaration> annotatedMethods, extension ValidationContext context) {
+	override void doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
 
-		for (annotatedMethod : annotatedMethods)
-			if (annotatedMethod.declaringType instanceof ClassDeclaration)
-				doValidate(annotatedMethod, context)
-			else
-				annotatedMethod.
-					addError('''Annotation @TraitMethodRedirection can only be used for methods within classes''')
-
-	}
-
-	def doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+		super.doValidate(annotatedMethod, context)
 
 		val xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+
+		if (!(xtendMethod.declaringType instanceof ClassDeclaration)) {
+			annotatedMethod.
+				addError('''Annotation @«processedAnnotationType.simpleName» can only be used for methods within classes''')
+			return
+		}
 
 		// analysis of method name and visibility
 		val extensionRedirectionInfo = annotatedMethod.getTraitMethodRedirectionInfo(context)
@@ -191,7 +180,7 @@ class TraitMethodRedirectionProcessor implements RegisterGlobalsParticipant<Meth
 		// must not be used for trait classes
 		if (xtendMethod.declaringType instanceof ClassDeclaration &&
 			(xtendMethod.declaringType as ClassDeclaration).isTraitClass)
-			xtendMethod.addError('''Trait method redirection can not be used in context of a trait class''')
+			xtendMethod.addError('''Trait method redirection cannot be used in context of a trait class''')
 
 		// check specific properties of annotated method
 		if (xtendMethod.static == true)

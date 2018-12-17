@@ -16,7 +16,7 @@ abstract class BigCat extends Cat implements ILargeAnimal {
 
 @ExtractInterface
 class Lion extends BigCat {
-	override String getHome() { "Afrika" }
+	override String getHome() { "Africa" }
 	override void huntInPack() {}
 }
 

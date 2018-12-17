@@ -1,5 +1,10 @@
 package org.eclipse.xtend.lib.annotation.etai
 
+import java.lang.reflect.Method
+import java.util.ArrayList
+import java.util.List
+import java.util.Collection
+
 /**
  * Interface for objects which store method calls. The stored call shall then
  * be processed by invoking the <code>eval()</code> method.
@@ -7,9 +12,76 @@ package org.eclipse.xtend.lib.annotation.etai
 interface LazyEvaluation {
 
 	/**
+	 * Returns the number of arguments in the stored method.
+	 */
+	def int getNumberOfArguments()
+
+	/**
+	 * Returns the argument in the stored method with the given index.
+	 */
+	def Object getArgument(int index)
+
+	/**
+	 * Changes the argument in the stored method with the given index.
+	 */
+	def void setArgument(int index, Object value)
+
+	/**
+	 * Returns the object executing the stored method.
+	 */
+	def Object getExecutingObject()
+
+	/**
+	 * Returns the stored method.
+	 */
+	def Method getMethod()
+
+	/**
 	 * Evaluate the stored method call and returns the result.
 	 */
 	def Object eval()
+
+}
+
+/**
+ * This is a standard implementation of the interface for storing method calls. 
+ * 
+ * Note that this class should only be used, if implemented by an anonymous inner class inside
+ * a method.
+ */
+abstract class LazyEvaluationAbstract implements LazyEvaluation {
+
+	List<Object> arguments = new ArrayList<Object>
+	Object executingObject
+
+	new(Object executingObject, Collection<Object> arguments) {
+
+		this.executingObject = executingObject
+
+		if (arguments !== null)
+			this.arguments.addAll(arguments)
+
+	}
+
+	override Object getExecutingObject() {
+		return executingObject
+	}
+
+	override int getNumberOfArguments() {
+		return arguments.size
+	}
+
+	override Object getArgument(int index) {
+		return arguments.get(index)
+	}
+
+	override void setArgument(int index, Object value) {
+		arguments.set(index, value)
+	}
+
+	override Method getMethod() {
+		return class.enclosingMethod
+	}
 
 }
 

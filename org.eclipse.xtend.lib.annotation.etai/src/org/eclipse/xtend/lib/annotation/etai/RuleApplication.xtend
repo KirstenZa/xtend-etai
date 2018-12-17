@@ -5,12 +5,27 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 import java.util.ArrayList
+import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
 import java.util.LinkedHashMap
 import java.util.List
 import java.util.Map
 import java.util.Set
+import java.util.SortedMap
+import java.util.SortedSet
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllToIndexed
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddToIndexed
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_PutAllTo
+import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_PutTo
+import org.eclipse.xtend.lib.annotation.etai.GetterRuleProcessor.MethodDeclarationFromGetter
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_Clear
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveAllFrom
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFrom
+import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFromIndexed
+import org.eclipse.xtend.lib.annotation.etai.SetterRuleProcessor.MethodDeclarationFromSetter
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckApplyRules
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckInit
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
@@ -20,6 +35,7 @@ import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.ValidationContext
+import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.ConstructorDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Declaration
@@ -31,22 +47,24 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableConstructorDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableParameterDeclaration
 import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclarator
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 
+import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructRuleDisableProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructorMethodProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.CollectionUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.StringUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
-import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclarator
 
 /**
  * <p>Classes can be annotated by this element in order to adapt them concerning
@@ -97,6 +115,18 @@ annotation AdaptedMethod {
 }
 
 /**
+ * <p>This annotation marks a parameter and gives information about the expected type. Thereby, the expected type
+ * does not match the declared paramter type. However, the declared type cannot be changed due to language
+ * restrictions (e.g. no covariance for method parameter types allowed).</p>
+ * 
+ * <p>During runtime the type of the passed argument will be checked for the expected type via assertion.</p>
+ */
+@Target(ElementType.PARAMETER)
+annotation AssertParameterType {
+	Class<?> value
+}
+
+/**
  * Annotation for an adapted constructor, i.e., a constructor which has been included because of
  * type auto adaption ({@link TypeAdaptionRule}) or the explicit request for copying the
  * constructor ({@link CopyConstructorRule}).
@@ -139,6 +169,42 @@ annotation GeneratedFactoryMethod {
  */
 @Target(ElementType.TYPE)
 annotation GeneratedFactoryClass {
+}
+
+/**
+ * Annotation for a getter method, which has been generated retrieving a field's value.
+ * 
+ * @see GetterRule
+ */
+@Target(ElementType.METHOD)
+annotation GeneratedGetterMethod {
+}
+
+/**
+ * Annotation for a setter method, which has been generated setting a field's value.
+ * 
+ * @see SetterRule
+ */
+@Target(ElementType.METHOD)
+annotation GeneratedSetterMethod {
+}
+
+/**
+ * Annotation for a method, which has been generated for adding a elements to a collection/map.
+ * 
+ * @see AdderRule
+ */
+@Target(ElementType.METHOD)
+annotation GeneratedAdderMethod {
+}
+
+/**
+ * Annotation for a method, which has been generated for removing a elements from a collection/map.
+ * 
+ * @see RemoverRule
+ */
+@Target(ElementType.METHOD)
+annotation GeneratedRemoverMethod {
 }
 
 /**
@@ -228,16 +294,16 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * <p>Retrieves all methods in the type hierarchy, which have an adaption rule declared
 	 * (in parameters or return type).</p>
 	 * 
-	 * <p>The result is a map of methods, together with the first superclass
-	 * of the given class or the trait class in whose type hierarchy the adaption rule
-	 * has been found.</p>
+	 * <p>The result is a map of methods, together with the "super classes" (in order) leading to the class 
+	 * where the adaption rule has been found. Thereby, a "super class" is not necessarily the extended class,
+	 * but it can also be a trait class.</p>
 	 * 
 	 * <p>A (manually declared) method in the type hierarchy without adaption rule will stop adaption,
 	 * even if a method in a super type has type adaption rules declared. In order to avoid this,
 	 * a (manually declared) method can be annotated by {@link AdaptedMethod}. Then it will be ignored
 	 * and the search type adaption rules continues.</p>
 	 */
-	static protected def Map<MethodDeclaration, ClassDeclaration> getMethodsToAdapt(
+	static protected def Map<MethodDeclaration, List<ClassDeclaration>> getMethodsToAdapt(
 		ClassDeclaration annotatedClass,
 		TypeMap typeMap,
 		Class<?> annotationType,
@@ -245,15 +311,15 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		extension TransformationContext context
 	) {
 
-		val methodsToAdapt = new LinkedHashMap<MethodDeclaration, ClassDeclaration>
+		val methodsToAdapt = new LinkedHashMap<MethodDeclaration, List<ClassDeclaration>>
 		val methodsNotToAdapt = new HashSet<String>
 
 		// all methods in current class shall not be adapted (based on the method name) 
-		methodsNotToAdapt.addAll(annotatedClass.getDeclaredMethodsResolved(context).map[simpleName])
+		methodsNotToAdapt.addAll(annotatedClass.getDeclaredMethodsResolved(true, false, false, context).map[simpleName])
 
 		// start recursion with current class
-		getMethodsToAdaptInternal(annotatedClass, annotatedClass, true, null, methodsToAdapt, methodsNotToAdapt,
-			!annotatedClass.getDeclaredMethodsResolved(context).exists [
+		getMethodsToAdaptInternal(annotatedClass, annotatedClass, true, new ArrayList<ClassDeclaration>, methodsToAdapt,
+			methodsNotToAdapt, !annotatedClass.getDeclaredMethodsResolved(true, false, false, context).exists [
 				it.isConstructorMethod
 			], typeMap, annotationType, annotationCheckExistenceOnMethod, context)
 
@@ -268,8 +334,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		ClassDeclaration original,
 		ClassDeclaration currentClass,
 		boolean isRoot,
-		ClassDeclaration superClass,
-		Map<MethodDeclaration, ClassDeclaration> methodsToAdapt,
+		List<ClassDeclaration> currentlyProcessingSuperClasses,
+		Map<MethodDeclaration, List<ClassDeclaration>> methodsToAdapt,
 		Set<String> methodsNotToAdapt,
 		boolean addConstructorMethods,
 		TypeMap typeMap,
@@ -284,7 +350,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (!isRoot) {
 
 			// ignore adapted methods
-			var relevantMethods = currentClass.getDeclaredMethodsResolved(context).filter [
+			var relevantMethods = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
 				!it.hasAnnotation(AdaptedMethod)
 			]
 
@@ -302,8 +368,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					]
 
 					// add found constructor methods
-					for (method : constructorMethodsWithAdaptionRule)
-						methodsToAdapt.put(method, superClass)
+					for (method : constructorMethodsWithAdaptionRule) {
+						methodsToAdapt.put(
+							method,
+							new ArrayList<ClassDeclaration>(currentlyProcessingSuperClasses)
+						)
+					}
 
 				}
 
@@ -326,27 +396,32 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			// add found methods
 			for (method : methodsWithAdaptionRule)
-				methodsToAdapt.put(method, superClass)
+				methodsToAdapt.put(method, new ArrayList<ClassDeclaration>(currentlyProcessingSuperClasses))
 
 			// all found (relevant) methods shall not be considered in further processing of current hierarchy any more
 			methodsNotToAdapt.addAll(relevantMethods.map[simpleName])
 
 		}
 
-		// recurse into super type
+		// recurse into super type (regular extended class)
 		if (currentClass.extendedClass?.type instanceof ClassDeclaration) {
 
-			getMethodsToAdaptInternal(original, currentClass.extendedClass.type as ClassDeclaration, false, if (isRoot)
-				currentClass.extendedClass.type as ClassDeclaration
-			else
-				superClass, methodsToAdapt, new HashSet<String>(methodsNotToAdapt), continueAddConstructorMethods,
-				typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+			currentlyProcessingSuperClasses.add(currentClass.extendedClass.type as ClassDeclaration)
+			try {
+
+				getMethodsToAdaptInternal(original, currentClass.extendedClass.type as ClassDeclaration, false,
+					currentlyProcessingSuperClasses, methodsToAdapt, new HashSet<String>(methodsNotToAdapt),
+					continueAddConstructorMethods, typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+
+			} finally {
+				currentlyProcessingSuperClasses.remove(currentlyProcessingSuperClasses.size - 1)
+			}
 
 		}
 
 		// track methods to adapt based on trait classes separately
 		val methodsToAdaptTemp = if (isRoot)
-				new LinkedHashMap<MethodDeclaration, ClassDeclaration>
+				new LinkedHashMap<MethodDeclaration, List<ClassDeclaration>>
 			else
 				methodsToAdapt
 
@@ -358,11 +433,17 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// iterate over trait class hierarchy
 			if (traitClassRef?.type instanceof ClassDeclaration) {
 
-				getMethodsToAdaptInternal(original, traitClassRef.type as ClassDeclaration, false, if (isRoot)
-					traitClassRef.type as ClassDeclaration
-				else
-					superClass, methodsToAdaptTemp, new HashSet<String>(methodsNotToAdapt), false, typeMap,
-					annotationType, annotationCheckExistenceOnMethod, context)
+				// recurse into super type (trait class)
+				currentlyProcessingSuperClasses.add(traitClassRef.type as ClassDeclaration)
+				try {
+
+					getMethodsToAdaptInternal(original, traitClassRef.type as ClassDeclaration, false,
+						currentlyProcessingSuperClasses, methodsToAdaptTemp, new HashSet<String>(methodsNotToAdapt),
+						false, typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+
+				} finally {
+					currentlyProcessingSuperClasses.remove(currentlyProcessingSuperClasses.size - 1)
+				}
 
 				if (isRoot) {
 
@@ -387,23 +468,97 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves the type for a specific parameter (or return type, if "paramPos" is -1) from the method of 
+	 * Retrieves the fallback type for a specific parameter (or return type, if "paramPos" is -1) from the method of 
 	 * the given class. It will search through superclasses until method is found.
 	 */
-	static protected def getSuperClassesMethodParamType(ClassDeclaration classDeclaration,
-		MethodDeclaration methodDeclaration, TypeMap typeMap, int paramPos, extension TransformationContext context) {
+	static protected def TypeReference getSuperClassesMethodFallbackParamType(
+		ClassDeclaration classDeclaration,
+		MethodDeclaration methodDeclaration,
+		TypeMap typeMap,
+		int paramPos,
+		List<String> errors,
+		extension TransformationContext context
+	) {
 
 		for (currentClass : classDeclaration.getSuperClasses(true)) {
 
-			val methodsFound = currentClass.getDeclaredMethodsResolved(context).filter [
+			// step 1: search exact type match
+			var methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
 				it.simpleName == methodDeclaration.simpleName &&
-					it.parameters.parameterListsSimilar(methodDeclaration.parameters)
+					methodDeclaration.parameters.parametersEquals(it.parameters, TypeMatchingStrategy.MATCH_INVARIANT,
+						true, typeMap, null, context)
+
 			]
 
+			if (methodsFound.size == 0) {
+
+				// step 2: search covariant type match
+				methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
+					it.simpleName == methodDeclaration.simpleName &&
+						methodDeclaration.parameters.parametersEquals(it.parameters,
+							TypeMatchingStrategy.MATCH_COVARIANCE, true, typeMap, null, context)
+
+				]
+
+			}
+
+			if (methodsFound.size == 0) {
+
+				// step 3: search similar type match
+				methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
+					it.simpleName == methodDeclaration.simpleName &&
+						methodDeclaration.parameters.parameterListsSimilar(it.parameters)
+				]
+
+			}
+
+			// error if still more than one method (ambiguity)
+			if (methodsFound.size > 1 && paramPos == -1) {
+
+				errors?.
+					add('''Retrieving fallback return type of method "«methodDeclaration.simpleName»" not possible because of ambiguity''')
+
+			}
+
 			if (methodsFound.size > 0) {
-				if (paramPos == -1)
-					return copyTypeReference(methodsFound.get(0).returnType, typeMap, context)
-				return copyTypeReference(methodsFound.get(0).parameters.get(paramPos).type, typeMap, context)
+
+				var methodFound = if (methodsFound.size > 1) {
+
+						// if there is ambiguity, try to find correct method via parameter name
+						val methodsFoundReduced = methodsFound.filter [
+							it.parameters.get(paramPos).simpleName ==
+								methodDeclaration.parameters.get(paramPos).simpleName
+						]
+
+						// error if still more than one method (ambiguity)
+						if (methodsFoundReduced.size > 1)
+							errors?.
+								add('''Retrieving fallback type of parameter #«paramPos» of method "«methodDeclaration.simpleName»" not possible because of ambiguity (try to use different names for parameters)''')
+
+						methodsFoundReduced.get(0)
+
+					} else {
+
+						methodsFound.get(0)
+
+					}
+
+				if (methodFound !== null) {
+
+					// method found, now copy type reference
+					if (paramPos == -1)
+						return copyTypeReference(methodFound.returnType, typeMap, context)
+
+					val parameter = methodFound.parameters.get(paramPos)
+					val parameterType = if (parameter.hasAnnotation(AssertParameterType))
+							parameter.getAnnotation(AssertParameterType).getClassValue("value")
+						else
+							parameter.type
+
+					return copyTypeReference(parameterType, typeMap, context)
+
+				}
+
 			}
 
 		}
@@ -413,34 +568,81 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves the type for a specific parameter from the constructor of 
+	 * Retrieves the fallback type for a specific parameter from the constructor of 
 	 * the given class. It will search through superclasses until constructor is found.
 	 */
-	static protected def getSuperClassesConstructorParamType(
+	static protected def TypeReference getSuperClassesConstructorFallbackParamType(
 		ClassDeclaration classDeclaration,
 		ConstructorDeclaration constructorDeclaration,
 		TypeMap typeMap,
 		int paramPos,
+		List<String> errors,
 		extension TransformationContext context
 	) {
 
 		for (currentClass : classDeclaration.getSuperClasses(true)) {
 
-			val constructorsFound = currentClass.declaredConstructors.filter [
-				it.parameters.parameterListsSimilar(constructorDeclaration.parameters)
+			// step 1: search exact type match
+			var constructorsFound = currentClass.declaredConstructors.filter [
+				constructorDeclaration.parameters.parametersEquals(it.parameters, TypeMatchingStrategy.MATCH_INVARIANT,
+					true, typeMap, null, context)
 			]
 
-			if (constructorsFound.size > 0)
-				return copyTypeReference(constructorsFound.get(0).parameters.get(paramPos).type, typeMap, context)
+			if (constructorsFound.size == 0) {
+
+				// step 2: search covariant type match
+				constructorsFound = currentClass.declaredConstructors.filter [
+					constructorDeclaration.parameters.parametersEquals(it.parameters,
+						TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, null, context)
+				]
+
+			}
+
+			if (constructorsFound.size == 0) {
+
+				// step 3: search similar type match
+				constructorsFound = currentClass.declaredConstructors.filter [
+					constructorDeclaration.parameters.parameterListsSimilar(it.parameters)
+				]
+
+			}
+
+			if (constructorsFound.size > 0) {
+
+				var constructorFound = if (constructorsFound.size > 1) {
+
+						// if there is ambiguity, try to find correct constructor via parameter name
+						val constructorsFoundReduced = constructorsFound.filter [
+							it.parameters.get(paramPos).simpleName ==
+								constructorDeclaration.parameters.get(paramPos).simpleName
+						]
+
+						// error if still more than one constructor (ambiguity)
+						if (constructorsFoundReduced.size > 1)
+							errors?.
+								add('''Retrieving fallback type of parameter #«paramPos» of constructor not possible because of ambiguity (try to use different names for parameters)''')
+
+						constructorsFoundReduced.get(0)
+
+					} else {
+
+						constructorsFound.get(0)
+
+					}
+
+				if (constructorFound !== null)
+					return copyTypeReference(constructorFound.parameters.get(paramPos).type, typeMap, context)
+
+			}
 
 		}
 
 	}
 
 	/** 
-	 * <p>Returns true, if two parameter lists shall be considered as "similar".</p>
+	 * <p>Returns true, if two parameter lists are considered as "similar".</p>
 	 * 
-	 * <p>They are considered as equal, if they have the same size and primitive types
+	 * <p>They are considered as similar, if they have the same size and primitive types
 	 * match.</p>
 	 */
 	static def boolean parameterListsSimilar(Iterable<? extends ParameterDeclaration> parameterList1,
@@ -510,8 +712,10 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			if (executable.hasAnnotation(AdaptedMethod) || executable.hasAnnotation(AdaptedConstructor)) {
 
-				val superMethod = getMatchingExecutableInSuperClass(executable as ExecutableDeclaration,
-					TypeMatchingStrategy.MATCH_COVARIANT, false, typeMap, context)
+				val superMethod = getMatchingExecutableInClass(
+					(executable.declaringType as ClassDeclaration).extendedClass?.type as ClassDeclaration, executable,
+					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+					false, false, true, false, false, typeMap, context)
 				if (superMethod !== null)
 					return getTypeAdaptionRuleWithinTypeHierarchy(
 						superMethod.parameters.get(parameterDeclaration.parameterPosition), typeMap, context)
@@ -537,6 +741,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		Map<String, String> variableMap,
 		TypeMap typeMap,
 		boolean useSuperType,
+		List<String> errors,
 		extension TransformationContext context
 	) {
 
@@ -579,13 +784,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				-1
 
 		if (source instanceof MethodDeclaration)
-			return getSuperClassesMethodParamType(relevantSuperClass, source as MethodDeclaration, typeMap, paramPos,
-				context)
+			return getSuperClassesMethodFallbackParamType(relevantSuperClass, source as MethodDeclaration, typeMap,
+				paramPos, errors, context)
 		else if (element instanceof ParameterDeclaration)
-			return getSuperClassesConstructorParamType(relevantSuperClass, source as ConstructorDeclaration, typeMap,
-				paramPos, context)
+			return getSuperClassesConstructorFallbackParamType(relevantSuperClass, source as ConstructorDeclaration,
+				typeMap, paramPos, errors, context)
 		else
-			throw new IllegalArgumentException("Cannot apply adaption rule to given element: " + element.toString)
+			throw new IllegalArgumentException('''Cannot apply adaption rule to given element: ''' + element.toString)
 
 	}
 
@@ -608,40 +813,43 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	/**
 	 * <p>The method returns, if there is any change for the given executable declaration.</p>
 	 */
-	static protected def boolean checkAdaptionChange(MutableClassDeclaration annotatedClass,
-		ClassDeclaration relevantSuperClass, ExecutableDeclaration ruleSource,
-		ExecutableDeclaration executableToCompare, Map<String, String> variableMap, TypeMap typeMap,
-		List<String> errors, extension TransformationContext context) {
+	static protected def boolean checkAdaptionChange(ClassDeclaration annotatedClass,
+		List<ClassDeclaration> relevantSuperClasses, MethodDeclaration ruleMethod,
+		MethodDeclaration methodInExtendedClass, Map<String, String> variableMap, TypeMap typeMap, List<String> errors,
+		extension TransformationContext context) {
 
 		// check each parameter for type change
-		val parameterIteratorRuleSource = ruleSource.parameters.iterator
-		val parameterIteratorExecutableToCompare = executableToCompare.parameters.iterator
+		val parameterIteratorRuleMethod = ruleMethod.parameters.iterator
+		val parameterIteratorMethodInExtendedClass = methodInExtendedClass.parameters.iterator
 
-		while (parameterIteratorRuleSource.hasNext) {
+		while (parameterIteratorRuleMethod.hasNext) {
 
-			val parameterRuleSource = parameterIteratorRuleSource.next
-			val parameterMethodToCompare = parameterIteratorExecutableToCompare.next
+			val parameterRuleMethod = parameterIteratorRuleMethod.next
+			val parameterMethodInExtendedClass = parameterIteratorMethodInExtendedClass.next
 
-			val ruleParam = parameterRuleSource.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			val adaptedType = parameterMethodToCompare.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
-				ruleParam, ruleSource, variableMap, typeMap, true, context)
+			val ruleParam = parameterRuleMethod.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
+			val adaptedTypeAnnotatedClass = parameterMethodInExtendedClass.applyTypeAdaptionRule(#[annotatedClass],
+				relevantSuperClasses.get(0), ruleParam, ruleMethod, variableMap, typeMap, true, errors, context)
 
-			if (!adaptedType.typeReferenceEquals(parameterMethodToCompare.type, null, true, typeMap, null))
+			// use type in AssertParameterType annotation if available (parameter has been adapted already)
+			var parameterTypeMethodInExtendedClass = parameterMethodInExtendedClass.type
+			if (parameterMethodInExtendedClass.hasAnnotation(AssertParameterType))
+				parameterTypeMethodInExtendedClass = parameterMethodInExtendedClass.getAnnotation(AssertParameterType).
+					getClassValue("value")
+
+			if (!adaptedTypeAnnotatedClass.typeReferenceEquals(parameterTypeMethodInExtendedClass, null, true, typeMap,
+				null))
 				return true
 
 		}
 
 		// check return type for change
-		if (executableToCompare instanceof MethodDeclaration) {
+		val ruleReturnType = ruleMethod.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
+		val adaptedReturnType = methodInExtendedClass.applyTypeAdaptionRule(#[annotatedClass],
+			relevantSuperClasses.get(0), ruleReturnType, ruleMethod, variableMap, typeMap, true, errors, context)
 
-			val ruleMethod = ruleSource.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			val adaptedReturnType = executableToCompare.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
-				ruleMethod, ruleSource, variableMap, typeMap, true, context)
-
-			if (!adaptedReturnType.typeReferenceEquals(executableToCompare.returnType, null, true, typeMap, null))
-				return true
-
-		}
+		if (!adaptedReturnType.typeReferenceEquals(methodInExtendedClass.returnType, null, true, typeMap, null))
+			return true
 
 		return false
 
@@ -651,10 +859,15 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * <p>Copy parameters and apply adaption rules.</p>
 	 * 
 	 * <p>The method supports copying parameters from multiple sources.</p>
+	 * 
+	 * <p>The parameter <code>createParameterAssertions</code> determines, if the parameter types shall
+	 * really be adapted/changed, or if a <code>AssertParameterType</code> annotation shall be added,
+	 * which will cause the generation of runtime type assertions. 
 	 */
 	static protected def void copyParametersAndAdapt(MutableClassDeclaration annotatedClass,
 		ClassDeclaration relevantSuperClass, ExecutableDeclaration source, MutableExecutableDeclaration target,
-		Map<String, String> variableMap, TypeMap typeMap, extension TransformationContext context) {
+		boolean createParameterAssertions, Map<String, String> variableMap, TypeMap typeMap, List<String> errors,
+		extension TransformationContext context) {
 
 		// copy parameters and create name list
 		for (parameter : source.parameters) {
@@ -662,18 +875,72 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// apply adaption rule (for parameter type)
 			val ruleParam = parameter.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
 			val adaptedType = parameter.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass, ruleParam, source,
-				variableMap, typeMap, true, context)
+				variableMap, typeMap, true, errors, context)
 
 			// construct new parameter name and check
 			val newParameterName = parameter.simpleName
 
-			// create new parameter (with adapting type)
-			target.addParameter(newParameterName, adaptedType)
+			// create new parameter (with regular or adapted type depending on mode)
+			val newParam = if (createParameterAssertions)
+					target.addParameter(newParameterName, parameter.type.copyTypeReference(typeMap, context))
+				else
+					target.addParameter(newParameterName, adaptedType)
+
+			// add information about adapted type
+			if (createParameterAssertions) {
+
+				if (!adaptedType.typeReferenceEquals(parameter.type, null, true, typeMap, null)) {
+
+					// error if adaption to a type parameter (a check cannot be performed)
+					if (adaptedType?.type instanceof TypeParameterDeclaration) {
+
+						errors?.
+							add('''Parameter "«parameter.simpleName»" of method "«source.simpleName»" cannot be adapted to type parameter "«adaptedType.type.simpleName»", because it cannot be checked (type erasure)''')
+
+					}
+
+					// warning if adapted type has type arguments (they will not be checked)
+					if (adaptedType.actualTypeArguments.length > 0) {
+
+						errors?.
+							add('''«WARNING_PREFIX»Parameter "«parameter.simpleName»" of method "«source.simpleName»" should not be adapted to another type with type arguments, because they cannot be checked (type erasure)''')
+
+					}
+
+					// add adapted type via annotation
+					newParam.addAnnotation(AssertParameterType.newAnnotationReference [
+						setClassValue("value", adaptedType)
+					])
+
+				}
+
+			}
 
 		}
 
 		// also set variable argument option correctly
 		target.varArgs = source.isVarArgsFixed
+
+	}
+
+	/**
+	 * Transfers an annotation for an adaption rule (in a bigger context, e.g. annotated to a collection field) to a parameter
+	 * of a generated method (e.g. adder for this field).
+	 */
+	static def void transferTypeAdaptionRuleToParameter(MutableParameterDeclaration parameterDeclaration,
+		AnnotationTarget annotationTarget, int expectedTypeParameterRules, (String[])=>String ruleModifier,
+		extension TransformationContext context) {
+
+		if (!annotationTarget.hasAnnotation(TypeAdaptionRule))
+			return
+
+		// copy and transform annotation
+		val transferredAnnotation = TypeAdaptionRuleProcessor.copyAnnotationAndTransform(annotationTarget,
+			expectedTypeParameterRules, ruleModifier, context)
+
+		// add annotation if available
+		if (transferredAnnotation !== null)
+			parameterDeclaration.addAnnotation(transferredAnnotation)
 
 	}
 
@@ -941,7 +1208,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		var paramNameList = originalConstructor.parametersNames
 		if (!isDefaultConstructor)
 			paramNameList = paramNameList.subList(1, paramNameList.size)
-		originalConstructor.copyParameters(newConstructor, if(!isDefaultConstructor) 1 else 0, typeMap, context)
+		originalConstructor.copyParameters(newConstructor, if(!isDefaultConstructor) 1 else 0, false, typeMap, context)
 
 		// hide original constructor
 		originalConstructor.visibility = Visibility.PRIVATE
@@ -961,7 +1228,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// add body to new constructor
 		bodySetter.setBody(
 			newConstructor, '''«IF !isDefaultConstructor»this((«dummyVariableType.canonicalName») null«IF (paramNameList.size > 0)», «ENDIF»«paramNameList.join(", ")»);«ENDIF»
-						«additionalBody»''')
+						«additionalBody»''', context)
 
 		// move annotations from original constructor to new constructor
 		if (!isDefaultConstructor) {
@@ -979,7 +1246,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	override doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
+	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
 
@@ -996,7 +1263,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+	override void doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 
 		super.doTransform(annotatedClass, context)
 
@@ -1012,7 +1279,17 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		extension TransformationContext context) {
 
 		// postpone transformation, if supertype must still be processed
-		if (phase === ProcessQueue.PHASE_AUTO_ADAPT)
+		if (phase === ProcessQueue.PHASE_AUTO_ADAPT) {
+
+			for (traitType : annotatedClass.getTraitClassesAppliedToExtended(null, context)) {
+
+				if ((traitType.type as ClassDeclaration).hasAnnotation(ApplyRules) &&
+					ProcessQueue.isTrackedTransformation(ProcessQueue.PHASE_AUTO_ADAPT, annotatedClass.compilationUnit,
+						(traitType.type as ClassDeclaration).qualifiedName))
+					return false
+
+			}
+
 			for (superType : annotatedClass.getSuperClasses(false)) {
 
 				if (superType.hasAnnotation(ApplyRules) &&
@@ -1021,6 +1298,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					return false
 
 			}
+
+		}
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
@@ -1038,6 +1317,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			doTransformMethodsAdaptions(annotatedClass, variableMap, typeMap, bodySetter, context)
 			doTransformConstructorsAdaptions(annotatedClass, variableMap, typeMap, bodySetter, context)
 			doTransformConstructorsFactoryMethods(annotatedClass, variableMap, typeMap, bodySetter, context)
+			doTransformGetterSetterAdderRemover(annotatedClass, variableMap, typeMap, bodySetter, context)
 
 		} else {
 
@@ -1071,51 +1351,64 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		methodsAdaption.addAll(methodsImplAdaption.keySet)
 
 		// adapt methods
-		for (method : methodsAdaption) {
+		for (method : methodsAdaption.getMethodsSorted(context)) {
 
 			val errors = new ArrayList<String>
 			val extendedClass = annotatedClass.extendedClass.type as ClassDeclaration
 
 			// retrieve and calculate data
-			var isTypeAdaption = methodsTypeAdaption.containsKey(method)
-			var isImplAdaption = methodsImplAdaption.containsKey(method)
+			var doTypeAdaption = methodsTypeAdaption.containsKey(method)
+			var doImplAdaption = methodsImplAdaption.containsKey(method)
 
-			var relevantSuperClass = methodsTypeAdaption.get(method)
+			var relevantSuperClasses = methodsTypeAdaption.get(method)
 
 			// check if type adaption is needed due to type change
-			val executableInSuperClass = extendedClass.getMatchingExecutableInClass(method,
-				TypeMatchingStrategy.MATCH_COVARIANT, true, typeMap, context) as MethodDeclaration
-			if (isTypeAdaption) {
-				isTypeAdaption = method.isConstructorMethod || if (executableInSuperClass !== null)
-					checkAdaptionChange(annotatedClass, relevantSuperClass, method, executableInSuperClass, variableMap,
-						typeMap, errors, context)
-				else
-					true
+			val executableInExtendedClass = extendedClass.getMatchingExecutableInClass(method,
+				TypeMatchingStrategy.MATCH_INHERITANCE, TypeMatchingStrategy.MATCH_INHERITANCE, true, true, true, false,
+				false, typeMap, context) as MethodDeclaration
+			if (doTypeAdaption && !doImplAdaption) {
+
+				// perform type adaption if constructor method
+				if (!method.isConstructorMethod)
+					if (executableInExtendedClass !== null &&
+						!checkAdaptionChange(annotatedClass, relevantSuperClasses, method, executableInExtendedClass,
+							variableMap, typeMap, errors, context)) {
+
+						// perform type adaption if the extended class has multiple matching methods
+						val matchingMethodsInSuperClass = extendedClass.getDeclaredMethodsResolved(true, false, false,
+							context).getMatchingMethods(method, TypeMatchingStrategy.MATCH_INHERITANCE,
+							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
+
+						if (matchingMethodsInSuperClass.size > 1)
+							doTypeAdaption = true
+						else
+							doTypeAdaption = false
+
+					}
+
 			}
 
 			// check if implementation adaption is needed due to type check
-			if (isImplAdaption) {
+			if (doImplAdaption && errors.size == 0) {
 
 				val ruleImplTypeExistenceCheck = method.getAnnotation(ImplAdaptionRule)?.getStringValue(
 					"typeExistenceCheck")
 				if (!ruleImplTypeExistenceCheck.isNullOrEmpty) {
 					val existingType = method.applyTypeAdaptionRule(#[annotatedClass], null,
-						ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, context)
+						ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, null, context)
 					if (existingType === null)
-						isImplAdaption = false
+						doImplAdaption = false
 				}
 
 			}
 
-			// report errors
-			xtendClass.reportErrors(errors, context)
-
-			if ((isTypeAdaption || isImplAdaption) && errors.size == 0) {
+			if ((doTypeAdaption || doImplAdaption) && errors.size == 0) {
 
 				// method must not exist yet in current class
-				if (annotatedClass.getDeclaredMethodsResolved(context).exists [
+				if (annotatedClass.getDeclaredMethodsResolved(true, false, false, context).exists [
 					it.simpleName == method.simpleName &&
-						it.methodEquals(method, TypeMatchingStrategy.MATCH_COVARIANT, typeMap, context)
+						it.methodEquals(method, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
 				]) {
 					xtendClass.
 						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(true, false, context).join(", ")»)" cannot be applied to current class, because the method has already been declared.''')
@@ -1126,7 +1419,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				val typeMapLocal = typeMap.clone
 
 				// create new method, if not declared
-				val newMethod = annotatedClass.copyMethod(method, false, true, false, typeMapLocal, context)
+				val newMethod = annotatedClass.copyMethod(method, false, true, false, false, false, false, typeMapLocal,
+					context)
 
 				// do NOT add override annotation in order to prevent covariance errors
 				// (especially in case of class constructors)
@@ -1146,21 +1440,23 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				if (method.hasAnnotation(NoInterfaceExtract) && annotatedClass.isTraitClass)
 					newMethod.addAnnotation(NoInterfaceExtract.newAnnotationReference)
 
-				if (isTypeAdaption) {
+				val performTypeAssertions = doTypeAdaption && !method.isStatic && !method.isConstructorMethod
+
+				if (doTypeAdaption) {
 
 					// copy parameters and apply type adaption rules
-					copyParametersAndAdapt(annotatedClass, relevantSuperClass, method, newMethod, variableMap,
-						typeMapLocal, context)
+					copyParametersAndAdapt(annotatedClass, relevantSuperClasses.get(0), method, newMethod,
+						performTypeAssertions, variableMap, typeMapLocal, errors, context)
 
 					// apply adaption rule (for method return type)
 					val ruleMethod = method.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-					newMethod.returnType = method.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClass,
-						ruleMethod, method, variableMap, typeMapLocal, true, context)
+					newMethod.returnType = method.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClasses.get(0),
+						ruleMethod, method, variableMap, typeMapLocal, true, errors, context)
 
 				} else {
 
 					// copy parameters and return type
-					method.copyParameters(newMethod, 0, typeMapLocal, context)
+					method.copyParameters(newMethod, 0, false, typeMapLocal, context)
 					newMethod.returnType = copyTypeReference(method.returnType, typeMap, context)
 
 				}
@@ -1170,16 +1466,16 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// set new method to abstract, if the implementation will not be adapted,
 				// but also search for a reason to implement, which means calling the method of the superclass
-				newMethod.abstract = !(isImplAdaption ||
-					(executableInSuperClass !== null && !executableInSuperClass.abstract))
+				newMethod.abstract = !(doImplAdaption ||
+					(executableInExtendedClass !== null && !executableInExtendedClass.abstract))
 
-				if (newMethod.abstract == true && executableInSuperClass !== null) {
+				if (newMethod.abstract == true && executableInExtendedClass !== null) {
 
 					// if method in superclass is abstract, it could be that it is an adapted method,
 					// which has not been processed by the traits mechanism, yet.
 					// the following algorithm checks, if the abstract method will get implemented
 					// by the traits mechanism, i.e. there is a trait class extending the method
-					val superClassWithExecutable = executableInSuperClass.declaringType as ClassDeclaration
+					val superClassWithExecutable = executableInExtendedClass.declaringType as ClassDeclaration
 
 					if (!superClassWithExecutable.isTraitClass && method.isTraitMethod) {
 
@@ -1193,8 +1489,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 								val executableInTraitClass = traitClass.getMatchingExecutableInClass(
 									newMethod,
-									TypeMatchingStrategy.MATCH_COVARIANT,
+									TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+									TypeMatchingStrategy.MATCH_INHERITANCE,
 									true,
+									true,
+									true,
+									false,
+									false,
 									typeMapLocal,
 									context
 								) as MethodDeclaration
@@ -1213,26 +1514,31 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				// no need for setting body if abstract
 				if (!newMethod.abstract) {
 
-					if (isImplAdaption) {
+					if (doImplAdaption) {
 
 						// apply implementation adaption
 						val ruleImpl = method.getAnnotation(ImplAdaptionRule)?.getStringValue("value")
-						bodySetter.setBody(newMethod, method.applyImplAdaptionRule(ruleImpl, variableMap, context))
+						bodySetter.setBody(newMethod, method.applyImplAdaptionRule(ruleImpl, variableMap, context),
+							context)
 
 					} else {
 
 						// generate method body, which is a super call
 						val isVoid = newMethod.returnType === null || newMethod.returnType.isVoid()
 						val returnTypeReferenceString = newMethod.returnType.
-							getTypeReferenceAsString(true, false, false, context)
+							getTypeReferenceAsString(true, false, false, false, context)
 						bodySetter.setBody(newMethod, '''«IF !isVoid»return («returnTypeReferenceString») «ENDIF»
-			 			super.«if (newMethod.isTraitMethod) newMethod.getTraitMethodImplName else newMethod.simpleName»(«paramNameList.join(", ")»);''')
+			 			super.«if (newMethod.isTraitMethod) newMethod.getTraitMethodImplName else newMethod.simpleName»(«paramNameList.join(", ")»);''',
+							context)
 
 					}
 
 				}
 
 			}
+
+			// report errors
+			xtendClass.reportErrors(errors, context)
 
 		}
 
@@ -1249,6 +1555,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// adapt constructors, if there is no declared constructor
 		if ((annotatedClass.primarySourceElement as ClassDeclaration).declaredConstructors.size == 0) {
 
+			val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
+
 			// retrieve methods, which must be copied or type/implementation adapted
 			val constructorsCopyRule = getConstructorsToAdapt(annotatedClass, CopyConstructorRule, context)
 			val constructorsTypeAdaption = getConstructorsToAdapt(annotatedClass, TypeAdaptionRule, context)
@@ -1263,19 +1571,19 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			for (constructor : constructorsAdaption) {
 
 				// check type of adaption
-				var isTypeAdaption = constructorsTypeAdaption.filter[it === constructor].size > 0
-				var isImplAdaption = constructorsImplAdaption.filter[it === constructor].size > 0
+				var doTypeAdaption = constructorsTypeAdaption.filter[it === constructor].size > 0
+				var doImplAdaption = constructorsImplAdaption.filter[it === constructor].size > 0
 
 				// check if implementation adaption is needed due to type check
-				if (isImplAdaption) {
+				if (doImplAdaption) {
 
 					val ruleImplTypeExistenceCheck = constructor.getAnnotation(ImplAdaptionRule)?.getStringValue(
 						"typeExistenceCheck")
 					if (!ruleImplTypeExistenceCheck.isNullOrEmpty) {
 						val existingType = constructor.applyTypeAdaptionRule(#[annotatedClass], null,
-							ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, context)
+							ruleImplTypeExistenceCheck, null, variableMap, typeMap, false, null, context)
 						if (existingType === null)
-							isImplAdaption = false
+							doImplAdaption = false
 					}
 
 				}
@@ -1300,16 +1608,18 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				]
 
-				if (isTypeAdaption) {
+				val errors = new ArrayList<String>
+
+				if (doTypeAdaption) {
 
 					// copy parameters and apply type adaption rules
 					copyParametersAndAdapt(annotatedClass, annotatedClass.extendedClass?.type as ClassDeclaration,
-						constructor, newConstructor, variableMap, typeMap, context)
+						constructor, newConstructor, false, variableMap, typeMap, errors, context)
 
 				} else {
 
 					// copy parameters
-					constructor.copyParameters(newConstructor, 0, typeMap, context)
+					constructor.copyParameters(newConstructor, 0, false, typeMap, context)
 
 				}
 
@@ -1319,19 +1629,22 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				// mark as "adapted constructor"
 				newConstructor.addAnnotation(AdaptedConstructor.newAnnotationReference)
 
-				if (isImplAdaption) {
+				if (doImplAdaption) {
 
 					// apply implementation adaption
 					val ruleImpl = constructor.getAnnotation(ImplAdaptionRule)?.getStringValue("value")
 					bodySetter.setBody(newConstructor,
-						constructor.applyImplAdaptionRule(ruleImpl, variableMap, context))
+						constructor.applyImplAdaptionRule(ruleImpl, variableMap, context), context)
 
 				} else {
 
 					// generate constructor body, which is a super call
-					bodySetter.setBody(newConstructor, '''super(«paramNameList.join(", ")»);''')
+					bodySetter.setBody(newConstructor, '''super(«paramNameList.join(", ")»);''', context)
 
 				}
+
+				// report errors
+				xtendClass.reportErrors(errors, context)
 
 			}
 
@@ -1342,6 +1655,374 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// another activate annotation from another file in order to determine explicit constructors)
 			if ((annotatedClass.primarySourceElement as ClassDeclaration).declaredConstructors.size > 0)
 				annotatedClass.addAnnotation(HasExplicitConstructors.newAnnotationReference)
+
+		}
+
+	}
+
+	private def void doTransformGetterSetterAdderRemover(MutableClassDeclaration annotatedClass,
+		Map<String, String> variableMap, TypeMap typeMap, BodySetter bodySetter,
+		extension TransformationContext context) {
+
+		// go through all fields (do not consider fields with inferred types)
+		for (field : annotatedClass.declaredFields.filter[!type.inferred]) {
+
+			if (field.hasAnnotation(GetterRule)) {
+
+				val getterRuleInfo = GetterRuleProcessor.getGetterInfo(field, context)
+
+				// create virtual method (getter) and copy/create
+				val virtualGetterMethod = new MethodDeclarationFromGetter(field, getterRuleInfo.visibility,
+					getterRuleInfo.collectionPolicy, context)
+				val newGetterMethod = copyMethod(annotatedClass, virtualGetterMethod, true, false, true, true, true,
+					true, typeMap, context)
+
+				// adjust return type for collections and make returned value unmodifiable
+				if (getterRuleInfo.collectionPolicy != CollectionGetterPolicy.DIRECT) {
+
+					if (context.newTypeReference(Collection).isAssignableFrom(field.type) ||
+						context.newTypeReference(Map).isAssignableFrom(field.type)) {
+
+						if (context.newTypeReference(SortedMap).isAssignableFrom(field.type)) {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 2)
+								newGetterMethod.returnType = SortedMap.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0),
+									newGetterMethod.returnType.actualTypeArguments.get(1))
+							else
+								newGetterMethod.returnType = SortedMap.newTypeReference(newWildcardTypeReference)
+						} else if (context.newTypeReference(Map).isAssignableFrom(field.type)) {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 2)
+								newGetterMethod.returnType = Map.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0),
+									newGetterMethod.returnType.actualTypeArguments.get(1))
+							else
+								newGetterMethod.returnType = Map.newTypeReference(newWildcardTypeReference)
+						} else if (context.newTypeReference(SortedSet).isAssignableFrom(field.type)) {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 1)
+								newGetterMethod.returnType = SortedSet.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0))
+							else
+								newGetterMethod.returnType = SortedSet.newTypeReference(newWildcardTypeReference)
+						} else if (context.newTypeReference(Set).isAssignableFrom(field.type)) {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 1)
+								newGetterMethod.returnType = Set.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0))
+							else
+								newGetterMethod.returnType = Set.newTypeReference(newWildcardTypeReference)
+						} else if (context.newTypeReference(List).isAssignableFrom(field.type)) {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 1)
+								newGetterMethod.returnType = List.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0))
+							else
+								newGetterMethod.returnType = List.newTypeReference(newWildcardTypeReference)
+						} else {
+							if (newGetterMethod.returnType.actualTypeArguments !== null &&
+								newGetterMethod.returnType.actualTypeArguments.size == 1)
+								newGetterMethod.returnType = Collection.newTypeReference(
+									newGetterMethod.returnType.actualTypeArguments.get(0))
+							else
+								newGetterMethod.returnType = Collection.newTypeReference(newWildcardTypeReference)
+						}
+
+					}
+
+				}
+
+				// apply body
+				bodySetter.setBody(newGetterMethod, virtualGetterMethod.basicImplementation, context)
+
+				// add generation annotation
+				newGetterMethod.addAnnotation(GeneratedGetterMethod.newAnnotationReference)
+
+			}
+
+			if (field.hasAnnotation(SetterRule)) {
+
+				val setterRuleInfo = SetterRuleProcessor.getSetterInfo(field, context)
+
+				// create virtual method (setter) and copy/create
+				val virtualSetterMethod = new MethodDeclarationFromSetter(field, setterRuleInfo.visibility, context)
+				val newSetterMethod = copyMethod(annotatedClass, virtualSetterMethod, true, false, true, true, true,
+					false, typeMap, context)
+
+				// transfer type adaption rule in a specific way
+				if (virtualSetterMethod.hasAnnotation(TypeAdaptionRule))
+					newSetterMethod.parameters.get(0).addAnnotation(
+						TypeAdaptionRuleProcessor.copyAnnotation(virtualSetterMethod, context))
+
+				// apply body
+				bodySetter.setBody(newSetterMethod, virtualSetterMethod.basicImplementation, context)
+
+				// add generation annotation
+				newSetterMethod.addAnnotation(GeneratedSetterMethod.newAnnotationReference)
+
+			}
+
+			if (field.hasAnnotation(AdderRule)) {
+
+				val adderRuleInfo = AdderRuleProcessor.getAdderInfo(field, context)
+
+				if (context.newTypeReference(Collection).isAssignableFrom(field.type)) {
+
+					if (adderRuleInfo.single) {
+
+						// create virtual method (add) and copy/create
+						val virtualAddMethod = new MethodDeclarationFromAdder_AddTo(field, adderRuleInfo.visibility,
+							context)
+						val newAddMethod = copyMethod(annotatedClass, virtualAddMethod, true, false, true, true, true,
+							false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(newAddMethod, virtualAddMethod.basicImplementation, context)
+
+						// transfer type adaption rule in a specific way
+						transferTypeAdaptionRuleToParameter(newAddMethod.parameters.get(0), virtualAddMethod,
+							1, [ rules |
+								'''«rules.get(0)»'''
+							], context)
+
+						// add generation annotation
+						newAddMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+						// another version of this method for adding with index
+						if (context.newTypeReference(List).isAssignableFrom(field.type)) {
+
+							// create virtual method (add, indexed) and copy/create
+							val virtualAddIndexedMethod = new MethodDeclarationFromAdder_AddToIndexed(field,
+								adderRuleInfo.visibility, context)
+							val newAddIndexedMethod = copyMethod(annotatedClass, virtualAddIndexedMethod, true, false,
+								true, true, true, false, typeMap, context)
+
+							// apply body
+							bodySetter.setBody(newAddIndexedMethod, virtualAddIndexedMethod.basicImplementation,
+								context)
+
+							// transfer type adaption rule in a specific way
+							transferTypeAdaptionRuleToParameter(newAddIndexedMethod.parameters.get(1), virtualAddMethod,
+								1, [ rules |
+									'''«rules.get(0)»'''
+								], context)
+
+							// add generation annotation
+							newAddIndexedMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+						}
+
+					}
+
+					if (adderRuleInfo.multiple) {
+
+						// create virtual method (addAll) and copy/create
+						val virtualAddAllMethod = new MethodDeclarationFromAdder_AddAllTo(field,
+							adderRuleInfo.visibility, context)
+						val newAddAllMethod = copyMethod(annotatedClass, virtualAddAllMethod, true, false, true, true,
+							true, false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(newAddAllMethod, virtualAddAllMethod.basicImplementation, context)
+
+						// transfer type adaption rule in a specific way
+						transferTypeAdaptionRuleToParameter(
+							newAddAllMethod.parameters.get(0),
+							virtualAddAllMethod,
+							1,
+							[ rules |
+								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+							],
+							context
+						)
+
+						// add generation annotation
+						newAddAllMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+						// another version of this method for adding with index
+						if (context.newTypeReference(List).isAssignableFrom(field.type)) {
+
+							// create virtual method (addAll, indexed) and copy/create
+							val virtualAddAllIndexedMethod = new MethodDeclarationFromAdder_AddAllToIndexed(field,
+								adderRuleInfo.visibility, context)
+							val newAddAllIndexedMethod = copyMethod(annotatedClass, virtualAddAllIndexedMethod, true,
+								false, true, true, true, false, typeMap, context)
+
+							// apply body
+							bodySetter.setBody(newAddAllIndexedMethod, virtualAddAllIndexedMethod.basicImplementation,
+								context)
+
+							// transfer type adaption rule in a specific way
+							transferTypeAdaptionRuleToParameter(newAddAllIndexedMethod.parameters.get(1),
+								virtualAddAllIndexedMethod, 1, [ rules |
+									'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+								], context)
+
+							// add generation annotation
+							newAddAllIndexedMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+						}
+
+					}
+
+				} else if (context.newTypeReference(Map).isAssignableFrom(field.type)) {
+
+					if (adderRuleInfo.single) {
+
+						// create virtual method (add) and copy/create
+						val virtualPutMethod = new MethodDeclarationFromAdder_PutTo(field, adderRuleInfo.visibility,
+							context)
+						val newPutMethod = copyMethod(annotatedClass, virtualPutMethod, true, false, true, true, true,
+							false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(newPutMethod, virtualPutMethod.basicImplementation, context)
+
+						// transfer type adaption rule in a specific way
+						transferTypeAdaptionRuleToParameter(newPutMethod.parameters.get(0),
+							virtualPutMethod, 2, [ rules |
+								'''«rules.get(0)»'''
+							], context)
+						transferTypeAdaptionRuleToParameter(newPutMethod.parameters.get(1),
+							virtualPutMethod, 2, [ rules |
+								'''«rules.get(1)»'''
+							], context)
+
+						// add generation annotation
+						newPutMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+					}
+
+					if (adderRuleInfo.multiple) {
+
+						// create virtual method (add) and copy/create
+						val virtualPutAllMethod = new MethodDeclarationFromAdder_PutAllTo(field,
+							adderRuleInfo.visibility, context)
+						val newPutAllMethod = copyMethod(annotatedClass, virtualPutAllMethod, true, false, true, true,
+							true, false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(newPutAllMethod, virtualPutAllMethod.basicImplementation, context)
+
+						// transfer type adaption rule in a specific way
+						transferTypeAdaptionRuleToParameter(
+							newPutAllMethod.parameters.get(0),
+							virtualPutAllMethod,
+							2,
+							[ rules |
+								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Map);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(1)»)'''
+							],
+							context
+						)
+
+						// add generation annotation
+						newPutAllMethod.addAnnotation(GeneratedAdderMethod.newAnnotationReference)
+
+					}
+
+				}
+
+			}
+
+			if (field.hasAnnotation(RemoverRule)) {
+
+				val removerRuleInfo = RemoverRuleProcessor.getRemoverInfo(field, context)
+
+				if (removerRuleInfo.single) {
+
+					// create virtual method (remove) and copy/create
+					val virtualRemoveMethod = new MethodDeclarationFromRemover_RemoveFrom(field,
+						removerRuleInfo.visibility, context)
+					val newRemoveMethod = copyMethod(annotatedClass, virtualRemoveMethod, true, false, true, true, true,
+						false, typeMap, context)
+
+					// apply body
+					bodySetter.setBody(newRemoveMethod, '''«virtualRemoveMethod.basicImplementation»''', context)
+
+					// transfer type adaption rule in a specific way
+					transferTypeAdaptionRuleToParameter(
+						newRemoveMethod.parameters.get(0),
+						virtualRemoveMethod,
+						if (context.newTypeReference(Collection).isAssignableFrom(field.type))
+							1
+						else
+							2,
+						[ rules |
+							'''«rules.get(0)»'''
+						],
+						context
+					)
+
+					// add generation annotation
+					newRemoveMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
+
+					// another version of this method for removing with index
+					if (context.newTypeReference(List).isAssignableFrom(field.type)) {
+
+						// create virtual method (remove, indexed) and copy/create
+						val virtualRemoveIndexedMethod = new MethodDeclarationFromRemover_RemoveFromIndexed(field,
+							removerRuleInfo.visibility, context)
+						val newRemoveIndexedMethod = copyMethod(annotatedClass, virtualRemoveIndexedMethod, true,
+							false, true, true, true, false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(
+							newRemoveIndexedMethod, '''«virtualRemoveIndexedMethod.basicImplementation»''', context)
+
+						// add generation annotation
+						newRemoveIndexedMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
+
+					}
+
+				}
+
+				if (removerRuleInfo.multiple) {
+
+					if (context.newTypeReference(Collection).type.
+						isAssignableFromConsiderUnprocessed(field.type?.type, context)) {
+
+						// create virtual method (removeAll) and copy/create
+						val virtualRemoveAllMethod = new MethodDeclarationFromRemover_RemoveAllFrom(field,
+							removerRuleInfo.visibility, context)
+						val newRemoveAllMethod = copyMethod(annotatedClass, virtualRemoveAllMethod, true, false, true,
+							true, true, false, typeMap, context)
+
+						// apply body
+						bodySetter.setBody(newRemoveAllMethod, '''«virtualRemoveAllMethod.basicImplementation»''',
+							context)
+
+						// transfer type adaption rule in a specific way
+						transferTypeAdaptionRuleToParameter(
+							newRemoveAllMethod.parameters.get(0),
+							virtualRemoveAllMethod,
+							1,
+							[ rules |
+								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+							],
+							context
+						)
+
+						// add generation annotation
+						newRemoveAllMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
+
+					}
+
+					// create virtual method (clear) and copy/create
+					val virtualClearMethod = new MethodDeclarationFromRemover_Clear(field, removerRuleInfo.visibility,
+						context)
+					val newClearMethod = copyMethod(annotatedClass, virtualClearMethod, true, false, true, true, true,
+						false, typeMap, context)
+
+					// apply body
+					bodySetter.setBody(newClearMethod, '''«virtualClearMethod.basicImplementation»''', context)
+
+					// add generation annotation
+					newClearMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
+
+				}
+
+			}
 
 		}
 
@@ -1572,7 +2253,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (!factoryMethodRuleInfo.returnTypeAdaptionRule.nullOrEmpty) {
 
 						val adaptedTypeReference = newFactoryMethod.applyTypeAdaptionRule(#[newFactoryMethod], null,
-							factoryMethodRuleInfo.returnTypeAdaptionRule, null, variableMap, typeMap, false, context)
+							factoryMethodRuleInfo.returnTypeAdaptionRule, null, variableMap, typeMap, false, null,
+							context)
 
 						if (adaptedTypeReference !== null)
 							newFactoryMethod.returnType = adaptedTypeReference
@@ -1593,7 +2275,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							newParameterList.put(parameter.simpleName,
 								parameter.type.copyTypeReference(usedTypeMap, context))
 							regularParamTypeNameList.add(
-								parameter.type.getTypeReferenceAsString(true, true, true, context))
+								parameter.type.getTypeReferenceAsString(true, false, true, false, context))
 
 						}
 
@@ -1629,7 +2311,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 								// try to apply adaption rule
 								adaptedParameterType = parameter.applyTypeAdaptionRule(#[annotatedClass], null,
-									adaptionRule, declaringExecutable, currentVariableMap, usedTypeMap, false, context)
+									adaptionRule, declaringExecutable, currentVariableMap, usedTypeMap, false, null,
+									context)
 
 								// use variable map of parent, which maybe leads to an available type
 								currectClass = currectClass.extendedClass.type as ClassDeclaration
@@ -1682,13 +2365,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 								if (traitClassToConstruct == parameter.declaringExecutable.declaringType) {
 									parameterNames.add(parameter.simpleName)
 									parameterTypeNames.add(
-										parameter.type.getTypeReferenceAsString(true, true, true, context))
+										parameter.type.getTypeReferenceAsString(true, false, true, false, context))
 								}
 
 							}
 
 							bodyDelegationObjectCreation +=
-								'''newObject.«traitClassToConstruct.getConstructorMethodCallName(true)»(«parameterNames.join(", ")»);
+								'''internal$newObject.«traitClassToConstruct.getConstructorMethodCallName(true)»(«parameterNames.join(", ")»);
 								'''
 							calledConstructorsDocumentation +=
 								'''<li>{@link «traitClassToConstruct.qualifiedName»#«traitClassToConstruct.simpleName»(java.lang.Object«IF !parameterTypeNames.empty», «parameterTypeNames.join(", ")»«ENDIF»)}
@@ -1705,7 +2388,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						for (traitClassToCheck : traitClassesToConstructDisabled) {
 
 							bodyCheckObjectCreation +=
-								'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(newObject, "«traitClassToCheck.delegateObjectName»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClassToCheck.qualifiedName»");
+								'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(internal$newObject, "«traitClassToCheck.delegateObjectName»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClassToCheck.qualifiedName»");
 								'''
 
 						}
@@ -1714,7 +2397,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// check if there is an ambiguous combination
 					if (newFactoryMethodList.methodListContains(newFactoryMethod, TypeMatchingStrategy.MATCH_INVARIANT,
-						typeMap, context)) {
+						TypeMatchingStrategy.MATCH_INVARIANT, false, typeMap, context)) {
 						xtendClass.
 							addError('''The generation of factory methods cannot be finished because the following type combination is ambiguous: «newFactoryMethod.parameters.map[it.type.toString].join(", ")» ''')
 						return
@@ -1741,11 +2424,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (!newFactoryMethod.abstract) {
 
 						bodySetter.setBody(
-							newFactoryMethod, '''«annotatedClass.qualifiedName»«typeArgumentString» newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
+							newFactoryMethod, '''«annotatedClass.qualifiedName»«typeArgumentString» internal$newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
 							«bodyDelegationObjectCreation»
 							«bodyCheckObjectCreation»
-							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
-							return newObject;''')
+							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»internal$newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
+							return internal$newObject;''', context)
 
 					}
 
@@ -1753,7 +2436,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// ensure that constructor is not synthetic
 				if (!bodySetter.hasBody(constructor))
-					bodySetter.setBody(constructor, "")
+					bodySetter.setBody(constructor, "", context)
 
 				// hide constructor
 				constructor.addAnnotation(ConstructorHiddenForFactoryMethod.newAnnotationReference)
@@ -1784,7 +2467,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 

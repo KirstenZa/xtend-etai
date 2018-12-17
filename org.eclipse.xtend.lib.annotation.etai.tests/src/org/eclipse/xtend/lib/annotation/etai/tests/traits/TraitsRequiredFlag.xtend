@@ -104,7 +104,6 @@ class ExtendedClassRequiredFlagMissing implements ITraitClassRequiredFlag {
 			val clazzProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
 			assertEquals(2, clazzProblems.size)
 			assertEquals(Severity.ERROR, clazzProblems.get(0).severity)
 			var List<String> errorList = new ArrayList<String>
@@ -113,6 +112,8 @@ class ExtendedClassRequiredFlagMissing implements ITraitClassRequiredFlag {
 			errorList = errorList.sort
 			assertTrue(errorList.get(0).contains("method2"))
 			assertTrue(errorList.get(1).contains("method4"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

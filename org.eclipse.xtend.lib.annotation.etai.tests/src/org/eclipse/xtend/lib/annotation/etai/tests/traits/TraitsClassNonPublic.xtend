@@ -322,13 +322,13 @@ abstract class ExtendedClassNonPublicAbstract implements ITraitClassNonPublic {
 			val clazzProblemsAbstract = (clazzAbstract.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, clazzProblemsNonAbstract.size)
 			assertEquals(Severity.ERROR, clazzProblemsNonAbstract.get(0).severity)
 			assertTrue(clazzProblemsNonAbstract.get(0).message.contains("implemented in the non-abstract"))
 
 			assertEquals(0, clazzProblemsAbstract.size)
+
+			assertEquals(1, allProblems.size)
 
 		]
 

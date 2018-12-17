@@ -1,0 +1,68 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class Text <<ApplyRules>> {
+	-paragraphs:List<String>
+	+getParagraphs():List<String>
+	+addToParagraphs($element:Text):boolean
+	+addToParagraphs($index:int,$element:Text):boolean
+	+removeFromParagraphs($element:Text):boolean
+	+removeFromParagraphs($index:int):boolean
+	+removeAllFromParagraphs(Collection<? extends String> $c):boolean
+	+clearParagraphs():boolean
+}
+
+class TextDuplicator {
+	+duplicateParagraphs(text:Text)
+}
+
+
+note right of Text::getParagraphs
+  return Collections.unmodifiableList(
+    new ArrayList(paragraphs));
+end note
+
+note right of Text::addToParagraphs($element:Text)
+  paragraphs.add($element);
+  return true;
+end note
+
+note right of Text::addToParagraphs($index:int,$element:Text)
+  paragraphs.add($index, $element);
+  return true;
+end note
+
+note right of Text::removeFromParagraphs($element:Text)
+  int size = paragraphs.size();
+  paragraphs.remove($element);
+  return size != paragraphs.size();
+end note
+
+note right of Text::removeFromParagraphs($index:int)
+  paragraphs.remove($index);
+  return true;
+end note
+
+note right of Text::removeAllFromParagraphs
+  int size = paragraphs.size();
+  paragraphs.removeAll($c);
+  return size != paragraphs.size();
+end note
+
+note right of Text::clearParagraphs()
+  boolean isEmpty = paragraphs.isEmpty();
+  paragraphs.clear();
+  return !isEmpty;
+end note
+
+'Layout
+Text -down[hidden]-> TextDuplicator
+
+@enduml

@@ -151,8 +151,6 @@ class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implemen
 			val localProblemsDerived2 = (clazzDerived2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(0, localProblemsBase.size)
 
 			assertEquals(1, localProblemsDerived1.size)
@@ -162,6 +160,8 @@ class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implemen
 			assertEquals(1, localProblemsDerived2.size)
 			assertEquals(Severity.ERROR, localProblemsDerived2.get(0).severity)
 			assertTrue(localProblemsDerived2.get(0).message.contains("final"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

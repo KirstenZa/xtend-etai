@@ -3,12 +3,15 @@ package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
+import org.eclipse.xtend.lib.annotation.etai.EPDefault
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
-import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionExtension
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionTrait
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionTraitExtended
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -31,25 +34,41 @@ class ReturnAdaptionType5Return extends ReturnAdaptionType4Return {
 class ReturnAdaptionType6Return extends ReturnAdaptionType5Return {
 }
 
+class ReturnAdaptionType7Return extends ReturnAdaptionType6Return {
+}
+
+class ReturnAdaptionType8Return extends ReturnAdaptionType7Return {
+}
+
 @TraitClassAutoUsing
 @ApplyRules
-abstract class ReturnAdaptionExtension {
+abstract class ReturnAdaptionTrait {
 
 	@RequiredMethod
 	@ImplAdaptionRule("apply(return \");appendVariable(var.class.qualified);append(\";)")
 	override String getQualifiedTypeName()
 
+	@ProcessedMethod(processor=EPDefault)
+	@ImplAdaptionRule("apply(return \");appendVariable(var.class.qualified);append(\";)")
+	override String getQualifiedTypeNameAlternative() {
+		return ""
+	}
+
+}
+
+@TraitClassAutoUsing
+@ApplyRules
+abstract class ReturnAdaptionTraitExtended extends ReturnAdaptionTrait {
 }
 
 @ApplyRules
 abstract class ReturnAdaptionType1 {
 
 	public int value
-	
+
 	@CopyConstructorRule
 	@ImplAdaptionRule(value="apply(super(\"\");\nvalue += 1;)", typeExistenceCheck="applyVariable(var.class.simple);replace(ReturnAdaptionType4,);appendVariable(var.class.qualified)")
-	new(
-		String x) {
+	new(String x) {
 	}
 
 	@TypeAdaptionRule("applyVariable(var.class.qualified);append(Return)")
@@ -73,7 +92,7 @@ abstract class ReturnAdaptionType1 {
 	) {
 		return x.toString
 	}
-	
+
 	@ImplAdaptionRule("")
 	abstract def void methodToBeImplemented()
 
@@ -85,7 +104,7 @@ class ReturnAdaptionType2 extends ReturnAdaptionType1 {
 
 @ApplyRules
 @ExtendedByAuto
-abstract class ReturnAdaptionType3 extends ReturnAdaptionType2 implements IReturnAdaptionExtension {
+abstract class ReturnAdaptionType3 extends ReturnAdaptionType2 implements IReturnAdaptionTrait {
 }
 
 @ApplyRules
@@ -104,6 +123,15 @@ class ReturnAdaptionType5 extends ReturnAdaptionType4 {
 
 @ApplyRules
 class ReturnAdaptionType6 extends ReturnAdaptionType5 {
+}
+
+@ApplyRules
+@ExtendedByAuto
+class ReturnAdaptionType7 extends ReturnAdaptionType2 implements IReturnAdaptionTraitExtended {
+}
+
+@ApplyRules
+class ReturnAdaptionType8 extends ReturnAdaptionType7 {
 }
 
 class ImplAdaptionTests {
@@ -131,36 +159,26 @@ class ImplAdaptionTests {
 		val obj5 = new ReturnAdaptionType5("")
 		val obj6 = new ReturnAdaptionType6("")
 
-		assertEquals(1, ReturnAdaptionType2.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).size)
-		assertSame(ReturnAdaptionType2Return, ReturnAdaptionType2.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).get(0).returnType)
-		assertEquals(1, ReturnAdaptionType3.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).size)
-		assertSame(ReturnAdaptionType3Return, ReturnAdaptionType3.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).get(0).returnType)
-		assertEquals(1, ReturnAdaptionType4.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).size)
-		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType4.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).get(0).returnType)
-		assertEquals(1, ReturnAdaptionType5.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).size)
-		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType5.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).get(0).returnType)
-		assertEquals(1, ReturnAdaptionType6.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).size)
-		assertSame(ReturnAdaptionType6Return, ReturnAdaptionType6.declaredMethods.filter[name == "method"].filter([
-			synthetic == false
-		]).get(0).returnType)
+		assertEquals(1, ReturnAdaptionType2.declaredMethods.filter[name == "method" && synthetic == false].size)
+		assertSame(ReturnAdaptionType2Return, ReturnAdaptionType2.declaredMethods.filter[
+			name == "method" && synthetic == false
+		].get(0).returnType)
+		assertEquals(1, ReturnAdaptionType3.declaredMethods.filter[name == "method" && synthetic == false].size)
+		assertSame(ReturnAdaptionType3Return, ReturnAdaptionType3.declaredMethods.filter[
+			name == "method" && synthetic == false
+		].get(0).returnType)
+		assertEquals(1, ReturnAdaptionType4.declaredMethods.filter[name == "method" && synthetic == false].size)
+		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType4.declaredMethods.filter[
+			name == "method" && synthetic == false
+		].get(0).returnType)
+		assertEquals(1, ReturnAdaptionType5.declaredMethods.filter[name == "method" && synthetic == false].size)
+		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType5.declaredMethods.filter[
+			name == "method" && synthetic == false
+		].get(0).returnType)
+		assertEquals(1, ReturnAdaptionType6.declaredMethods.filter[name == "method" && synthetic == false].size)
+		assertSame(ReturnAdaptionType6Return, ReturnAdaptionType6.declaredMethods.filter[
+			name == "method" && synthetic == false
+		].get(0).returnType)
 
 		assertSame(ReturnAdaptionType2Return, obj2.method.class)
 		assertSame(ReturnAdaptionType4Return, obj4.method.class)
@@ -202,8 +220,19 @@ class ImplAdaptionTests {
 	def void testImplAdaptionFromExtension() {
 
 		val obj4 = new ReturnAdaptionType4("")
+		val obj7 = new ReturnAdaptionType7("")
+		val obj8 = new ReturnAdaptionType8("")
 
 		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType4", obj4.qualifiedTypeName)
+		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType7", obj7.qualifiedTypeName)
+		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType8", obj8.qualifiedTypeName)
+
+		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType4",
+			obj4.qualifiedTypeNameAlternative)
+		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType7",
+			obj7.qualifiedTypeNameAlternative)
+		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType8",
+			obj8.qualifiedTypeNameAlternative)
 
 	}
 

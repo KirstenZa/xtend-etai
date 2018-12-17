@@ -108,11 +108,11 @@ class ExtendedClassWithExclusive implements ITraitClassWithExclusive {
 			val clazzProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, clazzProblems.size)
 			assertEquals(Severity.ERROR, clazzProblems.get(0).severity)
 			assertTrue(clazzProblems.get(0).message.contains("must not exist in the extended class"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -161,11 +161,11 @@ class ExtendedClassTest extends ExtendedClassTestBase implements ITraitClassTest
 			val clazzProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, clazzProblems.size)
 			assertEquals(Severity.ERROR, clazzProblems.get(0).severity)
 			assertTrue(clazzProblems.get(0).message.contains("must not exist in the extended class"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

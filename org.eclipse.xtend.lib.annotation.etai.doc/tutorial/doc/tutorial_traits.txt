@@ -137,6 +137,14 @@ Objects of type *LazyEvaluation* offer method *eval*. If calling this method for
 
 If the original method has return type *void*, *call* is simply expected to return *null*.
 
+Besides method *eval* type *LazyEvaluation* offers the following methods:
+
+- *int getNumberOfArguments()*: returns the number of arguments bound to the call of the original method
+- *Object getArgument(int index)*: returns the argument (with the specified *index*) bound to the call
+- *void setArgument(int index, Object value)*: changes the argument (with the specified *index*) bound to the call
+- *Object getExecutingObject()*: returns the object executing the original method
+- *java.lang.reflect.Method getMethod()*: returns the original method (e.g. can be used to check the method name)
+
 The following code shows an exemplary trait method processor *ProcessorStringCommaSeparated*. It shall execute the original method of the extended class first and the original method of the trait class afterwards. It concatenates both resulting strings with a separating comma in between and returns the concatenated string.
 
 This trait method processor is used for method *getCharacteristics* of all three trait classes *XFlying*, *XTalking* and *XColorful*. Class *Parrot* is extended by these trait classes, so in the end, it gets a method *getCharacteristics* which returns *"flying,talking,colorful"*, i.e. the individual results combined by *ProcessorStringCommaSeparated*.
@@ -223,7 +231,7 @@ It is possible to specify **rules so that a trait method is renamed** before it 
 
 If a method in the extended class is annotated by ***@TraitMethodRedirection***, which specifies a new method name via *String* *value*, each matching trait method will be renamed to this name before it is extending the class. In addition, it will become a new visibility, which is also specified by *@TraitMethodRedirection* via parameter *visibility* (default: *PROTECTED*). 
 
-The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive will be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
+The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive can be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
 
 However, **trait methods can ignore the redirection**. For this, there is a parameter *disableRedirection*, which can be specified together with *@EnvelopeMethod*, *@ProcessedMethod* or *@ExclusiveMethod*. If the flag is set to to *true*, which is the default value for *@EnvelopeMethod*, any setting by *@TraitMethodRedirection* is ignored.
 
@@ -281,12 +289,12 @@ This is also shown in the example below. Trait class *XWithName* specifies two c
 
 #### Automatic Generation of Constructors
 
-In combination with [adaption features](#automatic-adaption-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
+In combination with [modification features](#automatic-modification-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
 
 - the construction helper methods are called at the end of the constructor and
 - the parameters needed by construction helper methods are added to the constructor's parameter lists and later passed to the construction helper methods.
 
-If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Adaption of Classes](#automatic-adaption-of-classes)).
+If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Modification of Classes](#automatic-modification-of-classes)).
 
 Parameters of constructor methods are fully supported by this technique. They are simply added to the generated factory methods. In the trivial case that there is only one constructor method in the trait class and one constructor in the extended class, the parameters of the constructor methods are added to the end of the constructor's parameter list and then transferred to the generated factory method. In cases where multiple constructor methods, multiple (or no) constructors in the extended class or even multiple trait classes exist, cross products are calculated during code generation in order to generate factory methods and their parameter lists. The order of parameters is based on the order of applying trait classes, whereas parameters of the extended class's constructor always start the parameter list.
 
@@ -316,7 +324,7 @@ The mentioned parameters are combined in order to generate the *create* factory 
 >
 > In addition to this, there is the annotation ***@ConstructRuleDisable***. It can be applied, if a construct rule for a specific trait class is active, i.e., factory methods would be adapted in order to call corresponding construction helper methods. This is not a valid use case for classes which apply *@ConstructRule* or *@ConstructRuleAuto*, but for child classes, because construct rules are also inherited. If construction helper methods must be called manually again there, e.g. because calculations must be performed or parameters shall be controlled completely, a construct rule can be disabled for the specified trait classes via *@ConstructRuleDisable* and its *value*.
 
-##### Warning
+##### Limitation
 
 > Of course, the automatic combination of parameters can lead to ambiguous factory methods. In this case, the described technique cannot be used and construction must be implemented manually. 
 

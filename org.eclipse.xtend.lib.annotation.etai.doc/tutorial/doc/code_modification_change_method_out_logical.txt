@@ -1,0 +1,44 @@
+package virtual;
+
+public class Progress {
+
+	private double percentage;
+	private java.util.List<String> log = new java.util.ArrayList<String>();
+
+	public boolean setPercentage(double $percentage) {
+		if (this.percentage != $percentage) {
+			if (!percentageChange($percentage))
+				return false;
+			this.percentage = $percentage;
+			percentageChanged();
+			return true;
+		}
+		return false;
+	}
+
+	public boolean addAllToLog(int $index, java.util.Collection<? extends String> $c) {
+		if ($c.isEmpty())
+			return false;
+		java.util.List<String> addedElements = new java.util.ArrayList<String>($c);
+		java.util.List<Integer> addedIndices = new java.util.ArrayList<Integer>();
+		for (int i = $index; i < $index + $c.size(); i++)
+			addedIndices.add(i);
+		log.addAll($index, $c);
+		return true;
+	}
+
+	public boolean addAllToLog(java.util.Collection<? extends String> $c) {
+		return addAllToLog(log.size(), $c);
+	}
+
+    protected void percentageChanged() {
+        System.out.println("Percentage changed!");
+    }
+    
+    protected void addedToList(final String fieldname, final List<Integer> indices, final List<String> elements) {
+        for (int i = 0; (i < indices.size()); i++)
+        	System.out.println("Added \"" + elements.get(i) + "\" to list " +
+                fieldname + " at index " + indices.get(i));
+    }
+
+}

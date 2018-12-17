@@ -40,11 +40,11 @@ abstract class TraitClassExtended implements ITraitClassSimple {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("extended"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

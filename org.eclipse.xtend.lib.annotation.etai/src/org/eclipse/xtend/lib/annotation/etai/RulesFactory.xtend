@@ -6,14 +6,10 @@ import java.util.ArrayList
 import java.util.List
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.ValidationContext
-import org.eclipse.xtend.lib.macro.ValidationParticipant
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
-import org.eclipse.xtend.lib.macro.declaration.ConstructorDeclaration
-import org.eclipse.xtend.lib.macro.declaration.Declaration
-import org.eclipse.xtend.lib.macro.declaration.ExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.InterfaceDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
-import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.TypeDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
@@ -22,9 +18,9 @@ import org.eclipse.xtend.lib.macro.services.TypeLookup
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
  * This annotation can be used in order to generate a factory method for constructing an
@@ -85,7 +81,7 @@ annotation FactoryMethodRule {
 	 * @see FactoryMethodRule#factoryInstance
 	 */
 	boolean factoryInstanceFinal = true
-	
+
 	/**
 	 * <p>Determines if the generated factory class shall extend the potentially
 	 * generated factory class of a parent class.</p>
@@ -117,7 +113,7 @@ annotation FactoryMethodRule {
 	 * @see SetAdaptionVariable
 	 */
 	String factoryInterfaceVariable = ""
-	
+
 	/**
 	 * <p>The return type of the generated factory method matches the class for which the
 	 * factory method is generated. However, with this attribute an adaption rule can be specified. If the
@@ -194,324 +190,11 @@ annotation ConstructRuleDisable {
 }
 
 /**
- * <p>Methods in a supertype which are annotated with {@link TypeAdaptionRule},
- * will be generated and adapted automatically in a derived class,
- * if the derived class is annotated with {@link ApplyRules}.
- * The same applies to constructors, which are annotated by {@link CopyConstructorRule}.</p>
- * 
- * <p>This generation process will also be triggered,
- * if any parameter of the method/constructor, i.e. not the method/constructor itself,
- * is annotated with {@link TypeAdaptionRule}. In case of a constructor annotated
- * parameter, the constructor is adapted as if annotated by {@link CopyConstructorRule}.</p>
- * 
- * <p>The generated method/constructor will simply call the method/constructor
- * of the supertype. In case of a method, if there is no type change at all, the method
- * will not be generated.</p>
- * 
- * <p>An adaption rule of a superclass can be "deactivated" for a method in context of further
- * subclasses, if the method is overridden, and the {@link AdaptedMethod}
- * annotation is NOT used.</p>
- * 
- * <p>An adaption rule of a superclass can be "deactivated" for a constructor in context of 
- * further subclasses, if any constructor is implemented.</p>
- * 
- * <p>In order to control the type adaption a string for {@link TypeAdaptionRule} must be specified.
- * This string must contain one or multiple type adaption function calls separated by ";". The
- * purpose of such functions is to adapt the original type when generating the method in a
- * subclass. If {@link TypeAdaptionRule} annotates a method, the return type will
- * be adapted. If {@link TypeAdaptionRule} annotates a parameter, the corresponding
- * type will be adapted.</p>
- * 		
- * <p>Each type adaption function will modify the previously assumed type name to use. Originally,
- * exactly the type of the annotated type is assumed. If the type adaption function leads to a string
- * of a type, which cannot be found, the type of the super class's executable will
- * be applied.</p>
- * 
- * <p>The parameters of a type adaption function is usually interpreted as a string (without the necessity
- * of using <code>"</code>), but functions in context of type
- * parameters or for the search of type alternatives can also be nested.</p>
- * 
- * <p>Supported (type) adaption functions:</p>
- * <ul>
- * <li>apply(x):						"x" will replace the previously assumed type (as string)
- * <li>append(x):						"x" will be appended to the previously assumed type (as string)
- * <li>prepend(x):						"x" will be prepended to the previously assumed type (as string)
- * <li>applyVariable(x):				variable "x" will replace the previously assumed type (as string)
- * <li>appendVariable(x):				variable "x" will be appended to the previously assumed type (as string)
- * <li>prependVariable(x):				variable "x" will be prepended to the previously assumed type (as string)
- * <li>replace(x,y):					in the previously assumed type (as string) all occurrences of "x" will be replaced by "y"
- * <li>replaceAll(x,y):					in the previously assumed type (as string) all occurrences of "x" will be replaced by "y" (support of regular expressions)
- * <li>replaceFirst(x,y):				in the previously assumed type (as string) the first occurrence of "x" will be replaced by "y" (support of regular expressions)
- * <li>addTypeParam(x):					if not empty, the result of type adaption rule "x" (nested rules) are added as type parameter to previously assumed type
- * <li>addTypeParamWildcardExtends(x):	if not empty, the result of type adaption rule "x" (nested rules) are added as type parameter to previously assumed type using the format "? extends resultOfX"
- * <li>addTypeParamWildcardSuper(x):	if not empty, the result of type adaption rule "x" (nested rules) are added as type parameter to previously assumed type using the format "? super resultOfX"
- * <li>alternative(x):					with this function another function call list can be nested; if the type resulting from the commands until <code>alternative</code> cannot be found, the search for a type will continue after applying the commands within the <code>alternative</code> command as well; <code>alternative</code> is applicable only on top-level and together with other <code>alternative</code> calls at the end the function call list
- * </ul>
- * 
- * <p>The following variables are predefined and set automatically for the
- * current context:</p>
- * <ul>
- * <li>var.package:					the package name
- * <li>var.class.simple:			the fully simple class name
- * <li>var.class.qualified:			the fully qualified class name
- * <li>var.class.abstract:			if the class is abstract "true", otherwise "false"
- * <li>var.class.typeparameter.1:	the name of type parameter #1 (if available)
- * <li>var.class.typeparameter.2:	the name of type parameter #2 (if available)
- * <li>...
- * <li>var.class.typeparameter.x:	the name of type parameter #x (if available)
- * <li>const.bracket.round.open:	round bracket, open,    "("
- * <li>const.bracket.round.close:	round bracket, closed,  ")"
- * </ul>
- * 
- * @see ApplyRules
- * @see AdaptedMethod
- * @see AdaptedConstructor
- * @see CopyConstructorRule
- * @see SetAdaptionVariable
- * @see ImplAdaptionRule
- */
-@Target(ElementType.METHOD, ElementType.PARAMETER)
-@Active(TypeAdaptionRuleProcessor)
-annotation TypeAdaptionRule {
-	String value = ""
-}
-
-/**
- * <p>Methods and constructors in a supertype which are annotated with {@link ImplAdaptionRule},
- * will be generated and adapted automatically in a derived class,
- * if the derived class is annotated with {@link ApplyRules}.</p>
- * 
- * <p>The generated method/constructor will have a body which can be specified by
- * the value of this annotation, which is evaluated when the code is generated.
- * The annotation's value (a string) must contain implementation adaption
- * function calls, which are the same as type adaption function calls
- * (see {@link TypeAdaptionRule}).</p>
- * 
- * <p>The annotation also supports another list of adaption function calls in attribute
- * <code>typeExistenceCheck</code>. If specified, these calls are also evaluated during
- * code generation. If the evaluation result is not an existing type, then the
- * annotated method/constructor will not be adapted. In case of a constructor, it will
- * be implemented, however, and call the supertype's constructor.</p>
- * 
- * <p>An adaption rule of a superclass can be "deactivated" for a method in context of further
- * subclasses, if the method is overridden, and the {@link AdaptedMethod}
- * annotation is NOT used.</p>
- * 
- * <p>An adaption rule of a superclass can be "deactivated" for a constructor in context of 
- * further subclasses, if any constructor is implemented.</p>
- * 
- * @see ApplyRules
- * @see AdaptedMethod
- * @see AdaptedConstructor
- * @see TypeAdaptionRule
- * @see CopyConstructorRule
- * @see SetAdaptionVariable
- */
-@Target(ElementType.METHOD, ElementType.CONSTRUCTOR)
-@Active(ImplAdaptionRuleProcessor)
-annotation ImplAdaptionRule {
-	String value
-	String typeExistenceCheck = ""
-}
-
-/**
- * <p>This annotation can be applied to constructors and ensures that
- * the constructor in also implemented in sub classes. Basically, the semantics of this annotation
- * is explained in the documentation for {@link TypeAdaptionRule}, but with this annotation no
- * (return) type is adapted.</p>
- * 
- * @see TypeAdaptionRule
- */
-@Target(ElementType.CONSTRUCTOR)
-@Active(CopyConstructorRuleProcessor)
-annotation CopyConstructorRule {
-}
-
-/**
- * <p>This annotation can be used in context of a type in order to
- * set a variable in its context. The variable can be changed by subclassing.
- * However, if also inherited via interfaces or trait classes, it must
- * be ensured that variables are not set ambiguously.</p>
- * 
- * <p>There are also some variables, which are set automatically for the current
- * context and should not be set manually (see {@link TypeAdaptionRule}).</p>
- * 
- * <p>The variable can be accessed by {@link TypeAdaptionRule}. In its context,
- * there are also some predefined variables, which are set automatically and
- * should not be set manually.</p>
- * 
- * @see TypeAdaptionRule
- */
-@Target(ElementType.TYPE)
-annotation SetAdaptionVariable {
-	String value
-}
-
-/**
- * Active Annotation Processor for {@link CopyConstructorRule}
- * 
- * @see CopyConstructorRule
- */
-class CopyConstructorRuleProcessor implements ValidationParticipant<ConstructorDeclaration> {
-
-	override doValidate(List<? extends ConstructorDeclaration> annotatedConstructors,
-		extension ValidationContext context) {
-
-		for (annotatedConstructor : annotatedConstructors)
-			doValidate(annotatedConstructor, context)
-
-	}
-
-	def doValidate(ConstructorDeclaration annotatedConstructor, extension ValidationContext context) {
-
-		var ConstructorDeclaration xtendConstructor = annotatedConstructor.
-			primarySourceElement as ConstructorDeclaration
-
-		// check if in context of ApplyRules
-		val classWithConstructor = annotatedConstructor.declaringType as ClassDeclaration
-		if (!classWithConstructor.hasAnnotation(ApplyRules))
-			xtendConstructor.
-				addError('''Annotation @CopyConstructorRule must be used in context of a class with annotation @ApplyRules''')
-
-	}
-
-}
-
-/**
- * Active Annotation Processor for {@link TypeAdaptionRule}
- * 
- * @see TypeAdaptionRule
- */
-class TypeAdaptionRuleProcessor implements ValidationParticipant<Declaration> {
-
-	/**
-	 * Returns true if method has any specific adaption rule.
-	 */
-	static def hasTypeAdaptionRule(MethodDeclaration methodDeclaration) {
-		return methodDeclaration.hasAnnotation(TypeAdaptionRule) || methodDeclaration.parameters.exists [
-			it.hasAnnotation(TypeAdaptionRule)
-		]
-	}
-
-	override doValidate(List<? extends Declaration> annotatedDeclarations, extension ValidationContext context) {
-
-		for (annotatedDeclaration : annotatedDeclarations)
-			doValidate(annotatedDeclaration, context)
-
-	}
-
-	def doValidate(Declaration annotatedDeclaration, extension ValidationContext context) {
-
-		// retrieve executable which is in context of annotation
-		var ExecutableDeclaration executableInContext = null
-		if (annotatedDeclaration instanceof MethodDeclaration)
-			executableInContext = annotatedDeclaration
-		else if (annotatedDeclaration instanceof ParameterDeclaration)
-			executableInContext = annotatedDeclaration.declaringExecutable
-		else
-			annotatedDeclaration.addError('''Annotation @TypeAdaptionRule can not be applied to this element type''')
-
-		if (executableInContext !== null) {
-
-			val xtendExecutableDeclaration = executableInContext.primarySourceElement as ExecutableDeclaration
-
-			// must not be used on static method, if it does not use implementation adaption as well
-			if (executableInContext instanceof MethodDeclaration)
-				if (executableInContext.static && !executableInContext.hasAnnotation(ImplAdaptionRule))
-					xtendExecutableDeclaration.
-						addError('''Annotation @TypeAdaptionRule wihtout @ImplAdaptionRule cannot be used with static methods''')
-
-			// check if in context of ApplyRules 
-			val classInContext = executableInContext.declaringType as ClassDeclaration
-			if (!classInContext.hasAnnotation(ApplyRules))
-				xtendExecutableDeclaration.
-					addError('''Annotation @TypeAdaptionRule must be used in context of a class with annotation @ApplyRules''')
-
-			// parse and check for errors
-			val errors = new ArrayList<String>
-			val ruleParam = annotatedDeclaration.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
-			AdaptionFunctions.createFunctions(ruleParam, errors)
-			xtendExecutableDeclaration.reportErrors(errors, context)
-
-		}
-
-	}
-
-}
-
-/**
- * Active Annotation Processor for {@link ImplAdaptionRule}
- * 
- * @see ImplAdaptionRule
- */
-class ImplAdaptionRuleProcessor implements ValidationParticipant<ExecutableDeclaration> {
-
-	/**
-	 * Returns true if method has any specific adaption rule.
-	 */
-	static def hasImplAdaptionRule(MethodDeclaration methodDeclaration) {
-		return methodDeclaration.hasAnnotation(ImplAdaptionRule)
-	}
-
-	override doValidate(List<? extends ExecutableDeclaration> annotatedMethods, extension ValidationContext context) {
-
-		for (annotatedMethod : annotatedMethods)
-			doValidate(annotatedMethod, context)
-
-	}
-
-	def doValidate(ExecutableDeclaration annotatedExecutable, extension ValidationContext context) {
-
-		val xtendExecutableDeclaration = annotatedExecutable.primarySourceElement as ExecutableDeclaration
-
-		// check if in context of ApplyRules 
-		val classInContext = xtendExecutableDeclaration.declaringType as ClassDeclaration
-		if (!classInContext.hasAnnotation(ApplyRules))
-			xtendExecutableDeclaration.
-				addError('''Annotation @ImplAdaptionRule must be used in context of a class with annotation @ApplyRules''')
-
-		// parse and check for errors
-		val errors = new ArrayList<String>
-
-		val typeCheckParam = xtendExecutableDeclaration.getAnnotation(ImplAdaptionRule)?.getStringValue(
-			"typeExistenceCheck")
-		AdaptionFunctions.createFunctions(typeCheckParam, errors)
-		
-		val ruleParam = xtendExecutableDeclaration.getAnnotation(ImplAdaptionRule)?.getStringValue("value")
-		AdaptionFunctions.createFunctions(ruleParam, errors)
-		
-		xtendExecutableDeclaration.reportErrors(errors, context)
-
-	}
-
-}
-
-/**
- * Base class for activate annotation class processors (for auto adaption rules annotated on classes).
- */
-abstract class AutoAdaptionRuleClassProcessor extends AbstractClassProcessor {
-
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
-
-		super.doValidate(annotatedClass, context)
-
-		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
-
-		// check if in context of ApplyRules
-		if (!annotatedClass.hasAnnotation(ApplyRules))
-			xtendClass.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used in context of a class with annotation @ApplyRules''')
-
-	}
-
-}
-
-/**
  * Active Annotation Processor for {@link FactoryMethodRule}
  * 
  * @see FactoryMethodRule
  */
-class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
+class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClassDeclaration> {
 
 	/** 
 	 * Helper class for storing information about auto adaption.
@@ -533,6 +216,10 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		FactoryMethodRule
 	}
 
+	override boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement) {
+		return annotatedNamedElement instanceof ClassDeclaration
+	}
+
 	/**
 	 * The method will return the annotation's information from the current class.
 	 */
@@ -552,7 +239,6 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 			val factoryInterface = annotationFactoryMethodRule.getClassValue("factoryInterface")
 			val factoryInterfaceVariable = annotationFactoryMethodRule.getStringValue("factoryInterfaceVariable")
 			val returnTypeAdaptionRule = annotationFactoryMethodRule.getStringValue("returnTypeAdaptionRule")
-			
 
 			if (factoryMethod !== null)
 				result.factoryMethod = factoryMethod
@@ -608,8 +294,8 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		// retrieve info from trait classes
 		for (traitClassRef : currentClass.getTraitClassesAppliedToExtended(null, context)) {
 
-			val TraitClassResult = getFactoryMethodRuleInfoInternal(traitClassRef?.type as ClassDeclaration,
-				rootClass, errors, context)
+			val TraitClassResult = getFactoryMethodRuleInfoInternal(traitClassRef?.type as ClassDeclaration, rootClass,
+				errors, context)
 
 			if (TraitClassResult !== null)
 				result.add(TraitClassResult)
@@ -632,7 +318,7 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 
@@ -673,7 +359,7 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		if (!factoryMethodRuleInfo.initMethod.nullOrEmpty) {
 
 			// factory interface must only be set, if also instance is specified
-			if (!annotatedClass.getMethodClosure(null, null, true, context).exists [
+			if (!annotatedClass.getMethodClosure(null, null, true, false, false, true, context).exists [
 				it.simpleName == factoryMethodRuleInfo.initMethod && it.parameters.size == 0 && it.returnType.isVoid &&
 					(it.visibility == Visibility.PUBLIC || it.visibility == Visibility.PROTECTED)
 			])
@@ -691,10 +377,14 @@ class FactoryMethodRuleProcessor extends AutoAdaptionRuleClassProcessor {
  * 
  * @see ConstructRule
  */
-class ConstructRuleProcessor extends AutoAdaptionRuleClassProcessor {
+class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClassDeclaration> {
 
 	protected override getProcessedAnnotationType() {
 		ConstructRule
+	}
+
+	override boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement) {
+		return annotatedNamedElement instanceof ClassDeclaration
 	}
 
 	/**
@@ -747,8 +437,7 @@ class ConstructRuleProcessor extends AutoAdaptionRuleClassProcessor {
 			} else if (currentClass.hasAnnotation(ConstructRuleAuto)) {
 
 				// collect all relevant trait classes
-				val currentTraitClassAutoConstruction = currentClass.
-					getTraitClassesAppliedToExtended(null, context)
+				val currentTraitClassAutoConstruction = currentClass.getTraitClassesAppliedToExtended(null, context)
 				if (currentTraitClassAutoConstruction !== null)
 					for (typeRef : currentTraitClassAutoConstruction)
 						if (typeRef !== null && typeRef.type instanceof ClassDeclaration &&
@@ -772,7 +461,7 @@ class ConstructRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		return false
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 
@@ -781,7 +470,7 @@ class ConstructRuleProcessor extends AutoAdaptionRuleClassProcessor {
 		// there must not be another setting in type hierarchy
 		if (annotatedClass.getFactoryMethodRuleInfo(null, context) === null)
 			xtendClass.
-				addError('''Trait class auto construction can not be used without specifying a factory method rules for class hierarchy via @FactoryMethodRule''')
+				addError('''Trait class auto construction cannot be used without specifying a factory method rules for class hierarchy via @FactoryMethodRule''')
 
 		// check that class shall be extended
 		if (!annotatedClass.isExtendedClass)
@@ -863,10 +552,14 @@ class ConstructRuleAutoProcessor extends ConstructRuleProcessor {
  * 
  * @see ConstructRuleDisable
  */
-class ConstructRuleDisableProcessor extends AutoAdaptionRuleClassProcessor {
+class ConstructRuleDisableProcessor extends RuleProcessor<ClassDeclaration, MutableClassDeclaration> {
 
 	protected override getProcessedAnnotationType() {
 		ConstructRuleDisable
+	}
+
+	override boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement) {
+		return annotatedNamedElement instanceof ClassDeclaration
 	}
 
 	/**
@@ -920,7 +613,7 @@ class ConstructRuleDisableProcessor extends AutoAdaptionRuleClassProcessor {
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 
@@ -940,8 +633,7 @@ class ConstructRuleDisableProcessor extends AutoAdaptionRuleClassProcessor {
 		for (traitClassAutoConstructDisabledRef : traitClassAutoConstructDisabledRefs) {
 
 			// retrieve type
-			if (traitClassAutoConstructDisabledRef === null ||
-				traitClassAutoConstructDisabledRef.type === null) {
+			if (traitClassAutoConstructDisabledRef === null || traitClassAutoConstructDisabledRef.type === null) {
 				xtendClass.
 					addError('''Could not find one of the given trait classes specified in @«processedAnnotationType.simpleName»''')
 				return

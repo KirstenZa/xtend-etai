@@ -53,8 +53,6 @@ abstract class TraitClassInvalid {
 				problems
 
 			// do assertions
-			assertEquals(4, allProblems.size)
-			
 			assertEquals(1, problemsMethod1.size)
 			assertEquals(Severity.ERROR, problemsMethod1.get(0).severity)
 			assertTrue(problemsMethod1.get(0).message.contains("must be a trait method"))
@@ -71,6 +69,8 @@ abstract class TraitClassInvalid {
 			assertEquals(Severity.ERROR, problemsMethod4.get(0).severity)
 			assertTrue(problemsMethod4.get(0).message.contains("must not be declared static"))
 
+			assertEquals(4, allProblems.size)
+			
 		]
 
 	}

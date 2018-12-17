@@ -182,107 +182,127 @@ class TypeAdaptionVariableTests {
 	@Test
 	def void testTypeAdaptionWithVariable() {
 
-		val declaredMethodsExtendedClass = TypeAdaptionWithVariableExtendedClass.declaredMethods.filter([
+		val declaredMethodsExtendedClass = TypeAdaptionWithVariableExtendedClass.declaredMethods.filter[
 			synthetic == false
-		])
-		val declaredMethodsExtendedClassDerived = TypeAdaptionWithVariableExtendedClassDerived.declaredMethods.filter([
+		]
+		val declaredMethodsExtendedClassDerived = TypeAdaptionWithVariableExtendedClassDerived.declaredMethods.filter[
 			synthetic == false
-		])
+		]
 
 		// check case (a1)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "a1"
-		]).size)
-		assertSame(ControllerAttribute, declaredMethodsExtendedClass.filter([name == "a1"]).get(0).returnType)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttribute, declaredMethodsExtendedClass.filter[name == "a1"].get(0).returnType)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "a1"
-		]).size)
-		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter[
 			name == "a1"
-		]).get(0).returnType)
+		].get(0).returnType)
 
 		// check case (a2)
-		assertEquals(2, declaredMethodsExtendedClass.filter([
+		assertEquals(2, declaredMethodsExtendedClass.filter[
 			name == "a2"
-		]).size)
+		].size)
 		assertEquals(#{ControllerBase, ControllerAttributeString},
-			declaredMethodsExtendedClass.filter([name == "a2"]).map[returnType].toSet)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+			declaredMethodsExtendedClass.filter[name == "a2"].map[returnType].toSet)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "a2"
-		]).size)
-		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter[
 			name == "a2"
-		]).get(0).returnType)
+		].get(0).returnType)
 
 		// check case (a3)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "a3"
-		]).size)
-		assertSame(ControllerBase, declaredMethodsExtendedClass.filter([name == "a3"]).get(0).returnType)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClass.filter[name == "a3"].get(0).returnType)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "a3"
-		]).size)
-		assertSame(ControllerAttributeStringConcrete2, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttributeStringConcrete2, declaredMethodsExtendedClassDerived.filter[
 			name == "a3"
-		]).get(0).returnType)
+		].get(0).returnType)
 
 		// check case (b1)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "b1"
-		]).size)
-		assertSame(ControllerBase, declaredMethodsExtendedClass.filter([name == "b1"]).get(0).returnType)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClass.filter[name == "b1"].get(0).returnType)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "b1"
-		]).size)
-		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter[
 			name == "b1"
-		]).get(0).returnType)
+		].get(0).returnType)
 
 		// check case (b2)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "b2"
-		]).size)
-		assertSame(ControllerBase, declaredMethodsExtendedClass.filter([name == "b2"]).get(0).parameters.get(0).type)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClass.filter[name == "b2"].get(0).parameters.get(0).type)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "b2"
-		]).size)
-		assertSame(ControllerAttributeStringConcrete1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClassDerived.filter[
 			name == "b2"
-		]).get(0).parameters.get(0).type)
+		].get(0).parameters.get(0).type)
+
+		// there is no actual adaption in the signature of the method, but there is a type assertion (here the test)
+		var boolean exceptionThrown
+		val obj = new TypeAdaptionWithVariableExtendedClassDerived
+
+		exceptionThrown = false
+		try {
+			obj.b2(new ControllerBase(null))
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			obj.b2(new ControllerAttributeStringConcrete1(null))
+		} catch (Exception exception) {
+			exceptionThrown = true
+		}
+		assertFalse(exceptionThrown)
 
 		// check case (b3)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "b3"
-		]).size)
-		assertSame(ControllerBase, declaredMethodsExtendedClass.filter([name == "b3"]).get(0).returnType)
-		assertEquals(1, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClass.filter[name == "b3"].get(0).returnType)
+		assertEquals(1, declaredMethodsExtendedClassDerived.filter[
 			name == "b3"
-		]).size)
-		assertSame(ControllerAttributeString, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerAttributeString, declaredMethodsExtendedClassDerived.filter[
 			name == "b3"
-		]).get(0).returnType)
+		].get(0).returnType)
 
 		// check case (b4)
-		assertEquals(1, declaredMethodsExtendedClass.filter([
+		assertEquals(1, declaredMethodsExtendedClass.filter[
 			name == "b4"
-		]).size)
-		assertSame(ControllerBase, declaredMethodsExtendedClass.filter([name == "b4"]).get(0).returnType)
-		assertEquals(0, declaredMethodsExtendedClassDerived.filter([
+		].size)
+		assertSame(ControllerBase, declaredMethodsExtendedClass.filter[name == "b4"].get(0).returnType)
+		assertEquals(0, declaredMethodsExtendedClassDerived.filter[
 			name == "b4"
-		]).size)
+		].size)
 
 	}
 
 	@Test
 	def void testConstructorTypeAdaptionWithVariable() {
 
-		assertEquals(1, ConstructorTypeAdaptionWithVariableExtendedClass.declaredMethods.filter([
-			name == "create"
-		]).size)
+		assertEquals(1, ConstructorTypeAdaptionWithVariableExtendedClass.declaredMethods.filter[
+			name == "create" && synthetic == false
+		].size)
 
-		val createMethod = ConstructorTypeAdaptionWithVariableExtendedClass.declaredMethods.filter([
-			name == "create"
-		]).get(0)
+		val createMethod = ConstructorTypeAdaptionWithVariableExtendedClass.declaredMethods.filter[
+			name == "create" && synthetic == false
+		].get(0)
 
 		assertEquals(3, createMethod.parameterCount)
 		assertSame(AnotherDerived, createMethod.parameters.get(0).type)

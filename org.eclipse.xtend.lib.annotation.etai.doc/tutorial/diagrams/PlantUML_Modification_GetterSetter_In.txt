@@ -1,0 +1,15 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class Person <<ApplyRules>> {
+	<<GetterRule, SetterRule(visibility=PROTECTED)>> -name:String
+}
+
+@enduml

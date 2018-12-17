@@ -1,10 +1,11 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.extraction
 
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.NoInterfaceExtract
 import org.eclipse.xtend.lib.annotation.etai.tests.extraction.intf.IExtractInterfaceTestNoExtraction
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
-import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
@@ -20,7 +21,7 @@ class ExtractInterfaceTestNoExtraction {
 
 	@NoInterfaceExtract
 	def void method2() {}
-	
+
 	static def void method3() {}
 
 }
@@ -36,7 +37,7 @@ class ExtractInterfaceTestNoExtractionTests {
 		assertEquals("method1", IExtractInterfaceTestNoExtraction.declaredMethods.get(0).name)
 
 	}
-	
+
 	@Test
 	def void testNoExtractionNotAllowedForTraitClasses() {
 
@@ -63,14 +64,51 @@ abstract class AnTraitClass {
 
 			val clazz = findClass("virtual.AnTraitClass")
 
-			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
+			val problemsMethod = (clazz.findDeclaredMethod("method").primarySourceElement as MethodDeclaration).problems
 
 			// do assertions
+			assertEquals(1, problemsMethod.size)
+			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
+			assertTrue(problemsMethod.get(0).message.contains("must not be used within trait classes"))
+
 			assertEquals(1, allProblems.size)
 
-			assertEquals(1, problemsClass.size)
-			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
-			assertTrue(problemsClass.get(0).message.contains("must not be used for trait classes"))
+		]
+
+	}
+
+	@Test
+	def void testNoInterfaceExtractionWrongUsageOnFields() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.NoInterfaceExtract
+import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
+
+@ExtractInterface
+class ClassWithExtractInterface {
+
+	@NoInterfaceExtract
+	int field = 40
+
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass('virtual.ClassWithExtractInterface')
+
+			val problemsField = (clazz.findDeclaredField("field").primarySourceElement as FieldDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsField.size)
+			assertEquals(Severity.ERROR, problemsField.get(0).severity)
+			assertTrue(problemsField.get(0).message.contains("only be applied to methods"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

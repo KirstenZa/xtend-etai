@@ -607,11 +607,11 @@ abstract class AnTraitClass implements INotAnTraitClass {
 			val localProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, localProblems.size)
 			assertEquals(Severity.ERROR, localProblems.get(0).severity)
 			assertTrue(localProblems.get(0).message.contains("not a trait class"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -668,8 +668,6 @@ abstract class TraitClass4 extends TraitClass1 {
 			val localProblems23 = (clazz23.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(3, allProblems.size)
-
 			assertEquals(1, localProblems21.size)
 			assertEquals(Severity.ERROR, localProblems21.get(0).severity)
 			assertTrue(localProblems21.get(0).message.contains("type hierarchy"))
@@ -681,6 +679,8 @@ abstract class TraitClass4 extends TraitClass1 {
 			assertEquals(1, localProblems23.size)
 			assertEquals(Severity.ERROR, localProblems23.get(0).severity)
 			assertTrue(localProblems23.get(0).message.contains("common base"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 
@@ -695,37 +695,43 @@ abstract class TraitClass4 extends TraitClass1 {
 
 		assertTrue(
 			Modifier.isProtected(ExtendedClassUsingIndirectTraitsProtectedMethods.declaredMethods.findFirst [
-				name == "protectedMethodRequired"
+				name == "protectedMethodRequired" && synthetic == false
 			].modifiers)
 		)
 		assertTrue(
 			Modifier.isProtected(ExtendedClassUsingIndirectTraitsProtectedMethods.declaredMethods.findFirst [
-				name == "protectedMethodA"
+				name == "protectedMethodA" && synthetic == false
 			].modifiers)
 		)
 		assertTrue(
 			Modifier.isProtected(TraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst [
-				name == "protectedMethodRequired"
+				name == "protectedMethodRequired" && synthetic == false
 			].modifiers)
 		)
 		assertTrue(
 			Modifier.isProtected(TraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst [
-				name == "protectedMethodA"
+				name == "protectedMethodA" && synthetic == false
 			].modifiers)
 		)
 		assertNull(
 			IExtendedClassUsingIndirectTraitsProtectedMethods.declaredMethods.findFirst [
-				name == "protectedMethodRequired"
+				name == "protectedMethodRequired" && synthetic == false
 			]
 		)
 		assertNull(
-			IExtendedClassUsingIndirectTraitsProtectedMethods.declaredMethods.findFirst[name == "protectedMethodA"]
+			IExtendedClassUsingIndirectTraitsProtectedMethods.declaredMethods.findFirst [
+				name == "protectedMethodA" && synthetic == false
+			]
 		)
 		assertNull(
-			ITraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst[name == "protectedMethodRequired"]
+			ITraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst [
+				name == "protectedMethodRequired" && synthetic == false
+			]
 		)
 		assertNull(
-			ITraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst[name == "protectedMethodA"]
+			ITraitClassUsingOtherExtensionProtectedMethods.declaredMethods.findFirst [
+				name == "protectedMethodA" && synthetic == false
+			]
 		)
 
 	}
@@ -827,8 +833,6 @@ class ExtendedClassCheckInconsistentVariance3 implements ITraitClassCheckInconsi
 			val localProblems3 = (clazz3.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(3, allProblems.size)
-
 			assertEquals(1, localProblems1.size)
 			assertEquals(Severity.ERROR, localProblems1.get(0).severity)
 			assertTrue(localProblems1.get(0).message.contains("has already been applied"))
@@ -840,6 +844,8 @@ class ExtendedClassCheckInconsistentVariance3 implements ITraitClassCheckInconsi
 			assertEquals(1, localProblems3.size)
 			assertEquals(Severity.ERROR, localProblems3.get(0).severity)
 			assertTrue(localProblems3.get(0).message.contains("has already been applied"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 

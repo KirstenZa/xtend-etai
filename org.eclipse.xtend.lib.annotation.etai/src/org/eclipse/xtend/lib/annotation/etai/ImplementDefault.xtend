@@ -1,12 +1,12 @@
 package org.eclipse.xtend.lib.annotation.etai
 
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
-import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 import java.util.ArrayList
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
+import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
@@ -21,9 +21,9 @@ import static org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
 
 import static extension org.eclipse.xtend.lib.annotation.etai.EnvelopeMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ProcessedMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.RequiredMethodProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
@@ -55,7 +55,7 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 		ImplementDefault
 	}
 
-	override doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
+	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
 
@@ -64,7 +64,7 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 
 	}
 
-	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+	override void doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 
 		super.doTransform(annotatedClass, context)
 
@@ -83,16 +83,16 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 
 		// retrieve all methods, which are implemented
 		val methodsImplemented = new ArrayList<MethodDeclaration>(
-			annotatedClass.getMethodClosure(null, [false], true, context).filter[!it.abstract].toList)
+			annotatedClass.getMethodClosure(null, [false], true, false, false, true, context).filter[!it.abstract].
+				toList)
 
 		// retrieve all methods, which are not implemented (abstract)
 		val methodsToBeImplemented = new ArrayList<MethodDeclaration>(
-			annotatedClass.getMethodClosure(null, [true], true, context).filter[it.abstract].toList)
+			annotatedClass.getMethodClosure(null, [true], true, false, false, true, context).filter[it.abstract].toList)
 
 		// add methods from trait classes (which are relevant)
 		for (traitClass : annotatedClass.getTraitClassesSpecifiedForExtendedClosure(null, context))
-			for (traitMethod : (traitClass.type as ClassDeclaration).
-				getTraitMethodClosure(typeMap, context))
+			for (traitMethod : (traitClass.type as ClassDeclaration).getTraitMethodClosure(typeMap, context))
 				if (traitMethod.isRequiredMethod && traitMethod.visibility != Visibility.PUBLIC)
 					methodsToBeImplemented.add(traitMethod)
 				else if ((traitMethod.isProcessedMethod &&
@@ -109,16 +109,18 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 		for (methodNotImplemented : methodsToBeImplemented) {
 
 			// ... except an implementation can be found 
-			if (methodsImplemented.getMatchingMethod(methodNotImplemented, TypeMatchingStrategy.MATCH_COVARIANT,
-				typeMap, context) === null) {
+			if (methodsImplemented.getMatchingMethod(methodNotImplemented,
+				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+				false, typeMap, context) === null) {
 
 				// maybe an abstract method exists in current class (adaption), which can be used
 				// otherwise a new method must be created (by copying)
 				var implementedMethod = annotatedClass.getMatchingExecutableInClass(methodNotImplemented,
-					TypeMatchingStrategy.MATCH_COVARIANT, false, typeMap, context) as MutableMethodDeclaration
+					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+					false, false, true, false, false, typeMap, context) as MutableMethodDeclaration
 				if (implementedMethod === null)
-					implementedMethod = annotatedClass.copyMethod(methodNotImplemented, true, false, true, typeMap,
-						context)
+					implementedMethod = annotatedClass.copyMethod(methodNotImplemented, true, false, true, false, false,
+						false, typeMap, context)
 
 				// the implemented method will not be abstract
 				implementedMethod.abstract = false
@@ -132,25 +134,25 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 
 				// create method's body
 				if (implementedMethod.returnType == context.primitiveVoid)
-					bodySetter.setBody(implementedMethod, '''''')
+					bodySetter.setBody(implementedMethod, '''''', context)
 				else if (implementedMethod.returnType == context.primitiveBoolean)
-					bodySetter.setBody(implementedMethod, '''return false;''')
+					bodySetter.setBody(implementedMethod, '''return false;''', context)
 				else if (implementedMethod.returnType == context.primitiveInt)
-					bodySetter.setBody(implementedMethod, '''return 0;''')
+					bodySetter.setBody(implementedMethod, '''return 0;''', context)
 				else if (implementedMethod.returnType == context.primitiveDouble)
-					bodySetter.setBody(implementedMethod, '''return 0.0d;''')
+					bodySetter.setBody(implementedMethod, '''return 0.0d;''', context)
 				else if (implementedMethod.returnType == context.primitiveFloat)
-					bodySetter.setBody(implementedMethod, '''return 0.0f;''')
+					bodySetter.setBody(implementedMethod, '''return 0.0f;''', context)
 				else if (implementedMethod.returnType == context.primitiveChar)
-					bodySetter.setBody(implementedMethod, '''return '\0';''')
+					bodySetter.setBody(implementedMethod, '''return '\0';''', context)
 				else if (implementedMethod.returnType == context.primitiveLong)
-					bodySetter.setBody(implementedMethod, '''return 0L;''')
+					bodySetter.setBody(implementedMethod, '''return 0L;''', context)
 				else if (implementedMethod.returnType == context.primitiveShort)
-					bodySetter.setBody(implementedMethod, '''return 0;''')
+					bodySetter.setBody(implementedMethod, '''return 0;''', context)
 				else if (implementedMethod.returnType == context.primitiveByte)
-					bodySetter.setBody(implementedMethod, '''return 0;''')
+					bodySetter.setBody(implementedMethod, '''return 0;''', context)
 				else
-					bodySetter.setBody(implementedMethod, '''return null;''')
+					bodySetter.setBody(implementedMethod, '''return null;''', context)
 
 				// add to implemented methods, so it is not implemented again
 				methodsImplemented.add(implementedMethod)
@@ -163,7 +165,7 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
 

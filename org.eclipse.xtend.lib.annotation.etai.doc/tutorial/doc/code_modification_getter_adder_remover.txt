@@ -1,0 +1,26 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+
+@ApplyRules
+class Text {
+
+	@GetterRule(collectionPolicy=UNMODIFIABLE_COPY)
+	@AdderRule
+	@RemoverRule(multiple=true)
+	java.util.List<String> paragraphs = new java.util.ArrayList<String>
+	
+
+}
+
+class TextDuplicator {
+	
+	def duplicateParagraphs(Text text) {		
+		for (paragraph : text.paragraphs)
+			text.addToParagraphs("COPY: " + paragraph)
+	}
+
+}

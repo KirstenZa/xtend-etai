@@ -431,11 +431,14 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionDefaultVisibilityCheck() {
 
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst[name == "methodVisibilityCheck"].modifiers)
+			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+				name == "methodVisibilityCheck" && synthetic == false
+			].modifiers)
 		)
 		assertTrue(
-			Modifier.isPublic(
-				ExtendedClassDefault.declaredMethods.findFirst[name == "methodVisibilityCheckBase"].modifiers)
+			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+				name == "methodVisibilityCheckBase" && synthetic == false
+			].modifiers)
 		)
 
 	}
@@ -444,7 +447,9 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionDefaultSetFinalCheck() {
 
 		assertTrue(
-			Modifier.isFinal(ExtendedClassDefault.declaredMethods.findFirst[name == "methodSetFinalCheck"].modifiers)
+			Modifier.isFinal(ExtendedClassDefault.declaredMethods.findFirst [
+				name == "methodSetFinalCheck" && synthetic == false
+			].modifiers)
 		)
 
 	}
@@ -487,11 +492,14 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionOverrideVisibilityCheck() {
 
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst[name == "methodVisibilityCheck"].modifiers)
+			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+				name == "methodVisibilityCheck" && synthetic == false
+			].modifiers)
 		)
 		assertTrue(
-			Modifier.isPublic(
-				ExtendedClassDefault.declaredMethods.findFirst[name == "methodVisibilityCheckBase"].modifiers)
+			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+				name == "methodVisibilityCheckBase" && synthetic == false
+			].modifiers)
 		)
 
 	}

@@ -183,7 +183,8 @@ class RequiredMethodTests extends TraitTestsBase {
 	@Test
 	def void testRequiredMethodNoUnnecessaryAbstractDeclaration() {
 
-		assertEquals(0, ExtendedRequiredMethodAbstract.declaredMethods.filter[name.equals("method1")].size)
+		assertEquals(0,
+			ExtendedRequiredMethodAbstract.declaredMethods.filter[name.equals("method1") && synthetic == false].size)
 
 	}
 
@@ -213,11 +214,11 @@ abstract class TraitClassWithRequiredMethods {
 			val problemsMethod = (clazz.findDeclaredMethod("method").primarySourceElement as MethodDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsMethod.size)
 			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
 			assertTrue(problemsMethod.get(0).message.contains("abstract"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -259,13 +260,13 @@ class ExtendedClassNotFulfillingRequirement implements ITraitClassRequiring {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(2, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("requires method"))
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("requires method"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

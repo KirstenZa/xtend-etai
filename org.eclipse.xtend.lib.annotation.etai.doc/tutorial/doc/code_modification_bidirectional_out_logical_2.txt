@@ -1,0 +1,27 @@
+package virtual;
+
+public class Country {
+
+	private java.util.Set<City> cities = new java.util.HashSet<City>();
+
+	public java.util.Set<City> getCities() {
+		return java.util.Collections.unmodifiableSet(cities);
+	}
+
+	public boolean addToCities(City $element) {
+		if (cities.contains($element))
+			return false;
+		cities.add($element);
+		$element.setLocation(this);
+		return true;
+	}
+
+	public boolean removeFromCities(City $element) {
+		if (!cities.contains($element))
+			return false;
+		cities.remove($element);
+		$element.setLocation(null);
+		return true;
+	}
+
+}

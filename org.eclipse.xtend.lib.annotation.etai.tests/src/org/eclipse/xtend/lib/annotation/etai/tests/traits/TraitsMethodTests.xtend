@@ -5,6 +5,7 @@ package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -35,8 +36,7 @@ class RegularClass {
 	}
 
 	@RequiredMethod
-	def void method2() {
-	}
+	abstract def void method2()
 
 	@ProcessedMethod(processor=EPVoidPost)
 	def void method3() {
@@ -70,8 +70,6 @@ class RegularClass {
 				problems
 
 			// do assertions
-			assertEquals(5, allProblems.size)
-
 			assertEquals(1, problemsMethod1.size)
 			assertEquals(Severity.ERROR, problemsMethod1.get(0).severity)
 			assertTrue(problemsMethod1.get(0).message.contains("only be declared within a trait class"))
@@ -91,6 +89,8 @@ class RegularClass {
 			assertEquals(1, problemsMethod5.size)
 			assertEquals(Severity.ERROR, problemsMethod5.get(0).severity)
 			assertTrue(problemsMethod5.get(0).message.contains("only be declared within a trait class"))
+
+			assertEquals(5, allProblems.size)
 
 		]
 
@@ -139,13 +139,72 @@ class ExtendedClassBasic implements ITraitClassBasic {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(2, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("inferred"))
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("inferred"))
+
+			assertEquals(2, allProblems.size)
+
+		]
+
+	}
+	
+	@Test
+	def void testTraitMethodWrongUsageOnFields() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.EPDefault
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+
+@TraitClass
+abstract class TraitClassWithFields {
+
+	@ExclusiveMethod
+	int dataExclusive
+
+	@ProcessedMethod(processor=EPDefault)
+	int dataProcessed
+
+	@EnvelopeMethod
+	int dataEnvelope
+
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass('virtual.TraitClassWithFields')
+
+			val problemsFieldDataExclusive = (clazz.findDeclaredField("dataExclusive").
+				primarySourceElement as FieldDeclaration).problems
+			val problemsFieldDataProcessed = (clazz.findDeclaredField("dataProcessed").
+				primarySourceElement as FieldDeclaration).problems
+			val problemsFieldDataEnvelope = (clazz.findDeclaredField("dataEnvelope").
+				primarySourceElement as FieldDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsFieldDataExclusive.size)
+			assertEquals(Severity.ERROR, problemsFieldDataExclusive.get(0).severity)
+			assertTrue(problemsFieldDataExclusive.get(0).message.contains("only applied to a field, if"))
+
+			assertEquals(1, problemsFieldDataProcessed.size)
+			assertEquals(Severity.ERROR, problemsFieldDataProcessed.get(0).severity)
+			assertTrue(problemsFieldDataProcessed.get(0).message.contains("only applied to a field, if"))
+
+			assertEquals(1, problemsFieldDataEnvelope.size)
+			assertEquals(Severity.ERROR, problemsFieldDataEnvelope.get(0).severity)
+			assertTrue(problemsFieldDataEnvelope.get(0).message.contains("only applied to a field, if"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 

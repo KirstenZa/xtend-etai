@@ -263,11 +263,12 @@ class ExtendedClassAmbiguous implements ITraitClassAmbiguous1, ITraitClassAmbigu
 			if (errorMessage !== null) {
 
 				// do assertions
-				assertEquals(1, allProblems.size)
 				assertEquals(1, localProblems.size)
 				assertEquals(Severity.ERROR, localProblems.get(0).severity)
 
 				assertTrue(localProblems.get(0).message.contains(errorMessage))
+
+				assertEquals(1, allProblems.size)
 
 			} else {
 
@@ -343,8 +344,6 @@ class ExtendedClassAmbiguous2 implements ITraitClassAmbiguousDerived, ITraitClas
 			val localProblems2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, localProblems1.size)
 			assertEquals(Severity.ERROR, localProblems1.get(0).severity)
 			assertTrue(localProblems1.get(0).message.contains("has already been applied"))
@@ -352,6 +351,8 @@ class ExtendedClassAmbiguous2 implements ITraitClassAmbiguousDerived, ITraitClas
 			assertEquals(1, localProblems2.size)
 			assertEquals(Severity.ERROR, localProblems2.get(0).severity)
 			assertTrue(localProblems2.get(0).message.contains("has already been applied"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -531,8 +532,6 @@ class ExtendedScenario13 extends A_extBy_Y3_use_XE1 implements I_Z2_use_Y2_use_X
 			val localProblems13 = (clazz13.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(8, allProblems.size)
-
 			assertEquals(1, localProblems1.size)
 			assertEquals(Severity.ERROR, localProblems1.get(0).severity)
 			assertTrue(localProblems1.get(0).message.contains("has already been applied"))
@@ -575,6 +574,8 @@ class ExtendedScenario13 extends A_extBy_Y3_use_XE1 implements I_Z2_use_Y2_use_X
 
 			assertEquals(0, localProblems13.size)
 
+			assertEquals(8, allProblems.size)
+
 		]
 
 	}
@@ -608,11 +609,11 @@ class ExtendedClassEmpty implements ITraitClassEmpty, org.eclipse.xtend.lib.anno
 			val localProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, localProblems.size)
 			assertEquals(Severity.ERROR, localProblems.get(0).severity)
 			assertTrue(localProblems.get(0).message.contains("multiple times"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

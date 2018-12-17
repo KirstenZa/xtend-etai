@@ -293,30 +293,34 @@ class FactoryMethodTests {
 		assertEquals("myStr", newDerived41.str)
 		assertEquals("myStr", newDerived42.str)
 
-		assertEquals(2,
-			ClassWithFactoryMethodWithParametersDerived1.declaredMethods.filter[name.startsWith("create")].size())
-		assertEquals(1,
-			ClassWithFactoryMethodWithParametersDerived2.declaredMethods.filter[name.startsWith("create")].size())
-		assertEquals(1,
-			ClassWithFactoryMethodWithParametersDerived3.declaredMethods.filter[name.startsWith("create")].size())
-		assertEquals(2,
-			ClassWithFactoryMethodWithParametersDerived4.declaredMethods.filter[name.startsWith("create")].size())
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size())
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size())
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size())
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived4.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size())
 
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived1.constructors.size())
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived2.constructors.size())
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived3.constructors.size())
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived4.constructors.size())
 
-		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredConstructors.filter [
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredConstructors.filter [
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredConstructors.filter [
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(3, ClassWithFactoryMethodWithParametersDerived4.declaredConstructors.filter [
+		assertEquals(3, ClassWithFactoryMethodWithParametersDerived4.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
 
@@ -356,12 +360,14 @@ class FactoryMethodTests {
 		ClassWithFactoryMethodTypeArgs::callingMustWork(obj3)
 
 	}
-	
+
 	@Test
 	def void testFactoryMethodReturnTypeAdaption() {
 
-		assertEquals(IClassWithFactoryMethodReturnInterface, ClassWithFactoryMethodReturnInterface.getMethod("construct").returnType)
-		assertEquals(IClassWithFactoryMethodReturnInterfaceDerived, ClassWithFactoryMethodReturnInterfaceDerived.getMethod("construct").returnType)
+		assertEquals(IClassWithFactoryMethodReturnInterface,
+			ClassWithFactoryMethodReturnInterface.getMethod("construct").returnType)
+		assertEquals(IClassWithFactoryMethodReturnInterfaceDerived,
+			ClassWithFactoryMethodReturnInterfaceDerived.getMethod("construct").returnType)
 	}
 
 	@Test
@@ -431,8 +437,6 @@ class ExtendedClassWithFactoryMethod implements ITraitClassWithFactoryMethod {
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("Ambiguous"))
@@ -440,6 +444,8 @@ class ExtendedClassWithFactoryMethod implements ITraitClassWithFactoryMethod {
 			assertEquals(1, problemsClass2.size)
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("Ambiguous"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -530,8 +536,6 @@ abstract class TraitClassWithoutInitMethod {
 			val problemsClass6 = (clazz6.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(3, allProblems.size)
-
 			assertEquals(0, problemsClass1.size)
 			assertEquals(0, problemsClass2.size)
 			assertEquals(0, problemsClass3.size)
@@ -547,6 +551,8 @@ abstract class TraitClassWithoutInitMethod {
 			assertEquals(1, problemsClass6.size)
 			assertEquals(Severity.ERROR, problemsClass6.get(0).severity)
 			assertTrue(problemsClass6.get(0).message.contains("must be declared and visible"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 
@@ -577,11 +583,11 @@ class ClassWithFactoryMethod {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("empty factory method name"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

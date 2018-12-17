@@ -11,4 +11,7 @@ class ClassWithFactoryClassAdaptedTwiceConcreteOtherFile extends ClassWithFactor
 @ExtractInterface
 @ApplyRules
 class ControllerAttributeStringConcrete2 extends ControllerAttributeString {
+
+	override String getAString() { return "ControllerAttributeStringConcrete2" }
+
 }

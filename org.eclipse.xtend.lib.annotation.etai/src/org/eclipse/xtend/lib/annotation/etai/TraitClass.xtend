@@ -3,7 +3,9 @@ package org.eclipse.xtend.lib.annotation.etai
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 import java.util.ArrayList
+import java.util.HashSet
 import java.util.List
+import java.util.Set
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
 import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
@@ -24,11 +26,11 @@ import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.eclipse.xtend.lib.macro.services.TypeLookup
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
+import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructorMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.EnvelopeMethodProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.RequiredMethodProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.RequiredMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
 
@@ -180,6 +182,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	final static public String TRAIT_METHOD_IMPL_NAME_SUFFIX = "$impl"
 	final static public String EXTENDED_METHOD_CALL_NAME_SUFFIX = "$extended"
 
+	final static public Set<String> TRAIT_CLASS_TO_BE_PROCESSED = new HashSet<String>
+
 	protected override Class<?> getProcessedAnnotationType() {
 		TraitClass
 	}
@@ -304,8 +308,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	) {
 
 		// retrieve directly used trait classes (closure)
-		val directlyUsedTraitClasses = annotatedClass.
-			getTraitClassesDirectlyUsedByTraitClassClosure(null, context)
+		val directlyUsedTraitClasses = annotatedClass.getTraitClassesDirectlyUsedByTraitClassClosure(null, context)
 
 		val validDirectlyAppliedTraitClasses = new ArrayList<ClassDeclaration>
 
@@ -384,6 +387,20 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	}
 
 	/**
+	 * Returns <code>true</code>, if the trait class is still unprocessed.
+	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
+	 * processed specifically. 
+	 */
+	static def boolean isUnprocessedTraitClass(String annotatedClass) {
+
+		if (TRAIT_CLASS_TO_BE_PROCESSED.contains(annotatedClass))
+			return true
+
+		return false
+
+	}
+
+	/**
 	 * Returns the method name for the trait method (after renaming).
 	 */
 	static def getTraitMethodImplName(MethodDeclaration annotatedMethod) {
@@ -418,7 +435,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	) {
 
 		val result = new ArrayList<MethodDeclaration>
-		for (constructorMethod : annotatedClass.getDeclaredMethodsResolved(context))
+		for (constructorMethod : annotatedClass.getDeclaredMethodsResolved(true, false, false, context))
 			if (constructorMethod.isConstructorMethod)
 				result += constructorMethod
 		return result;
@@ -433,7 +450,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		extension T context
 	) {
 
-		for (constructorMethod : annotatedClass.getDeclaredMethodsResolved(context))
+		for (constructorMethod : annotatedClass.getDeclaredMethodsResolved(true, false, false, context))
 			if (constructorMethod.isConstructorMethod && constructorMethod.parameters.size > 0)
 				return true;
 		return false;
@@ -451,38 +468,42 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 		return traitClass.getMethodClosure(null, [
 			false
-		], true, context).filter([
+		], true, false, false, true, context).filter [
 			!it.abstract && it.isTraitMethod
-		]).unifyMethodDeclarations(TypeMatchingStrategy.MATCH_COVARIANT, covariantReturnType.curry(context), typeMap,
-			context)
+		].unifyMethodDeclarations(TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+			TypeMatchingStrategy.MATCH_INHERITANCE, covariantReturnType.curry(context), false, typeMap, context)
 
 	}
 
 	/**
 	 * Returns the trait methods from the specified trait class.
 	 */
-	static def List<MethodDeclaration> getTraitMethodClosure(ClassDeclaration traitClass,
-		TypeMap typeMap, extension TransformationContext context) {
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getTraitMethodClosure(
+		ClassDeclaration traitClass, TypeMap typeMap, extension T context) {
 
 		return traitClass.getMethodClosure(null, [
 			false
-		], true, context).filter([
+		], true, false, false, true, context).filter [
 			it.isTraitMethod
-		]).unifyMethodDeclarations(TypeMatchingStrategy.MATCH_COVARIANT, covariantReturnType.curry(context), typeMap,
-			context)
+		].unifyMethodDeclarations(TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+			TypeMatchingStrategy.MATCH_INHERITANCE, covariantReturnType.curry(context), false, typeMap, context)
 
 	}
 
-	override doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
+	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
+
+		// track if class (and interface) has already been processed,
+		// i.e. the type hierarchy has been set correctly and methods have been generated
+		TRAIT_CLASS_TO_BE_PROCESSED.add(annotatedClass.qualifiedName)
 
 		// start processing of this element
 		ProcessQueue.startTrack(ProcessQueue.PHASE_TRAIT_CLASS, annotatedClass, annotatedClass.qualifiedName)
 
 	}
 
-	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+	override void doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 
 		// process mirror interface (apply @ExtractInterface)
 		annotatedClass.addAnnotation(ExtractInterface.newAnnotationReference)
@@ -498,7 +519,16 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 	override boolean doTransformQueued(int phase, MutableClassDeclaration annotatedClass, BodySetter bodySetter,
 		extension TransformationContext context) {
 
-		doTransformQueuedTraitClass(phase, annotatedClass, bodySetter, context)
+		try {
+
+			doTransformQueuedTraitClass(phase, annotatedClass, bodySetter, context)
+
+		} finally {
+
+			// stop tracking (hierarchy is complete now)
+			TRAIT_CLASS_TO_BE_PROCESSED.remove(annotatedClass)
+
+		}
 
 		return true
 
@@ -564,14 +594,14 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 		} else {
 
-			extendedThisMethod.body = '''return («mirrorInterfaceTypeRef.getTypeReferenceAsString(true, false, false, context)») super.«EXTENDED_THIS_METHOD_NAME»();''';
+			extendedThisMethod.body = '''return («mirrorInterfaceTypeRef.getTypeReferenceAsString(true, false, false, false,context)») super.«EXTENDED_THIS_METHOD_NAME»();''';
 
 		}
 
 		// retrieve all envelop method in trait class hierarchy
-		val envelopeMethods = annotatedClass.getTraitMethodsToApply(typeMap, context).filter([
+		val envelopeMethods = annotatedClass.getTraitMethodsToApply(typeMap, context).filter [
 			it.isEnvelopeMethod
-		])
+		]
 
 		// generate helper method for envelope method in order to call method in extended class
 		for (envelopeMethod : envelopeMethods) {
@@ -581,7 +611,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 			// create new method which is able to call the functionality of extended class
 			// inside of envelope method
-			val newMethod = annotatedClass.copyMethod(envelopeMethod, true, false, false, typeMap, context)
+			val newMethod = annotatedClass.copyMethod(envelopeMethod, true, false, false, false, false, false, typeMap,
+				context)
 
 			// rename method and set private
 			newMethod.simpleName = envelopeMethod.getExtendedMethodCallName
@@ -605,17 +636,17 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					"null"
 
 			bodySetter.setBody(
-				newMethod, '''«IF !isVoid»return («newMethod.returnType.getTypeReferenceAsString(true, false, false, context)»)«ENDIF»
+				newMethod, '''«IF !isVoid»return («newMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)»)«ENDIF»
 						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(«EXTENDED_THIS_METHOD_NAME»(), "«envelopeMethod.getExtendedMethodImplName(annotatedClass)»",
 						«defaultValueProviderObj»,
 						«isVoid»,
 						new Class<?> [] { «paramTypeNameList.map[it + ".class"] .join(", ")» },
-						new Object [] { «paramNameList.join(", ")» });''')
+						new Object [] { «paramNameList.join(", ")» });''', context)
 
 		}
 
 		// go through all trait methods and constructors of trait class
-		for (method : annotatedClass.getDeclaredMethodsResolved(context)) {
+		for (method : annotatedClass.getDeclaredMethodsResolved(true, false, false, context)) {
 
 			if (method.isTraitMethod) {
 
@@ -626,7 +657,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					// copying the body to a new method instead of real renaming avoids
 					// some problems with "override" and warnings
 					// (original method will be reused by delegation mechanism)
-					val implMethod = annotatedClass.copyMethod(method, true, false, false, typeMap, context)
+					val implMethod = annotatedClass.copyMethod(method, true, false, false, false, false, false, typeMap,
+						context)
 
 					// set visibility
 					implMethod.visibility = Visibility.PUBLIC
@@ -641,7 +673,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					implMethod.simpleName = method.traitMethodImplName
 
 					// move body
-					bodySetter.moveBody(implMethod, method)
+					bodySetter.moveBody(implMethod, method, context)
 
 				}
 
@@ -651,8 +683,11 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					var ExecutableDeclaration foundEnvelopeMethod = method
 					while (foundEnvelopeMethod !== null && foundEnvelopeMethod instanceof MethodDeclaration &&
 						!(foundEnvelopeMethod as MethodDeclaration).isEnvelopeMethod)
-						foundEnvelopeMethod = getMatchingExecutableInSuperClass(foundEnvelopeMethod,
-							TypeMatchingStrategy.MATCH_COVARIANT, true, typeMap, context)
+						foundEnvelopeMethod = getMatchingExecutableInClass(
+							(foundEnvelopeMethod.declaringType as ClassDeclaration).extendedClass?.
+								type as ClassDeclaration, foundEnvelopeMethod,
+							TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
+							TypeMatchingStrategy.MATCH_INHERITANCE, true, false, true, false, false, typeMap, context)
 
 					if (foundEnvelopeMethod !== null)
 						xtendClass.
@@ -676,7 +711,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 			// copy parameters
 			val paramNameList = constructorMethod.parametersNames
-			constructorMethod.copyParameters(newConstructor, 0, null, context)
+			constructorMethod.copyParameters(newConstructor, 0, false, null, context)
 
 			// documentation
 			newConstructor.docComment = '''This constructor delegates to constructor method «constructorMethod.getJavaDocLinkTo(context)».'''
@@ -687,7 +722,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			// rename new method and move body from trait method to new method
 			bodySetter.setBody(newConstructor, '''this(«EXTENDED_THIS_FIELD_NAME», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);
 							«constructorMethod.simpleName»(«paramNameList.join(", ")»);
-						''')
+						''', context)
 
 		}
 
@@ -709,7 +744,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		// add body to set delegation reference
 		bodySetter.setBody(
 			basicConstructor, '''«IF xtendClass.extendedClass !== null && xtendClass.extendedClass.type.qualifiedName != Object.canonicalName»super(«EXTENDED_THIS_FIELD_NAME», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);«ELSE»
-					this.«EXTENDED_THIS_FIELD_NAME» = «EXTENDED_THIS_FIELD_NAME»;«ENDIF»''')
+					this.«EXTENDED_THIS_FIELD_NAME» = «EXTENDED_THIS_FIELD_NAME»;«ENDIF»''', context)
 
 		// specific annotation for new constructor
 		basicConstructor.addAnnotation(TraitClassDelegationConstructor.newAnnotationReference)
@@ -718,7 +753,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		val delegationMethodBlueprints = new ArrayList<MethodDeclaration>
 
 		// a delegate must be generated, if trait method is not public (i.e. it will not be in any interface)
-		for (method : annotatedClass.getDeclaredMethodsResolved(context))
+		for (method : annotatedClass.getDeclaredMethodsResolved(true, false, false, context))
 			if (method.isTraitMethod)
 				if (method.visibility != Visibility.PUBLIC)
 					delegationMethodBlueprints += method
@@ -735,10 +770,11 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 				// if the method is non-public, not declared in the class and not already registered,
 				// the trait method must be registered for creating delegation
 				if (traitMethod.visibility != Visibility.PUBLIC &&
-					annotatedClass.getDeclaredMethodsResolved(context).getMatchingMethod(traitMethod,
-						TypeMatchingStrategy.MATCH_ALL, typeMap, context) === null &&
-					delegationMethodBlueprints.getMatchingMethod(traitMethod, TypeMatchingStrategy.MATCH_ALL,
-						typeMap, context) === null)
+					annotatedClass.getDeclaredMethodsResolved(true, false, false, context).
+						getMatchingMethod(traitMethod, TypeMatchingStrategy.MATCH_INVARIANT,
+							TypeMatchingStrategy.MATCH_ALL, false, typeMap, context) === null &&
+					delegationMethodBlueprints.getMatchingMethod(traitMethod, TypeMatchingStrategy.MATCH_INVARIANT,
+						TypeMatchingStrategy.MATCH_ALL, false, typeMap, context) === null)
 					delegationMethodBlueprints += traitMethod
 			}
 
@@ -748,10 +784,10 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		var List<MethodDeclaration> interfaceMethods = new ArrayList<MethodDeclaration>
 		for (superType : annotatedClass.getSuperTypeClosure(null, null, false, context))
 			if (superType instanceof InterfaceDeclaration)
-				interfaceMethods.addAll(superType.getDeclaredMethodsResolved(context))
+				interfaceMethods.addAll(superType.getDeclaredMethodsResolved(true, false, false, context))
 
-		interfaceMethods = interfaceMethods.unifyMethodDeclarations(TypeMatchingStrategy.MATCH_ALL,
-			covariantReturnType.curry(context), typeMap, context)
+		interfaceMethods = interfaceMethods.unifyMethodDeclarations(TypeMatchingStrategy.MATCH_INVARIANT,
+			TypeMatchingStrategy.MATCH_ALL, covariantReturnType.curry(context), false, typeMap, context)
 
 		// delegation to each interface method required (unified)
 		delegationMethodBlueprints.addAll(interfaceMethods)
@@ -762,10 +798,15 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			// use already existing method as "new method" in the following algorithm
 			// (this avoids some problems with "override" and warnings)
 			val MutableMethodDeclaration existingMethod = annotatedClass.getDeclaredMethodsResolved(
+				true,
+				false,
+				false,
 				context
 			).getMatchingMethod(
 				delegationMethodBlueprint,
+				TypeMatchingStrategy.MATCH_INVARIANT,
 				TypeMatchingStrategy.MATCH_ALL,
+				false,
 				typeMap,
 				context
 			) as MutableMethodDeclaration
@@ -773,7 +814,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			val delegationMethod = if (existingMethod !== null)
 					existingMethod
 				else
-					annotatedClass.copyMethod(delegationMethodBlueprint, true, false, false, typeMap, context)
+					annotatedClass.copyMethod(delegationMethodBlueprint, true, false, false, false, false, false,
+						typeMap, context)
 
 			// delegation method must not be abstract
 			delegationMethod.abstract = false
@@ -808,7 +850,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 				// method is accessible
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false, context)») «ENDIF» «delegateCasted».«delegationMethodBlueprint.simpleName»(«paramNameList.join(", ")»);''')
+					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)») «ENDIF» «delegateCasted».«delegationMethodBlueprint.simpleName»(«paramNameList.join(", ")»);''',
+					context)
 
 			} else {
 
@@ -817,12 +860,12 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 				val paramTypeNameList = delegationMethodBlueprint.getParametersTypeNames(false, false, context)
 
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false, context)»)«ENDIF»
+					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)»)«ENDIF»
 						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(«EXTENDED_THIS_METHOD_NAME»(),"«methodFinal.simpleName»",
 						null,
 						«isVoid»,
 						new Class<?> [] { «paramTypeNameList.map[it + ".class"] .join(", ")» },
-						new Object [] { «paramNameList.join(", ")» });''')
+						new Object [] { «paramNameList.join(", ")» });''', context)
 
 			}
 
@@ -830,9 +873,10 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 	}
 
-	override doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
+	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)
+
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
 		// return because there is a general type problem
@@ -844,8 +888,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			xtendClass.addError('''Cannot apply both @TraitClass and @TraitClassAutoUsing''')
 
 		// parent class of trait class must also be trait class
-		if (xtendClass.extendedClass !== null &&
-			!(xtendClass.extendedClass.type as ClassDeclaration).isTraitClass &&
+		if (xtendClass.extendedClass !== null && !(xtendClass.extendedClass.type as ClassDeclaration).isTraitClass &&
 			xtendClass.extendedClass.type.qualifiedName != Object.canonicalName)
 			xtendClass.addError('''Parent class of trait class must also be a trait class''')
 
@@ -858,8 +901,19 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			xtendClass.declaredConstructors.get(0).addError(
 				'''Trait class must not specify any constructor (use @ConstructorMethod)''')
 
+		// go through fields
+		for (field : xtendClass.declaredFields) {
+
+			// fields with automatically generated getter/setter must specify trait method annotation
+			if ((field.hasAnnotation(GetterRule) || field.hasAnnotation(SetterRule) || field.hasAnnotation(AdderRule) ||
+				field.hasAnnotation(RemoverRule)) && field.isTraitMethod == false && field.isStatic == false)
+				field.
+					addError('''Within a trait class non-static getter/setter/adder/remover methods must be trait methods''')
+
+		}
+
 		// go through trait methods
-		for (method : xtendClass.getDeclaredMethodsResolved(context)) {
+		for (method : xtendClass.getDeclaredMethodsResolved(true, false, false, context)) {
 
 			// method must have a valid name (some mechanism depend on naming of methods)
 			if (method.simpleName.contains("$"))
@@ -879,8 +933,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 		// check directly used trait classes
 		val errors = new ArrayList<String>
-		val directlyUsedTraitClassesRefs = annotatedClass.
-			getTraitClassesDirectlyUsedByTraitClass(errors, context)
+		val directlyUsedTraitClassesRefs = annotatedClass.getTraitClassesDirectlyUsedByTraitClass(errors, context)
 		if (xtendClass.reportErrors(errors, context))
 			return;
 

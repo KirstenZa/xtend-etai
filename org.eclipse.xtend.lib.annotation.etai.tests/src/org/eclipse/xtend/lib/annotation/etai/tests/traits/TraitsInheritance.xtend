@@ -20,7 +20,7 @@ abstract class TraitClassWithInheritanceBase {
 	override AdaptionClassBase methodOverridden() {
 		null
 	}
-	
+
 	@ExclusiveMethod
 	override AdaptionClassBase [] methodOverriddenArray() {
 		null
@@ -40,7 +40,7 @@ abstract class TraitClassWithInheritanceDerived extends TraitClassWithInheritanc
 	override AdaptionClassDerived methodOverridden() {
 		null
 	}
-	
+
 	@ExclusiveMethod
 	override AdaptionClassDerived [] methodOverriddenArray() {
 		null
@@ -77,13 +77,12 @@ class TraitsInheritanceTests extends TraitTestsBase {
 	@Test
 	def void testExtensionOverriding() {
 
-		assertEquals(1,
-			ExtendedTraitClassWithInheritanceDerived.declaredMethods.filter([synthetic == false]).filter([
-				name == "methodOverridden"
-			]).size)
-		assertSame(AdaptionClassDerived, ExtendedTraitClassWithInheritanceDerived.declaredMethods.filter([
-			synthetic == false
-		]).filter([name == "methodOverridden"]).get(0).returnType)
+		assertEquals(1, ExtendedTraitClassWithInheritanceDerived.declaredMethods.filter[
+			name == "methodOverridden" && synthetic == false
+		].size)
+		assertSame(AdaptionClassDerived, ExtendedTraitClassWithInheritanceDerived.declaredMethods.filter[
+			name == "methodOverridden" && synthetic == false
+		].get(0).returnType)
 
 	}
 

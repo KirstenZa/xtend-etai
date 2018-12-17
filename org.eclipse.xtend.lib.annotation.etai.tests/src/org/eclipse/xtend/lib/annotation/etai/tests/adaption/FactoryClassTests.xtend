@@ -429,17 +429,17 @@ class FactoryClassTests {
 		assertEquals("myStr", newDerived41.str)
 		assertEquals("myStr", newDerived42.str)
 
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.Factory.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.Factory.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.Factory.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.Factory.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.Factory.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.Factory.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived4.Factory.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived4.Factory.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size())
 
 		assertEquals(0, ClassWithFactoryClassWithParametersDerived1.constructors.size())
@@ -447,16 +447,16 @@ class FactoryClassTests {
 		assertEquals(0, ClassWithFactoryClassWithParametersDerived3.constructors.size())
 		assertEquals(0, ClassWithFactoryClassWithParametersDerived4.constructors.size())
 
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.declaredConstructors.filter [
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.declaredConstructors.filter [
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.declaredConstructors.filter [
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(3, ClassWithFactoryClassWithParametersDerived4.declaredConstructors.filter [
+		assertEquals(3, ClassWithFactoryClassWithParametersDerived4.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size())
 
@@ -539,11 +539,11 @@ class UsingFactoryClassInterface {
 			val problemsClass1 = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("must be specified"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -575,11 +575,11 @@ class UsingFactoryClassInterface {
 			val problemsClass1 = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("must be an interface"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -611,11 +611,11 @@ class UsingFactoryClassInterface {
 			val problemsClass1 = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("both"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -654,26 +654,26 @@ class UsingFactoryClassInterface {
 
 		// check factory and its methods
 		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === IControllerAttributeStringConcrete1
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === IControllerAttributeStringConcrete1 && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === TypeC
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === TypeC && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === IComponentFeature
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === IComponentFeature && synthetic == false
 		].size)
 
 		// check also if declared in another file		
 		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcreteOtherFile.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === IControllerAttributeStringConcrete1
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === IControllerAttributeStringConcrete1 && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === TypeC
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === TypeC && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
-			it.parameters.get(0).type === IComponentFeature
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+			it.parameters.get(0).type === IComponentFeature && synthetic == false
 		].size)
 
 	}
@@ -681,7 +681,7 @@ class UsingFactoryClassInterface {
 	@Test
 	def void testFactoryClassNoDerivation() {
 
-		assertTrue(Modifier.isPrivate(ClassWithFactoryClassWithoutConstructorDerived2.declaredClasses.findFirst [
+		assertTrue(Modifier.isPrivate(ClassWithFactoryClassWithoutConstructorDerived2.declaredClasses.findFirst[
 			simpleName == "Factory"
 		].modifiers))
 

@@ -34,10 +34,10 @@ class TypeAdaptionRegularExpressionTests {
 	@Test
 	def void testRegularExpressionAdaption() {
 
-		assertEquals(1, TypeAdaptionOverrideRegularExpressionDerived.declaredMethods.filter [
+		assertEquals(1, TypeAdaptionOverrideRegularExpressionDerived.declaredMethods.filter[
 			name == "method" && synthetic == false
 		].size)
-		assertSame(AAAXXXXXXDerivedBB, TypeAdaptionOverrideRegularExpressionDerived.declaredMethods.filter [
+		assertSame(AAAXXXXXXDerivedBB, TypeAdaptionOverrideRegularExpressionDerived.declaredMethods.filter[
 			name == "method" && synthetic == false
 		].get(0).returnType)
 

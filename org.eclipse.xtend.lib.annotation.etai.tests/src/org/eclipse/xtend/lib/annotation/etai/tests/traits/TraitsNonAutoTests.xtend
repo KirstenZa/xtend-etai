@@ -147,11 +147,11 @@ abstract class AnExtendedClass implements INotAnTraitClass {
 			val localProblems = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, localProblems.size)
 			assertEquals(Severity.ERROR, localProblems.get(0).severity)
 			assertTrue(localProblems.get(0).message.contains("not a trait class"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -190,11 +190,11 @@ abstract class ExtendedNonAuto implements IExtensionNonAuto {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("apply both"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -228,11 +228,11 @@ abstract class ExtendedNonAuto {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("interface"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -310,12 +310,12 @@ abstract class ExtendedNonAuto implements IExtensionNonAuto {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-			
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("interface"))
 
+			assertEquals(1, allProblems.size)
+			
 		]
 
 	}
@@ -356,8 +356,6 @@ abstract class ExtendedNone2 {
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-			
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("at least one"))
@@ -366,6 +364,8 @@ abstract class ExtendedNone2 {
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("at least one"))
 
+			assertEquals(2, allProblems.size)
+			
 		]
 
 	}
@@ -425,8 +425,6 @@ abstract class ExtendedNonAutoDerived extends ExtendedNonAuto implements IExtens
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-			
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("order"))
@@ -435,6 +433,8 @@ abstract class ExtendedNonAutoDerived extends ExtendedNonAuto implements IExtens
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("order"))
 
+			assertEquals(2, allProblems.size)
+			
 		]
 
 	}

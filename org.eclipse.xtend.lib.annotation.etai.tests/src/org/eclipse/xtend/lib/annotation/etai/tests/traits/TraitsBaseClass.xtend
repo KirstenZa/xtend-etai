@@ -302,8 +302,6 @@ class MyExtendedClassExtendingBaseClass6 implements IMyTraitClassNoUsing, IMyTra
 			val clazzProblems6 = (clazz6.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(5, allProblems.size)
-
 			assertEquals(0, clazzProblemsB1.size)
 			assertEquals(0, clazzProblemsB2.size)
 			assertEquals(0, clazzProblemsB3.size)
@@ -331,6 +329,8 @@ class MyExtendedClassExtendingBaseClass6 implements IMyTraitClassNoUsing, IMyTra
 			assertTrue(clazzProblems5.get(0).message.contains("is a trait base class"))
 
 			assertEquals(0, clazzProblems6.size)
+
+			assertEquals(5, allProblems.size)
 
 		]
 

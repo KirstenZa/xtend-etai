@@ -130,14 +130,14 @@ class ExtractInterfaceAbsoluteNoPackage {
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("default package"))
 			assertEquals(1, problemsClass2.size)
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("default package"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

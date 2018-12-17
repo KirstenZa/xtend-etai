@@ -2,15 +2,16 @@ package org.eclipse.xtend.lib.annotation.etai
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
-import java.util.List
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.ValidationContext
-import org.eclipse.xtend.lib.macro.ValidationParticipant
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MemberDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
+import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.TypeDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtend.lib.macro.services.TypeLookup
@@ -27,7 +28,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * 
  * @see TraitClass
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD, ElementType.FIELD)
 @Active(ExclusiveMethodProcessor)
 annotation ExclusiveMethod {
 
@@ -57,7 +58,7 @@ annotation ExclusiveMethod {
  * 
  * @see TraitClass
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD, ElementType.FIELD)
 @Active(ProcessedMethodProcessor)
 annotation ProcessedMethod {
 
@@ -113,7 +114,7 @@ annotation ProcessedMethod {
  * 
  * @see TraitClass
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.METHOD, ElementType.FIELD)
 @Active(EnvelopeMethodProcessor)
 annotation EnvelopeMethod {
 
@@ -168,6 +169,7 @@ annotation EnvelopeMethod {
  * 
  * @see TraitClass
  */
+@Target(ElementType.METHOD)
 @Active(RequiredMethodProcessor)
 annotation RequiredMethod {
 }
@@ -177,16 +179,22 @@ annotation RequiredMethod {
  * 
  * @see TraitClass
  */
-abstract class AbstractTraitMethodAnnotationProcessor implements ValidationParticipant<MethodDeclaration> {
+abstract class AbstractTraitMethodAnnotationProcessor extends AbstractMemberProcessor {
+
+	override boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement) {
+		return annotatedNamedElement instanceof FieldDeclaration || annotatedNamedElement instanceof MethodDeclaration
+	}
 
 	/**
-	 * Check if method is a trait method
+	 * Check if method is a trait method (or a field has an according annotation).
 	 */
-	static def isTraitMethod(MethodDeclaration annotatedMethod) {
-		ExclusiveMethodProcessor.isExclusiveMethod(annotatedMethod) ||
-			ProcessedMethodProcessor.isProcessedMethod(annotatedMethod) ||
-			EnvelopeMethodProcessor.isEnvelopeMethod(annotatedMethod) ||
-			RequiredMethodProcessor.isRequiredMethod(annotatedMethod)
+	static def isTraitMethod(AnnotationTarget annotationTarget) {
+
+		ExclusiveMethodProcessor.isExclusiveMethod(annotationTarget) ||
+			ProcessedMethodProcessor.isProcessedMethod(annotationTarget) ||
+			EnvelopeMethodProcessor.isEnvelopeMethod(annotationTarget) ||
+			RequiredMethodProcessor.isRequiredMethod(annotationTarget)
+
 	}
 
 	/**
@@ -211,12 +219,12 @@ abstract class AbstractTraitMethodAnnotationProcessor implements ValidationParti
 
 	/**
 	 * Copies the trait method annotation (if existent) from the given source including
-	 * all attributes and returns a new annotation reference
+	 * all attributes and returns a new annotation reference.
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
 
-		if (annotationTarget instanceof MethodDeclaration) {
+		if (annotationTarget instanceof MethodDeclaration || annotationTarget instanceof FieldDeclaration) {
 			if (ExclusiveMethodProcessor.isExclusiveMethod(annotationTarget))
 				return ExclusiveMethodProcessor.copyAnnotation(annotationTarget, context)
 			else if (ProcessedMethodProcessor.isProcessedMethod(annotationTarget))
@@ -231,36 +239,49 @@ abstract class AbstractTraitMethodAnnotationProcessor implements ValidationParti
 
 	}
 
-	override doValidate(List<? extends MethodDeclaration> annotatedMethods, extension ValidationContext context) {
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
 
-		for (annotatedMethod : annotatedMethods)
-			if (!(annotatedMethod.declaringType instanceof ClassDeclaration) ||
-				!(annotatedMethod.declaringType as ClassDeclaration).isTraitClass)
-				annotatedMethod.
-					addError('''Trait method can only be declared within a trait class (annotated with @TraitClass or @TraitClassAutoUsing)''')
-			else
-				doValidate(annotatedMethod, context)
+		super.doValidate(annotatedMember, context)
 
-	}
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
 
-	def void doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+		if (!(xtendMember.declaringType instanceof ClassDeclaration) ||
+			!(xtendMember.declaringType as ClassDeclaration).isTraitClass) {
+			annotatedMember.
+				addError('''A trait method can only be declared within a trait class (annotated with @TraitClass or @TraitClassAutoUsing)''')
+			return
+		}
 
-		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+		if (xtendMember instanceof MethodDeclaration) {
 
-		// check, if trait methods has valid properties
-		if (xtendMethod.visibility == Visibility.PRIVATE)
-			xtendMethod.addError("Trait method must not be declared private")
+			// check if trait methods has valid properties
+			if (xtendMember.visibility == Visibility.PRIVATE)
+				xtendMember.addError("A trait method must not be declared private")
 
-		if (xtendMethod.returnType === null || xtendMethod.returnType.inferred == true)
-			xtendMethod.addError("Trait method must explicitly specify the return type")
-		if (xtendMethod.final == true)
-			xtendMethod.addError("Trait method must not be declared final")
-		if (xtendMethod.static == true)
-			xtendMethod.addError("Trait method must not be declared static")
+			if (xtendMember.returnType === null || xtendMember.returnType.inferred == true)
+				xtendMember.addError("A trait method must explicitly specify the return type")
+			if (xtendMember.final == true)
+				xtendMember.addError("A trait method must not be declared final")
+			if (xtendMember.static == true)
+				xtendMember.addError("A trait method must not be declared static")
 
-		// only one trait method annotation must be used
-		if (xtendMethod.numberOfTraitMethodAnnotations > 1)
-			xtendMethod.addError("Only one trait method annotation must be applied")
+			// only one trait method annotation must be used
+			if (xtendMember.numberOfTraitMethodAnnotations > 1)
+				xtendMember.addError("Only one trait method annotation must be applied")
+
+		} else if (xtendMember instanceof FieldDeclaration) {
+
+			if (xtendMember.final == true)
+				xtendMember.addError("A trait method must not be declared final")
+			if (xtendMember.static == true)
+				xtendMember.addError("A trait method must not be declared static")
+
+			if (!xtendMember.hasAnnotation(GetterRule) && !xtendMember.hasAnnotation(SetterRule) &&
+				!xtendMember.hasAnnotation(AdderRule) && !xtendMember.hasAnnotation(RemoverRule))
+				xtendMember.addError(
+					"A trait method annotation can only applied to a field, if it is also annotated by @GetterRule, @SetterRule, @AdderRule or @RemoverRule")
+
+		}
 
 	}
 
@@ -278,16 +299,20 @@ class ExclusiveMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 	 */
 	static class ExclusiveMethodInfo {
 
-		public boolean setFinal
+		public boolean setFinal = false
 		public boolean disableRedirection = false
 
 	}
 
+	protected override getProcessedAnnotationType() {
+		ExclusiveMethodProcessor
+	}
+
 	/**
-	 * Check if method is an exclusive method
+	 * Check if method is an exclusive method (or a field has an according annotation).
 	 */
-	static def isExclusiveMethod(MethodDeclaration annotatedMethod) {
-		annotatedMethod.hasAnnotation(ExclusiveMethod)
+	static def isExclusiveMethod(AnnotationTarget annotationTarget) {
+		annotationTarget.hasAnnotation(ExclusiveMethod)
 	}
 
 	/**
@@ -310,13 +335,16 @@ class ExclusiveMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 	}
 
 	/**
-	 * Copies the annotation (compatible to this processor) from the given source including
+	 * Copies the annotation (compatible to this processor) from the given source (if existent) including
 	 * all attributes and returns a new annotation reference
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
 
 		val annotationExclusiveMethod = annotationTarget.getAnnotation(ExclusiveMethod)
+
+		if (annotationExclusiveMethod === null)
+			return null
 
 		return ExclusiveMethod.newAnnotationReference [
 			setBooleanValue("setFinal", annotationExclusiveMethod.getBooleanValue("setFinal"))
@@ -325,15 +353,19 @@ class ExclusiveMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	}
 
-	override doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
 
-		super.doValidate(annotatedMethod, context)
+		super.doValidate(annotatedMember, context)
 
-		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
 
-		// check for abstract modifier
-		if (xtendMethod.abstract == true)
-			xtendMethod.addError("Exclusive method must not be declared abstract")
+		if (xtendMember instanceof MethodDeclaration) {
+
+			// check for abstract modifier
+			if (xtendMember.abstract == true)
+				xtendMember.addError("Exclusive method must not be declared abstract")
+
+		}
 
 	}
 
@@ -358,11 +390,15 @@ class ProcessedMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	}
 
+	protected override getProcessedAnnotationType() {
+		ProcessedMethodProcessor
+	}
+
 	/**
-	 * Check if method is a processed method
+	 * Check if method is a processed method (or a field has an according annotation).
 	 */
-	static def isProcessedMethod(MethodDeclaration annotatedMethod) {
-		annotatedMethod.hasAnnotation(ProcessedMethod)
+	static def isProcessedMethod(AnnotationTarget annotationTarget) {
+		annotationTarget.hasAnnotation(ProcessedMethod)
 	}
 
 	/**
@@ -389,13 +425,16 @@ class ProcessedMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 	}
 
 	/**
-	 * Copies the annotation (compatible to this processor) from the given source including
+	 * Copies the annotation (compatible to this processor) from the given source (if existent) including
 	 * all attributes and returns a new annotation reference
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
 
 		val annotationProcessedMethod = annotationTarget.getAnnotation(ProcessedMethod)
+
+		if (annotationProcessedMethod === null)
+			return null
 
 		return ProcessedMethod.newAnnotationReference [
 			setClassValue("processor", annotationProcessedMethod.getClassValue("processor"))
@@ -406,33 +445,37 @@ class ProcessedMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	}
 
-	override doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
 
-		super.doValidate(annotatedMethod, context)
+		super.doValidate(annotatedMember, context)
 
 		val traitMethodProcessorType = TraitMethodProcessor.findTypeGlobally
 
-		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
 
-		val processedMethodInfo = xtendMethod.getProcessedMethodInfo(context)
+		if (xtendMember instanceof MethodDeclaration) {
 
-		// check for abstract modifier
-		if (xtendMethod.abstract == true)
-			xtendMethod.addError("Processed method must not be declared abstract")
+			val processedMethodInfo = xtendMember.getProcessedMethodInfo(context)
 
-		if (processedMethodInfo.processor !== null) {
+			// check for abstract modifier
+			if (xtendMember.abstract == true)
+				xtendMember.addError("Processed method must not be declared abstract")
 
-			// processor must be specified (non-void)
-			if (processedMethodInfo.processor.qualifiedName == Object.canonicalName) {
-				xtendMethod.addError(
-					"A processed method, which may also appear in extended class (non-exclusive), must also specify a processor")
+			if (processedMethodInfo.processor !== null) {
+
+				// processor must be specified (non-void)
+				if (processedMethodInfo.processor.qualifiedName == Object.canonicalName) {
+					xtendMember.addError(
+						"A processed method, which may also appear in extended class (non-exclusive), must also specify a processor")
+				}
+
+				// processor must have the correct type
+				if (!(processedMethodInfo.processor instanceof ClassDeclaration) ||
+					!(processedMethodInfo.processor as ClassDeclaration).getSuperTypeClosure(null, null, true, context).
+						contains(traitMethodProcessorType))
+					xtendMember.addError("The given processor is not implementing the TraitMethodProcessor interface")
+
 			}
-
-			// processor must have the correct type
-			if (!(processedMethodInfo.processor instanceof ClassDeclaration) ||
-				!(processedMethodInfo.processor as ClassDeclaration).getSuperTypeClosure(null, null, true, context).
-					contains(traitMethodProcessorType))
-				xtendMethod.addError("The given processor is not implementing the TraitMethodProcessor interface")
 
 		}
 
@@ -459,11 +502,15 @@ class EnvelopeMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	}
 
+	protected override getProcessedAnnotationType() {
+		EnvelopeMethodProcessor
+	}
+
 	/**
-	 * Check if method is an envelope method
+	 * Check if method is an envelope method (or a field has an according annotation).
 	 */
-	static def isEnvelopeMethod(MethodDeclaration annotatedMethod) {
-		annotatedMethod.hasAnnotation(EnvelopeMethod)
+	static def isEnvelopeMethod(AnnotationTarget annotationTarget) {
+		annotationTarget.hasAnnotation(EnvelopeMethod)
 	}
 
 	/**
@@ -490,13 +537,16 @@ class EnvelopeMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 	}
 
 	/**
-	 * Copies the annotation (compatible to this processor) from the given source including
+	 * Copies the annotation (compatible to this processor) from the given source (if existent) including
 	 * all attributes and returns a new annotation reference
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
 
 		val annotationEnvelopeMethod = annotationTarget.getAnnotation(EnvelopeMethod)
+
+		if (annotationEnvelopeMethod === null)
+			return null
 
 		return EnvelopeMethod.newAnnotationReference [
 			setClassValue("defaultValueProvider", annotationEnvelopeMethod.getClassValue("defaultValueProvider"))
@@ -507,44 +557,48 @@ class EnvelopeMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	}
 
-	override doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
 
-		super.doValidate(annotatedMethod, context)
+		super.doValidate(annotatedMember, context)
 
 		val defaultValueProviderType = DefaultValueProvider.findTypeGlobally
 
-		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
 
-		val envelopeMethodInfo = xtendMethod.getEnvelopeMethodInfo(context)
+		if (xtendMember instanceof MethodDeclaration) {
 
-		// check for abstract modifier
-		if (xtendMethod.abstract == true)
-			xtendMethod.addError("Envelope method must not be declared abstract")
+			val envelopeMethodInfo = xtendMember.getEnvelopeMethodInfo(context)
 
-		if (envelopeMethodInfo.defaultValueProvider !== null) {
+			// check for abstract modifier
+			if (xtendMember.abstract == true)
+				xtendMember.addError("Envelope method must not be declared abstract")
 
-			// required flag and default value provider must be consistent
-			val isVoid = xtendMethod.returnType === null || xtendMethod.returnType.isVoid()
-			if (!isVoid && envelopeMethodInfo.required == false &&
-				envelopeMethodInfo.defaultValueProvider.qualifiedName == Object.canonicalName)
-				xtendMethod.addError(
-					"A non-void envelope method must either set the required flag to true or specify a default value provider")
+			if (envelopeMethodInfo.defaultValueProvider !== null) {
 
-			if (isVoid && envelopeMethodInfo.defaultValueProvider.qualifiedName != Object.canonicalName)
-				xtendMethod.addError("A void envelope method must not specify a default value provider")
+				// required flag and default value provider must be consistent
+				val isVoid = xtendMember.returnType === null || xtendMember.returnType.isVoid()
+				if (!isVoid && envelopeMethodInfo.required == false &&
+					envelopeMethodInfo.defaultValueProvider.qualifiedName == Object.canonicalName)
+					xtendMember.addError(
+						"A non-void envelope method must either set the required flag to true or specify a default value provider")
 
-			// default value provider must be a class
-			if (!(envelopeMethodInfo.defaultValueProvider instanceof ClassDeclaration)) {
-				xtendMethod.addError("The given default value provider is not a class declaration")
-				return
+				if (isVoid && envelopeMethodInfo.defaultValueProvider.qualifiedName != Object.canonicalName)
+					xtendMember.addError("A void envelope method must not specify a default value provider")
+
+				// default value provider must be a class
+				if (!(envelopeMethodInfo.defaultValueProvider instanceof ClassDeclaration)) {
+					xtendMember.addError("The given default value provider is not a class declaration")
+					return
+				}
+
+				// default value provider must have the correct type
+				if (envelopeMethodInfo.defaultValueProvider.qualifiedName != Object.canonicalName &&
+					!(envelopeMethodInfo.defaultValueProvider as ClassDeclaration).getSuperTypeClosure(null, null, true,
+						context).contains(defaultValueProviderType))
+					xtendMember.addError(
+						"The given default value provider is not implementing the DefaultValueProvider interface")
+
 			}
-
-			// default value provider must have the correct type
-			if (envelopeMethodInfo.defaultValueProvider.qualifiedName != Object.canonicalName &&
-				!(envelopeMethodInfo.defaultValueProvider as ClassDeclaration).getSuperTypeClosure(null, null, true,
-					context).contains(defaultValueProviderType))
-				xtendMethod.addError(
-					"The given default value provider is not implementing the DefaultValueProvider interface")
 
 		}
 
@@ -560,32 +614,45 @@ class EnvelopeMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 class RequiredMethodProcessor extends AbstractTraitMethodAnnotationProcessor {
 
 	/**
-	 * Check if method is an required method
+	 * Check if method is an required method (or a field has an according annotation).
 	 */
-	static def isRequiredMethod(MethodDeclaration annotatedMethod) {
-		annotatedMethod.hasAnnotation(RequiredMethod)
+	static def isRequiredMethod(AnnotationTarget annotationTarget) {
+		annotationTarget.hasAnnotation(RequiredMethod)
+	}
+
+	protected override getProcessedAnnotationType() {
+		RequiredMethodProcessor
 	}
 
 	/**
-	 * Copies the annotation (compatible to this processor) from the given source including
+	 * Copies the annotation (compatible to this processor) from the given source (if existent) including
 	 * all attributes and returns a new annotation reference
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
 
+		val annotationRequiredMethod = annotationTarget.getAnnotation(RequiredMethod)
+
+		if (annotationRequiredMethod === null)
+			return null
+
 		return RequiredMethod.newAnnotationReference
 
 	}
 
-	override doValidate(MethodDeclaration annotatedMethod, extension ValidationContext context) {
+	override void doValidate(MemberDeclaration annotatedMember, extension ValidationContext context) {
 
-		super.doValidate(annotatedMethod, context)
+		super.doValidate(annotatedMember, context)
 
-		var MethodDeclaration xtendMethod = annotatedMethod.primarySourceElement as MethodDeclaration
+		var MemberDeclaration xtendMember = annotatedMember.primarySourceElement as MemberDeclaration
 
-		// check for abstract modifier
-		if (xtendMethod.abstract == false)
-			xtendMethod.addError("Required method must be declared abstract")
+		if (xtendMember instanceof MethodDeclaration) {
+
+			// check for abstract modifier
+			if (xtendMember.abstract == false)
+				xtendMember.addError("Required method must be declared abstract")
+
+		}
 
 	}
 

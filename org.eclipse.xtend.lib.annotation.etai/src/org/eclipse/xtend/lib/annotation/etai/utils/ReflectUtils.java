@@ -10,9 +10,9 @@ public class ReflectUtils {
 
 	/**
 	 * <p>
-	 * This method retrieves the (private) method of a given class. If the
-	 * method is not found within class, it will search recursively through
-	 * super types as well.
+	 * This method retrieves the (private) method of a given class. If the method is
+	 * not found within class, it will search recursively through super types as
+	 * well.
 	 * </p>
 	 * 
 	 * <p>
@@ -20,18 +20,15 @@ public class ReflectUtils {
 	 * </p>
 	 * 
 	 * <p>
-	 * If the method cannot be found, null is returned.
+	 * If the method cannot be found, <code>null</code> is returned.
 	 * </p>
 	 */
 	public static Method getPrivateMethod(Class<?> clazz, String methodName) {
 
 		// search through this clazz
-		for (Method method : clazz.getDeclaredMethods()) {
-
+		for (Method method : clazz.getDeclaredMethods())
 			if (method.getName().equals(methodName))
 				return method;
-
-		}
 
 		// recursively got up, if not found in this class
 		if (clazz.getSuperclass() != null)
@@ -42,21 +39,11 @@ public class ReflectUtils {
 	}
 
 	/**
-	 * <p>
-	 * This method retrieves the (private) method of a given class. If the
-	 * method is not found within class, it will search recursively through
-	 * super types as well.
-	 * </p>
-	 * 
-	 * <p>
-	 * The method tries to match the given parameter types exactly.
-	 * </p>
-	 * 
-	 * <p>
-	 * If the method cannot be found, null is returned.
-	 * </p>
+	 * Helper method for implementing {@link #getPrivateMethodExactMatch} and
+	 * {@link #getPrivateMethodCompatibleMatch}.
 	 */
-	public static Method getPrivateMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+	private static Method getPrivateMethod(Class<?> clazz, String methodName, Class<?>[] parameterTypes,
+			boolean compatible) {
 
 		int parameterCount = 0;
 		if (parameterTypes != null)
@@ -70,8 +57,14 @@ public class ReflectUtils {
 				// also check types (exactly)
 				boolean match = true;
 				for (int i = 0; i < parameterCount && match; i++)
-					if (parameterTypes[i] != method.getParameterTypes()[i])
-						match = false;
+					if (compatible) {
+						if (parameterTypes[i] != null
+								&& !method.getParameterTypes()[i].isAssignableFrom(parameterTypes[i]))
+							match = false;
+					} else {
+						if (method.getParameterTypes()[i] != parameterTypes[i])
+							match = false;
+					}
 
 				if (match)
 					return method;
@@ -82,7 +75,7 @@ public class ReflectUtils {
 
 		// recursively got up, if not found in this class
 		if (clazz.getSuperclass() != null)
-			return getPrivateMethod(clazz.getSuperclass(), methodName, parameterTypes);
+			return getPrivateMethod(clazz.getSuperclass(), methodName, parameterTypes, compatible);
 
 		return null;
 
@@ -90,27 +83,123 @@ public class ReflectUtils {
 
 	/**
 	 * <p>
-	 * This method retrieves the (private) field of a given class. If the field
-	 * is not found within class, it will search recursively through super types
-	 * as well.
+	 * This method retrieves the (private) method of a given class. If the method is
+	 * not found within class, it will search recursively through super types as
+	 * well.
 	 * </p>
 	 * 
 	 * <p>
-	 * If the field cannot be found, null is returned.
+	 * The method tries to match the given parameter types exactly.
+	 * </p>
+	 * 
+	 * <p>
+	 * If the method cannot be found, <code>null</code> is returned.
+	 * </p>
+	 */
+	public static Method getPrivateMethodExactMatch(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+
+		return getPrivateMethod(clazz, methodName, parameterTypes, false);
+
+	}
+
+	/**
+	 * <p>
+	 * This method retrieves the (private) method of a given class. If the method is
+	 * not found within class, it will search recursively through super types as
+	 * well.
+	 * </p>
+	 * 
+	 * <p>
+	 * The method tries to match the given parameter types, if compatible (i.e the
+	 * given parameter type is at least a sub type).
+	 * </p>
+	 * 
+	 * <p>
+	 * If the method cannot be found, <code>null</code> is returned.
+	 * </p>
+	 */
+	public static Method getPrivateMethodCompatibleMatch(Class<?> clazz, String methodName, Class<?>[] parameterTypes) {
+
+		return getPrivateMethod(clazz, methodName, parameterTypes, true);
+
+	}
+
+	/**
+	 * <p>
+	 * This method calls a method (can be private) with the given arguments.
+	 * </p>
+	 */
+	public static Object callPrivateMethod(Object obj, Method method, Object[] arguments)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		boolean previousAccessible = method.isAccessible();
+		method.setAccessible(true);
+		try {
+
+			return method.invoke(obj, arguments);
+
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} finally {
+			method.setAccessible(previousAccessible);
+		}
+
+	}
+
+	/**
+	 * <p>
+	 * This method calls a method (can be private) with the given arguments.
+	 * </p>
+	 * 
+	 * @see getPrivateMethodCompatibleMatch(Class, String, Class[])
+	 */
+	public static Object callPrivateMethod(Object obj, String methodName, Object[] arguments)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		Class<?>[] parameterTypes = new Class<?>[arguments.length];
+		for (int i = 0; i < arguments.length; i++) {
+			if (arguments[i] == null)
+				parameterTypes[i] = null;
+			else
+				parameterTypes[i] = arguments[i].getClass();
+		}
+
+		return callPrivateMethod(obj, getPrivateMethodCompatibleMatch(obj.getClass(), methodName, parameterTypes),
+				arguments);
+
+	}
+
+	/**
+	 * <p>
+	 * This method calls a method (can be private) without arguments.
+	 * </p>
+	 * 
+	 * @see getPrivateMethodCompatibleMatch(Class, String, Class[])
+	 */
+	public static Object callPrivateMethod(Object obj, String methodName)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		return callPrivateMethod(obj, getPrivateMethodCompatibleMatch(obj.getClass(), methodName, null), null);
+
+	}
+
+	/**
+	 * <p>
+	 * This method retrieves the (private) field of a given class. If the field is
+	 * not found within class, it will search recursively through super types as
+	 * well.
+	 * </p>
+	 * 
+	 * <p>
+	 * If the field cannot be found, <code>null</code> is returned.
 	 * </p>
 	 */
 	public static Field getPrivateField(Class<?> clazz, String fieldName) {
 
 		// search through this clazz
-		for (Field field : clazz.getDeclaredFields()) {
-
-			if (field.getName().equals(fieldName)) {
-
+		for (Field field : clazz.getDeclaredFields())
+			if (field.getName().equals(fieldName))
 				return field;
-
-			}
-
-		}
 
 		// recursively got up, if not found in this class
 		if (clazz.getSuperclass() != null)
@@ -124,12 +213,8 @@ public class ReflectUtils {
 	 * <p>
 	 * This method retrieves the value of a (private) field of the given object.
 	 * </p>
-	 * 
-	 * @see getPrivateField(Class, String)
 	 */
-	public static Object getPrivateFieldValue(Object obj, String fieldName) {
-
-		Field field = getPrivateField(obj.getClass(), fieldName);
+	public static Object getPrivateFieldValue(Object obj, Field field) {
 
 		boolean previousAccessible = field.isAccessible();
 		field.setAccessible(true);
@@ -146,9 +231,56 @@ public class ReflectUtils {
 	}
 
 	/**
+	 * <p>
+	 * This method retrieves the value of a (private) field of the given object.
+	 * </p>
+	 * 
+	 * @see getPrivateField(Class, String)
+	 */
+	public static Object getPrivateFieldValue(Object obj, String fieldName) {
+
+		return getPrivateFieldValue(obj, getPrivateField(obj.getClass(), fieldName));
+
+	}
+
+	/**
+	 * <p>
+	 * This method sets the value of a (private) field of the given object.
+	 * </p>
+	 */
+	public static void setPrivateFieldValue(Object obj, Field field, Object value) {
+
+		boolean previousAccessible = field.isAccessible();
+		field.setAccessible(true);
+		try {
+
+			field.set(obj, value);
+
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} finally {
+			field.setAccessible(previousAccessible);
+		}
+
+	}
+
+	/**
+	 * <p>
+	 * This method sets the value of a (private) field of the given object.
+	 * </p>
+	 * 
+	 * @see getPrivateField(Class, String)
+	 */
+	public static void setPrivateFieldValue(Object obj, String fieldName, Object value) {
+
+		setPrivateFieldValue(obj, getPrivateField(obj.getClass(), fieldName), value);
+
+	}
+
+	/**
 	 * Helper method for calling an extended (non-public) method in the extended
-	 * class. This method is used by an processed or envelope methods of
-	 * extension classes.
+	 * class. This method is used by an processed or envelope methods of extension
+	 * classes.
 	 * 
 	 * @see org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 	 * @see org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
@@ -157,7 +289,7 @@ public class ReflectUtils {
 			boolean isVoid, Class<?>[] parameterTypes, Object[] args) {
 
 		// search for method within extended class
-		Method method = getPrivateMethod(obj.getClass(), methodName, parameterTypes);
+		Method method = getPrivateMethodExactMatch(obj.getClass(), methodName, parameterTypes);
 
 		// use default value provider, if no method found
 		if (method == null) {

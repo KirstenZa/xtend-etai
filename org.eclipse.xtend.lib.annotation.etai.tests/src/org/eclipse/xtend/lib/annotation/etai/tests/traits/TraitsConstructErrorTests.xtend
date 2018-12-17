@@ -67,12 +67,12 @@ class ExtendedClassTwice implements ITraitClass1, ITraitClass2 {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-			
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("type combination is ambiguous"))
 
+			assertEquals(1, allProblems.size)
+			
 		]
 
 	}
@@ -131,8 +131,6 @@ class ExtendedClassNoParameterConstructor implements ITraitClassNoParameterConst
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("not contain constructor methods"))
@@ -140,6 +138,8 @@ class ExtendedClassNoParameterConstructor implements ITraitClassNoParameterConst
 			assertEquals(1, problemsClass2.size)
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("not contain constructor methods"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -186,12 +186,11 @@ class ExtendedClassParameterTypeMismatch implements ITraitClass1 {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size
-				
-			)
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("type mismatch of parameter"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -254,11 +253,12 @@ class ExtendedClassDerived extends ExtendedClassBase implements ITraitClass2 {
 			val problemsClass1 = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("is not extending"))
+
+			assertEquals(1, allProblems.size)
+
 		]
 
 	}
@@ -301,11 +301,12 @@ class ExtendedClass1 implements ITraitClass1 {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("without specifying a factory method"))
+
+			assertEquals(1, allProblems.size)
+
 		]
 
 	}
@@ -364,14 +365,14 @@ class ExtendedClassNoConstructorMethodWithParameters implements ITraitClassNoCon
 			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("does not contain constructor methods"))
 			assertEquals(1, problemsClass2.size)
 			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
 			assertTrue(problemsClass2.get(0).message.contains("does not contain constructor methods"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -417,11 +418,12 @@ class ExtendedClass1 implements ITraitClass1 {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("variable argument lists"))
+
+			assertEquals(1, allProblems.size)
+
 		]
 
 	}

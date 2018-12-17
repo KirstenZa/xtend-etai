@@ -176,10 +176,14 @@ class TraitsConstructDisableTests extends TraitTestsBase {
 	@Test
 	def void testTraitClassAutoConstructDisable() {
 
-		assertEquals(4, ExtendedClassConstructDisable.declaredMethods.filter[name.startsWith("create")].size)
-		assertEquals(2, ExtendedClassConstructDisableDerived.declaredMethods.filter[name.startsWith("create")].size)
-		assertEquals(4, ExtendedClassConstructDisableWithoutManualConstruction.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(4, ExtendedClassConstructDisable.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size)
+		assertEquals(2, ExtendedClassConstructDisableDerived.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
+		].size)
+		assertEquals(4, ExtendedClassConstructDisableWithoutManualConstruction.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size)
 
 		val obj1 = ExtendedClassConstructDisable.createExtendedClassConstructDisable(111)
@@ -223,8 +227,8 @@ class TraitsConstructDisableTests extends TraitTestsBase {
 	@Test
 	def void testTraitClassAutoConstructDisableUsingContext() {
 
-		assertEquals(1, ExtendedClassWithConstructorUsingSimple1Derived.declaredMethods.filter [
-			name.startsWith("create")
+		assertEquals(1, ExtendedClassWithConstructorUsingSimple1Derived.declaredMethods.filter[
+			name.startsWith("create") && synthetic == false
 		].size)
 
 		val obj = ExtendedClassWithConstructorUsingSimple1Derived.
@@ -273,13 +277,13 @@ class ExtendedClassNoExtension {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(2, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.map[message].exists[it.contains("@ApplyRules")])
 			assertEquals(Severity.ERROR, problemsClass.get(1).severity)
 			assertTrue(problemsClass.map[message].exists[it.contains("cannot be disabled")])
+
+			assertEquals(2, allProblems.size)
 
 		]
 

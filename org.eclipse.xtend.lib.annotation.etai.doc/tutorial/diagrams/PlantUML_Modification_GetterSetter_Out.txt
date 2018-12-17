@@ -1,0 +1,29 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+!pragma horizontalLineBetweenDifferentPackageAllowed
+
+'Class Diagram
+class Person <<ApplyRules>> {
+	-name:String
+	+getName():String
+	#setName($name:String):boolean
+}
+
+note right of Person::getName
+  return this.name;
+end note
+
+note right of Person::setName($name:String)
+  if (this.name != $name) {
+    this.name = $name;
+    return true;
+  }
+  return false;
+end note
+
+@enduml

@@ -1,0 +1,14 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.GetterRule
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+
+@ApplyRules
+class Person {
+
+	@GetterRule
+	@SetterRule(visibility=PROTECTED)
+	String name
+
+}

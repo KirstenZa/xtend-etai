@@ -11,6 +11,7 @@ import org.eclipse.xtend.lib.macro.expression.Expression
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils
 import java.util.List
+import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 /**
  * <p>Helper class for retrieving and setting bodies for executables
@@ -29,10 +30,12 @@ class BodySetter {
 
 		public boolean flushed = false
 		public String methodBody
+		public TypeReferenceProvider context
 
-		new(boolean flushed, String methodBody) {
+		new(boolean flushed, String methodBody, TypeReferenceProvider context) {
 			this.flushed = flushed
 			this.methodBody = methodBody
+			this.context = context
 		}
 
 	}
@@ -63,9 +66,9 @@ class BodySetter {
 	 * Sets method body via string by using the internal cache. Also
 	 * null as body string is allowed.
 	 */
-	def setBody(MutableExecutableDeclaration executable, String bodyString) {
+	def setBody(MutableExecutableDeclaration executable, String bodyString, TypeReferenceProvider context) {
 
-		cachedBodies.put(executable, new BodyInfo(false, bodyString))
+		cachedBodies.put(executable, new BodyInfo(false, bodyString, context))
 		executable.body = null as Expression
 
 	}
@@ -74,16 +77,16 @@ class BodySetter {
 	 * Move body of specified source method to given destination method considering
 	 * the internal cache.
 	 */
-	def moveBody(MutableExecutableDeclaration dest, MethodDeclaration src) {
+	def moveBody(MutableExecutableDeclaration dest, MethodDeclaration src, TypeReferenceProvider context) {
 
 		if (cachedBodies.containsKey(src)) {
 
 			// set method body using cache
-			setBody(dest, cachedBodies.get(src).methodBody)
+			setBody(dest, cachedBodies.get(src).methodBody, context)
 
 			// ensure that source method's body is set to null (if mutable)
 			if (src instanceof MutableMethodDeclaration)
-				setBody(src, null)
+				setBody(src, null, context)
 
 		} else {
 
@@ -120,11 +123,11 @@ class BodySetter {
 
 				// ensure that source method's body is set to null (if mutable)
 				if (src instanceof MutableMethodDeclaration)
-					setBody(src, null)
+					setBody(src, null, context)
 
 			} else {
 
-				setBody(dest, null)
+				setBody(dest, null, context)
 
 			}
 
@@ -141,10 +144,22 @@ class BodySetter {
 
 			if (bodyInfo.value.flushed == false) {
 
+				var String typeAssertionBody = ""
+				for (newMethodParameter : bodyInfo.key.parameters)
+					if (newMethodParameter.hasAnnotation(AssertParameterType)) {
+						val requiredParamterType = newMethodParameter.getAnnotation(AssertParameterType).
+							getClassValue("value")
+						typeAssertionBody +=
+							'''assert «newMethodParameter.simpleName» == null || «newMethodParameter.simpleName» instanceof «requiredParamterType.getTypeReferenceAsString(true, true, false, false, bodyInfo.value.context)» : String.format(org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.TYPE_ADAPTION_PARAMETER_TYPE_ERROR, "«bodyInfo.key.simpleName»", "«newMethodParameter.simpleName»", "«requiredParamterType.getTypeReferenceAsString(true, false, false, false, bodyInfo.value.context)»");
+							'''
+						typeAssertionBody += "\n";
+					}
+
 				bodyInfo.value.flushed = true
+				val typeAssertionBodyFinal = typeAssertionBody
 				bodyInfo.key.mutate [
 
-					bodyInfo.key.body = '''«bodyInfo.value.methodBody»'''
+					bodyInfo.key.body = '''«typeAssertionBodyFinal + bodyInfo.value.methodBody»'''
 
 				]
 

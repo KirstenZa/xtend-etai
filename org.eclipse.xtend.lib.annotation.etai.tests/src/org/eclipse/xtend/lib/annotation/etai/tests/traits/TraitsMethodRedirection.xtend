@@ -385,7 +385,7 @@ class TraitsMethodRedirectionTests extends TraitTestsBase {
 	@Test
 	def void testRedirectionNew() {
 
-		val ExtendedRedirectionNewBase obj = new ExtendedRedirectionNew
+		val ExtendedRedirectionNewBase obj = new ExtendedRedirectionNew	
 		obj.dispose
 		obj.disposeInternal;
 		(obj as ExtendedRedirectionNew).anotherMethod
@@ -408,13 +408,15 @@ class TraitsMethodRedirectionTests extends TraitTestsBase {
 	def void testRedirectionNewInterface() {
 
 		assertEquals(2, IExtendedRedirectionNewWithExtractInterface.declaredMethods.size)
-		assertEquals(1,
-			IExtendedRedirectionNewWithExtractInterface.declaredMethods.filter[name == "disposeInternal"].size)
-		assertEquals(1,
-			IExtendedRedirectionNewWithExtractInterface.declaredMethods.filter[name == "anotherMethod2"].size)
+		assertEquals(1, IExtendedRedirectionNewWithExtractInterface.declaredMethods.filter[
+			name == "disposeInternal" && synthetic == false
+		].size)
+		assertEquals(1, IExtendedRedirectionNewWithExtractInterface.declaredMethods.filter[
+			name == "anotherMethod2" && synthetic == false
+		].size)
 
-		assertEquals(1, ExtendedRedirectionNewWithExtractInterface.declaredMethods.filter [
-			name == "anotherMethod2Internal"
+		assertEquals(1, ExtendedRedirectionNewWithExtractInterface.declaredMethods.filter[
+			name == "anotherMethod2Internal" && synthetic == false
 		].size)
 
 	}
@@ -485,6 +487,7 @@ import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.TraitMethodRedirection
+
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 interface InterfaceWithRedirection {
@@ -538,8 +541,6 @@ class RedirectedExtendedClass {
 				primarySourceElement as MethodDeclaration).problems
 
 			// do assertions
-			assertEquals(4, allProblems.size)
-
 			assertEquals(1, problemsInterfaceMethod.size)
 			assertEquals(Severity.ERROR, problemsInterfaceMethod.get(0).severity)
 			assertTrue(problemsInterfaceMethod.get(0).message.contains("class"))
@@ -555,6 +556,8 @@ class RedirectedExtendedClass {
 			assertEquals(1, problemsExtendedMethod2.size)
 			assertEquals(Severity.ERROR, problemsExtendedMethod2.get(0).severity)
 			assertTrue(problemsExtendedMethod2.get(0).message.contains("private"))
+
+			assertEquals(4, allProblems.size)
 
 		]
 
@@ -607,11 +610,11 @@ class RedirectedExtendedClassDerived extends RedirectedExtendedClassBase impleme
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("final"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -680,8 +683,6 @@ class ThisExtendedDerived2 extends ThisExtendedBase2 implements IThisExtension {
 			val problemsClassDerived2 = (clazzDerived2.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsClassDerived1.size)
 			assertEquals(Severity.ERROR, problemsClassDerived1.get(0).severity)
 			assertTrue(problemsClassDerived1.get(0).message.contains("cycle"))
@@ -689,6 +690,8 @@ class ThisExtendedDerived2 extends ThisExtendedBase2 implements IThisExtension {
 			assertEquals(1, problemsClassDerived2.size)
 			assertEquals(Severity.ERROR, problemsClassDerived2.get(0).severity)
 			assertTrue(problemsClassDerived2.get(0).message.contains("cycle"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -736,11 +739,11 @@ abstract class ExtendedRedirection extends ExtendedRedirectionBase implements IT
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
 			assertTrue(problemsClass.get(0).message.contains("requires"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

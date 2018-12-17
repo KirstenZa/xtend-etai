@@ -1,6 +1,7 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.macro.declaration.ConstructorDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -25,6 +26,11 @@ import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 @ExtractInterface
 @ApplyRules
 class MyComponent1 {
+
+	new(
+		@TypeAdaptionRule("applyVariable(var.class.simple);someMethod()")
+		Object obj) {
+	}
 
 	@TypeAdaptionRule("applyVariable(var.class.simple);replaceMyComponent,org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IController")
 	override Object _ctrl1() {
@@ -62,6 +68,8 @@ class MyComponent2 extends MyComponent1 {}
 
 			val clazz = findClass('virtual.MyComponent1')
 
+			val problemsContructor = (clazz.declaredConstructors.get(0).primarySourceElement as ConstructorDeclaration).
+				problems
 			val problemsMethod1 = (clazz.findDeclaredMethod("_ctrl1").primarySourceElement as MethodDeclaration).
 				problems
 			val problemsMethod2 = (clazz.findDeclaredMethod("_ctrl2").primarySourceElement as MethodDeclaration).
@@ -72,8 +80,9 @@ class MyComponent2 extends MyComponent1 {}
 				problems
 
 			// do assertions
-			assertEquals(4, allProblems.size)
-
+			assertEquals(1, problemsContructor.size)
+			assertEquals(Severity.ERROR, problemsContructor.get(0).severity)
+			assertTrue(problemsContructor.get(0).message.contains("not found"))
 			assertEquals(1, problemsMethod1.size)
 			assertEquals(Severity.ERROR, problemsMethod1.get(0).severity)
 			assertTrue(problemsMethod1.get(0).message.contains("Incorrect"))
@@ -86,6 +95,8 @@ class MyComponent2 extends MyComponent1 {}
 			assertEquals(1, problemsMethod4.size)
 			assertEquals(Severity.ERROR, problemsMethod4.get(0).severity)
 			assertTrue(problemsMethod4.get(0).message.contains("not found"))
+
+			assertEquals(5, allProblems.size)
 
 		]
 

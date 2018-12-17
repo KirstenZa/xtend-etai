@@ -125,7 +125,7 @@ abstract class ExtendedClassConstructBase {
 
 	new(BigDecimal bigDecimal) {
 		this.bigDecimal = bigDecimal
-		
+
 		// use attribute in order to avoid warning
 		this.bigDecimal = this.bigDecimal
 	}
@@ -170,7 +170,7 @@ class ExtendedClassConstructOwnConstructor implements ITraitClassConstructConcre
 
 	protected new(Long longValue) {
 		this.longValue = longValue
-		
+
 		// use attribute in order to avoid warning
 		this.longValue = this.longValue
 	}
@@ -411,11 +411,11 @@ class TraitsConstructTests extends TraitTestsBase {
 	protected def void assertConstructorsAndFactoryMethodCount(Class<?> clazz, int numberOfProtectedConstructors,
 		int numberOfFactoryMethods) {
 
-		assertEquals(numberOfProtectedConstructors, clazz.declaredConstructors.filter [
+		assertEquals(numberOfProtectedConstructors, clazz.declaredConstructors.filter[
 			Modifier.isProtected(it.modifiers)
 		].size)
-		assertEquals(numberOfFactoryMethods, clazz.declaredMethods.filter [
-			it.name.startsWith("create")
+		assertEquals(numberOfFactoryMethods, clazz.declaredMethods.filter[
+			it.name.startsWith("create") && synthetic == false
 		].size)
 
 	}
@@ -799,11 +799,11 @@ class TraitsConstructTests extends TraitTestsBase {
 	def void testExtensionConstructructAutoPrefix() {
 
 		// prefix "auto$" shall be used for construction helpers
-		assertEquals(0, ExtendedClassConstructNoConstructorFourExtensions.declaredMethods.filter [
-			it.name.startsWith("new$")
+		assertEquals(0, ExtendedClassConstructNoConstructorFourExtensions.declaredMethods.filter[
+			it.name.startsWith("new$") && synthetic == false
 		].size)
-		assertEquals(5, ExtendedClassConstructNoConstructorFourExtensions.declaredMethods.filter [
-			it.name.startsWith("auto$new$")
+		assertEquals(5, ExtendedClassConstructNoConstructorFourExtensions.declaredMethods.filter[
+			it.name.startsWith("auto$new$") && synthetic == false
 		].size)
 
 	}
