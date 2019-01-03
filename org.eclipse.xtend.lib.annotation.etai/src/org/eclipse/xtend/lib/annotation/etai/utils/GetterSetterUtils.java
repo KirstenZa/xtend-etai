@@ -131,7 +131,7 @@ public class GetterSetterUtils {
 	 * and return type <code>boolean</code>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexBoolean<E> {
-		boolean call(List<E> elements, List<Integer> indices);
+		boolean call(List<E> elements, List<Integer> indices, List<E> oldElements);
 	}
 
 	/**
@@ -139,7 +139,7 @@ public class GetterSetterUtils {
 	 * return type <code>boolean</code>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexBoolean<E> {
-		boolean call(E element, int index);
+		boolean call(E element, int index, List<E> oldElements);
 	}
 
 	/**
@@ -147,7 +147,7 @@ public class GetterSetterUtils {
 	 * and return type <code>void</code>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexVoid<E> {
-		void call(List<E> elements, List<Integer> indices);
+		void call(List<E> elements, List<Integer> indices, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class GetterSetterUtils {
 	 * return type <code>void</code>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexVoid<E> {
-		void call(E element, int index);
+		void call(E element, int index, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
@@ -571,6 +571,9 @@ public class GetterSetterUtils {
 
 				List<E> objsToBeAdded;
 
+				// copy of old elements
+				List<E> oldElements = Collections.unmodifiableList(new ArrayList<E>(collection));
+
 				// special preparation for sets: remove elements from given set which already
 				// exist in destination set
 				if (collection instanceof Set<?>) {
@@ -592,7 +595,7 @@ public class GetterSetterUtils {
 					objsToBeAdded = new ArrayList<E>();
 					int currentIndex = startIndex;
 					for (E element : elements) {
-						if (beforeElementAdd.call(element, currentIndex)) {
+						if (beforeElementAdd.call(element, currentIndex, oldElements)) {
 							objsToBeAdded.add(element);
 							currentIndex++;
 						}
@@ -615,7 +618,7 @@ public class GetterSetterUtils {
 				// call "before add" method for whole change package and check, if it will be
 				// added
 				if (beforeAdd != null) {
-					if (!beforeAdd.call(objsToBeAdded, indicesToBeAdded))
+					if (!beforeAdd.call(objsToBeAdded, indicesToBeAdded, oldElements))
 						return false;
 				}
 
@@ -669,13 +672,16 @@ public class GetterSetterUtils {
 
 				}
 
+				// copy of new elements
+				List<E> newElements = Collections.unmodifiableList(new ArrayList<E>(collection));
+
 				// go through each element, which has been added, and call "after element add"
 				// method
 				if (afterElementAdd != null) {
 
 					int currentIndex = startIndex;
 					for (E element : objsAdded) {
-						afterElementAdd.call(element, currentIndex);
+						afterElementAdd.call(element, currentIndex, oldElements, newElements);
 						currentIndex++;
 					}
 
@@ -683,7 +689,7 @@ public class GetterSetterUtils {
 
 				// call "after add" method for whole change package, which has been added
 				if (afterAdd != null) {
-					afterAdd.call(objsAdded, indicesToBeAdded);
+					afterAdd.call(objsAdded, indicesToBeAdded, oldElements, newElements);
 				}
 
 				return true;
@@ -742,13 +748,16 @@ public class GetterSetterUtils {
 				List<Integer> indicesToBeRemoved = null;
 				List<E> objsToBeRemoved;
 
+				// copy of old elements
+				List<E> oldElements = Collections.unmodifiableList(new ArrayList<E>(collection));
+
 				// reduce elements to elements which are really in the collection
 				if (elements != null) {
 
-					java.util.Collection<E> newElements = new java.util.HashSet<E>();
+					java.util.List<E> newElements = new java.util.ArrayList<E>();
 
 					for (E obj : elements)
-						if (collection.contains(obj))
+						if (collection.contains(obj) && !newElements.contains(obj))
 							newElements.add(obj);
 
 					elements = newElements;
@@ -763,7 +772,7 @@ public class GetterSetterUtils {
 					indicesToBeRemoved = new ArrayList<Integer>();
 					E element = ((List<? extends E>) collection).get(index);
 
-					if (beforeElementRemove == null || beforeElementRemove.call(element, index)) {
+					if (beforeElementRemove == null || beforeElementRemove.call(element, index, oldElements)) {
 						objsToBeRemoved.add(element);
 						indicesToBeRemoved.add(index);
 					}
@@ -781,7 +790,8 @@ public class GetterSetterUtils {
 								Object elementInCollection = ((List<? extends E>) collection).get(i);
 								if ((elementInCollection == null && element == null)
 										|| element.equals(elementInCollection)) {
-									if (beforeElementRemove == null || beforeElementRemove.call(element, i)) {
+									if (beforeElementRemove == null
+											|| beforeElementRemove.call(element, i, oldElements)) {
 										objsToBeRemoved.add(element);
 										indicesToBeRemoved.add(i);
 									}
@@ -796,7 +806,7 @@ public class GetterSetterUtils {
 					} else {
 
 						for (E element : elements)
-							if (beforeElementRemove == null || beforeElementRemove.call(element, -1))
+							if (beforeElementRemove == null || beforeElementRemove.call(element, -1, oldElements))
 								objsToBeRemoved.add(element);
 
 					}
@@ -815,7 +825,7 @@ public class GetterSetterUtils {
 				// call "before remove" method for whole change package and check,
 				// if it will be removed
 				if (beforeRemove != null) {
-					if (!beforeRemove.call(objsToBeRemoved, indicesToBeRemoved))
+					if (!beforeRemove.call(objsToBeRemoved, indicesToBeRemoved, oldElements))
 						return false;
 				}
 
@@ -885,6 +895,9 @@ public class GetterSetterUtils {
 
 				}
 
+				// copy of new elements
+				List<E> newElements = Collections.unmodifiableList(new ArrayList<E>(collection));
+
 				// go through each element, which has been removed,
 				// and call "after element remove" method
 				if (afterElementRemove != null) {
@@ -895,7 +908,7 @@ public class GetterSetterUtils {
 
 						if (indicesToBeRemoved != null)
 							currentIndex = indicesToBeRemoved.get(i);
-						afterElementRemove.call(objsRemoved.get(i), currentIndex);
+						afterElementRemove.call(objsRemoved.get(i), currentIndex, oldElements, newElements);
 
 					}
 
@@ -903,7 +916,7 @@ public class GetterSetterUtils {
 
 				// call "after remove" method for whole change package, which has been removed
 				if (afterRemove != null) {
-					afterRemove.call(objsRemoved, indicesToBeRemoved);
+					afterRemove.call(objsRemoved, indicesToBeRemoved, oldElements, newElements);
 				}
 
 				return true;

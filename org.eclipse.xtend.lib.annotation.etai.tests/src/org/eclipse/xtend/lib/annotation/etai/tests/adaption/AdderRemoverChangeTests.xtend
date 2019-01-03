@@ -642,16 +642,356 @@ class ClassWithAdderRemoverNoConcurrent {
 	@RemoverRule(multiple=true, afterRemove="%Removed")
 	@GetterRule
 	List<Integer> listData = new ArrayList<Integer>
-	
+
 	protected def void listDataAdded() {
 		if (addToListData(8))
 			listData.add(99)
 		else
 			listData.add(100)
 	}
-	
+
 	protected def void listDataRemoved() {
 		assertFalse(removeFromListData(0))
+	}
+
+}
+
+@ApplyRules
+class ClassWithAdderRemoverChangeWithOldNewList {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	public List<Object> expectedOldElements = null
+	public List<Object> expectedNewElements = null
+	public List<Integer> expectedIndices = null
+	public Object notAllowed = null
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@GetterRule
+	List<Integer> listDataJustOldNew = new ArrayList<Integer>
+
+	def boolean listDataJustOldNewBeforeAdd(List<Integer> oldElements, List<Integer> indices, List<Integer> elements) {
+		beforeAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedIndices, indices)
+		return elements.size() <= 2
+	}
+
+	def void listDataJustOldNewAdded(List<Integer> oldElements, List<Integer> newElements, List<Integer> indices,
+		List<Integer> elements) {
+		afterAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertEquals(expectedIndices, indices)
+	}
+
+	def boolean listDataJustOldNewBeforeElementAdd(List<Integer> oldElements, int index, Integer element) {
+		beforeElementAdd++
+		assertEquals(expectedOldElements, oldElements)
+		if (notAllowed === null || !element.equals(notAllowed))
+			assertTrue(expectedIndices.contains(index))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void listDataJustOldNewElementAdded(List<Integer> oldElements, List<Integer> newElements, int index,
+		Integer element) {
+		afterElementAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertTrue(expectedIndices.contains(index))
+	}
+
+	def boolean listDataJustOldNewBeforeRemove(List<Integer> oldElements, List<Integer> indices,
+		List<Integer> elements) {
+		beforeRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedIndices, indices)
+		return elements.size() <= 2
+	}
+
+	def void listDataJustOldNewRemoved(List<Integer> oldElements, List<Integer> newElements, List<Integer> indices,
+		List<Integer> elements) {
+		afterRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertEquals(expectedIndices, indices)
+	}
+
+	def boolean listDataJustOldNewBeforeElementRemove(List<Integer> oldElements, int index, Integer element) {
+		beforeElementRemove++
+		assertEquals(expectedOldElements, oldElements)
+		if (notAllowed === null || !element.equals(notAllowed))
+			assertTrue(expectedIndices.contains(index))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void listDataJustOldNewElementRemoved(List<Integer> oldElements, List<Integer> newElements, int index,
+		Integer element) {
+		afterElementRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertTrue(expectedIndices.contains(index))
+	}
+
+// TODO: obiges funktioniert nur mit index, tests?
+}
+
+@ApplyRules
+class ClassWithAdderRemoverChangeWithOldNewListAndFieldName {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	public List<Object> expectedOldElements = null
+	public List<Object> expectedNewElements = null
+	public List<Integer> expectedIndices = null
+	public Object notAllowed = null
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@GetterRule
+	List<Integer> listDataJustOldNew = new ArrayList<Integer>
+
+	def boolean listDataJustOldNewBeforeAdd(String fieldName, List<Integer> oldElements, List<Integer> indices,
+		List<Integer> elements) {
+		assertEquals("listDataJustOldNew", fieldName)
+		beforeAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedIndices, indices)
+		return elements.size() <= 2
+	}
+
+	def void listDataJustOldNewAdded(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		List<Integer> indices, List<Integer> elements) {
+		assertEquals("listDataJustOldNew", fieldName)
+		afterAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertEquals(expectedIndices, indices)
+	}
+
+	def boolean listDataJustOldNewBeforeElementAdd(String fieldName, List<Integer> oldElements, int index,
+		Integer element) {
+		assertEquals("listDataJustOldNew", fieldName)
+		beforeElementAdd++
+		assertEquals(expectedOldElements, oldElements)
+		if (notAllowed === null || !element.equals(notAllowed))
+			assertTrue(expectedIndices.contains(index))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void listDataJustOldNewElementAdded(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		int index, Integer element) {
+		assertEquals("listDataJustOldNew", fieldName)
+		afterElementAdd++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertTrue(expectedIndices.contains(index))
+	}
+
+	def boolean listDataJustOldNewBeforeRemove(String fieldName, List<Integer> oldElements, List<Integer> indices,
+		List<Integer> elements) {
+		assertEquals("listDataJustOldNew", fieldName)
+		beforeRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedIndices, indices)
+		return elements.size() <= 2
+	}
+
+	def void listDataJustOldNewRemoved(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		List<Integer> indices, List<Integer> elements) {
+		assertEquals("listDataJustOldNew", fieldName)
+		afterRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertEquals(expectedIndices, indices)
+	}
+
+	def boolean listDataJustOldNewBeforeElementRemove(String fieldName, List<Integer> oldElements, int index,
+		Integer element) {
+		assertEquals("listDataJustOldNew", fieldName)
+		beforeElementRemove++
+		assertEquals(expectedOldElements, oldElements)
+		if (notAllowed === null || !element.equals(notAllowed))
+			assertTrue(expectedIndices.contains(index))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void listDataJustOldNewElementRemoved(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		int index, Integer element) {
+		assertEquals("listDataJustOldNew", fieldName)
+		afterElementRemove++
+		assertEquals(expectedOldElements, oldElements)
+		assertEquals(expectedNewElements, newElements)
+		assertTrue(expectedIndices.contains(index))
+	}
+
+}
+
+@ApplyRules
+class ClassWithAdderRemoverChangeWithOldNewSet {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	public List<Object> expectedOldElements = null
+	public List<Object> expectedNewElements = null
+	public Object notAllowed = null
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@GetterRule
+	Set<Integer> setDataJustOldNew = new HashSet<Integer>
+
+	def boolean setDataJustOldNewBeforeAdd(List<Integer> oldElements, List<Integer> elements) {
+		beforeAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return elements.size() <= 2
+	}
+
+	def void setDataJustOldNewAdded(List<Integer> oldElements, List<Integer> newElements, List<Integer> elements) {
+		afterAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeElementAdd(List<Integer> oldElements, Integer element) {
+		beforeElementAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void setDataJustOldNewElementAdded(List<Integer> oldElements, List<Integer> newElements, Integer element) {
+		afterElementAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeRemove(List<Integer> oldElements, List<Integer> elements) {
+		beforeRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return elements.size() <= 2
+	}
+
+	def void setDataJustOldNewRemoved(List<Integer> oldElements, List<Integer> newElements, List<Integer> elements) {
+		afterRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeElementRemove(List<Integer> oldElements, Integer element) {
+		beforeElementRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void setDataJustOldNewElementRemoved(List<Integer> oldElements, List<Integer> newElements, Integer element) {
+		afterElementRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+}
+
+@ApplyRules
+class ClassWithAdderRemoverChangeWithOldNewSetAndFieldName {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	public List<Object> expectedOldElements = null
+	public List<Object> expectedNewElements = null
+	public Object notAllowed = null
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@GetterRule
+	Set<Integer> setDataJustOldNew = new HashSet<Integer>
+
+	def boolean setDataJustOldNewBeforeAdd(String fieldName, List<Integer> oldElements, List<Integer> elements) {
+		assertEquals("setDataJustOldNew", fieldName)
+		beforeAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return elements.size() <= 2
+	}
+
+	def void setDataJustOldNewAdded(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		List<Integer> elements) {
+		assertEquals("setDataJustOldNew", fieldName)
+		afterAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeElementAdd(String fieldName, List<Integer> oldElements, Integer element) {
+		assertEquals("setDataJustOldNew", fieldName)
+		beforeElementAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void setDataJustOldNewElementAdded(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		Integer element) {
+		assertEquals("setDataJustOldNew", fieldName)
+		afterElementAdd++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeRemove(String fieldName, List<Integer> oldElements, List<Integer> elements) {
+		assertEquals("setDataJustOldNew", fieldName)
+		beforeRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return elements.size() <= 2
+	}
+
+	def void setDataJustOldNewRemoved(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		List<Integer> elements) {
+		assertEquals("setDataJustOldNew", fieldName)
+		afterRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
+	}
+
+	def boolean setDataJustOldNewBeforeElementRemove(String fieldName, List<Integer> oldElements, Integer element) {
+		assertEquals("setDataJustOldNew", fieldName)
+		beforeElementRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		return notAllowed === null || !element.equals(notAllowed)
+	}
+
+	def void setDataJustOldNewElementRemoved(String fieldName, List<Integer> oldElements, List<Integer> newElements,
+		Integer element) {
+		assertEquals("setDataJustOldNew", fieldName)
+		afterElementRemove++
+		assertEquals(new HashSet<Object>(expectedOldElements), new HashSet<Object>(oldElements))
+		assertEquals(new HashSet<Object>(expectedNewElements), new HashSet<Object>(newElements))
 	}
 
 }
@@ -915,6 +1255,522 @@ class AdderRemoverChangeTests {
 	}
 
 	@Test
+	def void testListChangeParamsWithOldNewElements() {
+
+		val obj = new ClassWithAdderRemoverChangeWithOldNewList
+
+		obj.expectedOldElements = new ArrayList<Object>(#[])
+		obj.expectedNewElements = new ArrayList<Object>(#[4])
+		obj.expectedIndices = new ArrayList<Integer>(#[0])
+		obj.notAllowed = null
+		assertTrue(obj.addToListDataJustOldNew(4))
+		assertArrayEquals(#[4], obj.listDataJustOldNew)
+		assertEquals(1, obj.beforeElementAdd)
+		assertEquals(1, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = null
+		obj.expectedIndices = new ArrayList<Integer>(#[1, 2, 3])
+		obj.notAllowed = null
+		assertFalse(obj.addAllToListDataJustOldNew(#[5, 6, 7]))
+		assertArrayEquals(#[4], obj.listDataJustOldNew)
+		assertEquals(4, obj.beforeElementAdd)
+		assertEquals(2, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1, 2])
+		obj.notAllowed = 9
+		assertTrue(obj.addAllToListDataJustOldNew(#[8, 9, 10]))
+		assertArrayEquals(#[4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(7, obj.beforeElementAdd)
+		assertEquals(3, obj.beforeAdd)
+		assertEquals(3, obj.afterElementAdd)
+		assertEquals(2, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[0, 1])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToListDataJustOldNew(0, #[14, 15]))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(9, obj.beforeElementAdd)
+		assertEquals(4, obj.beforeAdd)
+		assertEquals(5, obj.afterElementAdd)
+		assertEquals(3, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1])
+		obj.notAllowed = null
+		assertTrue(obj.addToListDataJustOldNew(1, 30))
+		assertArrayEquals(#[14, 30, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(10, obj.beforeElementAdd)
+		assertEquals(5, obj.beforeAdd)
+		assertEquals(6, obj.afterElementAdd)
+		assertEquals(4, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromListDataJustOldNew(new Integer(30)))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(1, obj.beforeElementRemove)
+		assertEquals(1, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = null
+		obj.expectedIndices = new ArrayList<Integer>(#[0, 1, 3])
+		obj.notAllowed = null
+		assertFalse(obj.removeAllFromListDataJustOldNew(#[14, 15, 8]))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(4, obj.beforeElementRemove)
+		assertEquals(2, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[2])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromListDataJustOldNew(2))
+		assertArrayEquals(#[14, 15, 8, 10], obj.listDataJustOldNew)
+		assertEquals(5, obj.beforeElementRemove)
+		assertEquals(3, obj.beforeRemove)
+		assertEquals(2, obj.afterElementRemove)
+		assertEquals(2, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8])
+		obj.expectedIndices = new ArrayList<Integer>(#[3])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromListDataJustOldNew(new Integer(10)))
+		assertArrayEquals(#[14, 15, 8], obj.listDataJustOldNew)
+		assertEquals(6, obj.beforeElementRemove)
+		assertEquals(4, obj.beforeRemove)
+		assertEquals(3, obj.afterElementRemove)
+		assertEquals(3, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 8])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedIndices = new ArrayList<Integer>(#[0])
+		obj.notAllowed = 8
+		assertTrue(obj.removeAllFromListDataJustOldNew(#[14, 8]))
+		assertArrayEquals(#[15, 8], obj.listDataJustOldNew)
+		assertEquals(8, obj.beforeElementRemove)
+		assertEquals(5, obj.beforeRemove)
+		assertEquals(4, obj.afterElementRemove)
+		assertEquals(4, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedNewElements = new ArrayList<Object>(#[15])
+		obj.expectedIndices = new ArrayList<Integer>(#[1])
+		obj.notAllowed = null
+		assertTrue(obj.removeAllFromListDataJustOldNew(#[8]))
+		assertArrayEquals(#[15], obj.listDataJustOldNew)
+		assertEquals(9, obj.beforeElementRemove)
+		assertEquals(6, obj.beforeRemove)
+		assertEquals(5, obj.afterElementRemove)
+		assertEquals(5, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15])
+		obj.expectedNewElements = new ArrayList<Object>(#[])
+		obj.expectedIndices = new ArrayList<Integer>(#[0])
+		obj.notAllowed = null
+		assertTrue(obj.clearListDataJustOldNew)
+		assertTrue(obj.listDataJustOldNew.isEmpty)
+		assertEquals(10, obj.beforeElementRemove)
+		assertEquals(7, obj.beforeRemove)
+		assertEquals(6, obj.afterElementRemove)
+		assertEquals(6, obj.afterRemove)
+
+		obj.beforeElementRemove = 0
+		obj.beforeRemove = 0
+		obj.afterElementRemove = 0
+		obj.afterRemove = 0
+
+	}
+
+	@Test
+	def void testListChangeParamsWithOldNewElementsAndFieldName() {
+
+		val obj = new ClassWithAdderRemoverChangeWithOldNewListAndFieldName
+
+		obj.expectedOldElements = new ArrayList<Object>(#[])
+		obj.expectedNewElements = new ArrayList<Object>(#[4])
+		obj.expectedIndices = new ArrayList<Integer>(#[0])
+		obj.notAllowed = null
+		assertTrue(obj.addToListDataJustOldNew(4))
+		assertArrayEquals(#[4], obj.listDataJustOldNew)
+		assertEquals(1, obj.beforeElementAdd)
+		assertEquals(1, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = null
+		obj.expectedIndices = new ArrayList<Integer>(#[1, 2, 3])
+		obj.notAllowed = null
+		assertFalse(obj.addAllToListDataJustOldNew(#[5, 6, 7]))
+		assertArrayEquals(#[4], obj.listDataJustOldNew)
+		assertEquals(4, obj.beforeElementAdd)
+		assertEquals(2, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1, 2])
+		obj.notAllowed = 9
+		assertTrue(obj.addAllToListDataJustOldNew(#[8, 9, 10]))
+		assertArrayEquals(#[4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(7, obj.beforeElementAdd)
+		assertEquals(3, obj.beforeAdd)
+		assertEquals(3, obj.afterElementAdd)
+		assertEquals(2, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[0, 1])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToListDataJustOldNew(0, #[14, 15]))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(9, obj.beforeElementAdd)
+		assertEquals(4, obj.beforeAdd)
+		assertEquals(5, obj.afterElementAdd)
+		assertEquals(3, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1])
+		obj.notAllowed = null
+		assertTrue(obj.addToListDataJustOldNew(1, 30))
+		assertArrayEquals(#[14, 30, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(10, obj.beforeElementAdd)
+		assertEquals(5, obj.beforeAdd)
+		assertEquals(6, obj.afterElementAdd)
+		assertEquals(4, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[1])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromListDataJustOldNew(new Integer(30)))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(1, obj.beforeElementRemove)
+		assertEquals(1, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = null
+		obj.expectedIndices = new ArrayList<Integer>(#[0, 1, 3])
+		obj.notAllowed = null
+		assertFalse(obj.removeAllFromListDataJustOldNew(#[14, 15, 8]))
+		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
+		assertEquals(4, obj.beforeElementRemove)
+		assertEquals(2, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[2])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromListDataJustOldNew(2))
+		assertArrayEquals(#[14, 15, 8, 10], obj.listDataJustOldNew)
+		assertEquals(5, obj.beforeElementRemove)
+		assertEquals(3, obj.beforeRemove)
+		assertEquals(2, obj.afterElementRemove)
+		assertEquals(2, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.expectedIndices = new ArrayList<Integer>(#[0])
+		obj.notAllowed = 8
+		assertTrue(obj.removeAllFromListDataJustOldNew(#[14, 8]))
+		assertArrayEquals(#[15, 8, 10], obj.listDataJustOldNew)
+		assertEquals(7, obj.beforeElementRemove)
+		assertEquals(4, obj.beforeRemove)
+		assertEquals(3, obj.afterElementRemove)
+		assertEquals(3, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedIndices = new ArrayList<Integer>(#[2])
+		obj.notAllowed = null
+		assertTrue(obj.removeAllFromListDataJustOldNew(#[10]))
+		assertArrayEquals(#[15, 8], obj.listDataJustOldNew)
+		assertEquals(8, obj.beforeElementRemove)
+		assertEquals(5, obj.beforeRemove)
+		assertEquals(4, obj.afterElementRemove)
+		assertEquals(4, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedNewElements = new ArrayList<Object>(#[])
+		obj.expectedIndices = new ArrayList<Integer>(#[0, 1])
+		obj.notAllowed = null
+		assertTrue(obj.clearListDataJustOldNew)
+		assertTrue(obj.listDataJustOldNew.isEmpty)
+		assertEquals(10, obj.beforeElementRemove)
+		assertEquals(6, obj.beforeRemove)
+		assertEquals(6, obj.afterElementRemove)
+		assertEquals(5, obj.afterRemove)
+
+		obj.beforeElementRemove = 0
+		obj.beforeRemove = 0
+		obj.afterElementRemove = 0
+		obj.afterRemove = 0
+
+	}
+
+	@Test
+	def void testSetChangeParamsWithOldNewElements() {
+
+		val obj = new ClassWithAdderRemoverChangeWithOldNewSet
+
+		obj.expectedOldElements = new ArrayList<Object>(#[])
+		obj.expectedNewElements = new ArrayList<Object>(#[4])
+		obj.notAllowed = null
+		assertTrue(obj.addToSetDataJustOldNew(4))
+		assertEquals(new HashSet(#[4]), obj.setDataJustOldNew)
+		assertEquals(1, obj.beforeElementAdd)
+		assertEquals(1, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = null
+		obj.notAllowed = null
+		assertFalse(obj.addAllToSetDataJustOldNew(#[5, 6, 7]))
+		assertEquals(new HashSet(#[4]), obj.setDataJustOldNew)
+		assertEquals(4, obj.beforeElementAdd)
+		assertEquals(2, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.notAllowed = 9
+		assertTrue(obj.addAllToSetDataJustOldNew(#[8, 9, 10]))
+		assertEquals(new HashSet(#[4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(7, obj.beforeElementAdd)
+		assertEquals(3, obj.beforeAdd)
+		assertEquals(3, obj.afterElementAdd)
+		assertEquals(2, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToSetDataJustOldNew(#[30, 14]))
+		assertEquals(new HashSet(#[14, 30, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(9, obj.beforeElementAdd)
+		assertEquals(4, obj.beforeAdd)
+		assertEquals(5, obj.afterElementAdd)
+		assertEquals(3, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToSetDataJustOldNew(#[15]))
+		assertEquals(new HashSet(#[14, 30, 4, 8, 15, 10]), obj.setDataJustOldNew)
+		assertEquals(10, obj.beforeElementAdd)
+		assertEquals(5, obj.beforeAdd)
+		assertEquals(6, obj.afterElementAdd)
+		assertEquals(4, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromSetDataJustOldNew(new Integer(30)))
+		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(1, obj.beforeElementRemove)
+		assertEquals(1, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = null
+		obj.notAllowed = null
+		assertFalse(obj.removeAllFromSetDataJustOldNew(#[14, 15, 8]))
+		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(4, obj.beforeElementRemove)
+		assertEquals(2, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromSetDataJustOldNew(4))
+		assertEquals(new HashSet(#[14, 15, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(5, obj.beforeElementRemove)
+		assertEquals(3, obj.beforeRemove)
+		assertEquals(2, obj.afterElementRemove)
+		assertEquals(2, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.notAllowed = 8
+		assertTrue(obj.removeAllFromSetDataJustOldNew(#[14, 8]))
+		assertEquals(new HashSet(#[15, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(7, obj.beforeElementRemove)
+		assertEquals(4, obj.beforeRemove)
+		assertEquals(3, obj.afterElementRemove)
+		assertEquals(3, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8])
+		obj.notAllowed = null
+		assertTrue(obj.removeAllFromSetDataJustOldNew(#[10]))
+		assertEquals(new HashSet(#[15, 8]), obj.setDataJustOldNew)
+		assertEquals(8, obj.beforeElementRemove)
+		assertEquals(5, obj.beforeRemove)
+		assertEquals(4, obj.afterElementRemove)
+		assertEquals(4, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedNewElements = new ArrayList<Object>(#[])
+		obj.notAllowed = null
+		assertTrue(obj.clearSetDataJustOldNew)
+		assertTrue(obj.setDataJustOldNew.isEmpty)
+		assertEquals(10, obj.beforeElementRemove)
+		assertEquals(6, obj.beforeRemove)
+		assertEquals(6, obj.afterElementRemove)
+		assertEquals(5, obj.afterRemove)
+
+	}
+
+	@Test
+	def void testSetChangeParamsWithOldNewElementsAndFieldName() {
+
+		val obj = new ClassWithAdderRemoverChangeWithOldNewSetAndFieldName
+
+		obj.expectedOldElements = new ArrayList<Object>(#[])
+		obj.expectedNewElements = new ArrayList<Object>(#[4])
+		obj.notAllowed = null
+		assertTrue(obj.addToSetDataJustOldNew(4))
+		assertEquals(new HashSet(#[4]), obj.setDataJustOldNew)
+		assertEquals(1, obj.beforeElementAdd)
+		assertEquals(1, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = null
+		obj.notAllowed = null
+		assertFalse(obj.addAllToSetDataJustOldNew(#[5, 6, 7]))
+		assertEquals(new HashSet(#[4]), obj.setDataJustOldNew)
+		assertEquals(4, obj.beforeElementAdd)
+		assertEquals(2, obj.beforeAdd)
+		assertEquals(1, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4])
+		obj.expectedNewElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.notAllowed = 9
+		assertTrue(obj.addAllToSetDataJustOldNew(#[8, 9, 10]))
+		assertEquals(new HashSet(#[4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(7, obj.beforeElementAdd)
+		assertEquals(3, obj.beforeAdd)
+		assertEquals(3, obj.afterElementAdd)
+		assertEquals(2, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToSetDataJustOldNew(#[30, 14]))
+		assertEquals(new HashSet(#[14, 30, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(9, obj.beforeElementAdd)
+		assertEquals(4, obj.beforeAdd)
+		assertEquals(5, obj.afterElementAdd)
+		assertEquals(3, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.addAllToSetDataJustOldNew(#[15]))
+		assertEquals(new HashSet(#[14, 30, 4, 8, 15, 10]), obj.setDataJustOldNew)
+		assertEquals(10, obj.beforeElementAdd)
+		assertEquals(5, obj.beforeAdd)
+		assertEquals(6, obj.afterElementAdd)
+		assertEquals(4, obj.afterAdd)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromSetDataJustOldNew(new Integer(30)))
+		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(1, obj.beforeElementRemove)
+		assertEquals(1, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = null
+		obj.notAllowed = null
+		assertFalse(obj.removeAllFromSetDataJustOldNew(#[14, 15, 8]))
+		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(4, obj.beforeElementRemove)
+		assertEquals(2, obj.beforeRemove)
+		assertEquals(1, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.notAllowed = null
+		assertTrue(obj.removeFromSetDataJustOldNew(4))
+		assertEquals(new HashSet(#[14, 15, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(5, obj.beforeElementRemove)
+		assertEquals(3, obj.beforeRemove)
+		assertEquals(2, obj.afterElementRemove)
+		assertEquals(2, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[14, 15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.notAllowed = 8
+		assertTrue(obj.removeAllFromSetDataJustOldNew(#[14, 8]))
+		assertEquals(new HashSet(#[15, 8, 10]), obj.setDataJustOldNew)
+		assertEquals(7, obj.beforeElementRemove)
+		assertEquals(4, obj.beforeRemove)
+		assertEquals(3, obj.afterElementRemove)
+		assertEquals(3, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8, 10])
+		obj.expectedNewElements = new ArrayList<Object>(#[15, 8])
+		obj.notAllowed = null
+		assertTrue(obj.removeAllFromSetDataJustOldNew(#[10]))
+		assertEquals(new HashSet(#[15, 8]), obj.setDataJustOldNew)
+		assertEquals(8, obj.beforeElementRemove)
+		assertEquals(5, obj.beforeRemove)
+		assertEquals(4, obj.afterElementRemove)
+		assertEquals(4, obj.afterRemove)
+
+		obj.expectedOldElements = new ArrayList<Object>(#[15, 8])
+		obj.expectedNewElements = new ArrayList<Object>(#[])
+		obj.notAllowed = null
+		assertTrue(obj.clearSetDataJustOldNew)
+		assertTrue(obj.setDataJustOldNew.isEmpty)
+		assertEquals(10, obj.beforeElementRemove)
+		assertEquals(6, obj.beforeRemove)
+		assertEquals(6, obj.afterElementRemove)
+		assertEquals(5, obj.afterRemove)
+
+		obj.beforeElementRemove = 0
+		obj.beforeRemove = 0
+		obj.afterElementRemove = 0
+		obj.afterRemove = 0
+
+	}
+
+	@Test
 	def void testSetChangeWithName() {
 
 		val obj = new ClassWithAdderRemoverChangeWithName
@@ -1075,25 +1931,25 @@ class AdderRemoverChangeTests {
 
 		obj.addAllToListData(#["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
 
-		obj.expectedIndices = new ArrayList<Integer>(#[2, 4, 6])
-		obj.expectedElements = new ArrayList<String>(#["c", "e", "g"])
+		obj.expectedIndices = new ArrayList<Integer>(#[4, 2, 6])
+		obj.expectedElements = new ArrayList<String>(#["e", "c", "g"])
 		obj.doNotRemove = new HashSet(#["d"]);
 
 		obj.removeAllFromListData(#["e", "c", "x", "d", "g"])
 
 	}
-	
+
 	@Test
 	def void testChangeMethodsNoConcurrentChange() {
-		
+
 		val obj = new ClassWithAdderRemoverNoConcurrent
 
-		obj.addToListData(1)		
-		assertEquals(#[1,100], obj.listData)
+		obj.addToListData(1)
+		assertEquals(#[1, 100], obj.listData)
 
-		obj.removeFromListData(100 as Integer)		
+		obj.removeFromListData(100 as Integer)
 		assertEquals(#[1], obj.listData)
-		
+
 	}
 
 	@Test

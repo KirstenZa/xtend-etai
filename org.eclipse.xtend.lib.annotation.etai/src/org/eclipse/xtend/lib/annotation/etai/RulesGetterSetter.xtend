@@ -131,10 +131,10 @@ annotation SetterRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>boolean fieldNameBeforeChange()
-	 * <li>boolean fieldNameBeforeChange(T newValue)
-	 * <li>boolean fieldNameBeforeChange(T oldValue, T newValue)
-	 * <li>boolean fieldNameBeforeChange(String fieldName, T oldValue, T newValue)
+	 * <li><code>boolean fieldNameBeforeChange()</code>
+	 * <li><code>boolean fieldNameBeforeChange(T newValue)</code>
+	 * <li><code>boolean fieldNameBeforeChange(T oldValue, T newValue)</code>
+	 * <li><code>boolean fieldNameBeforeChange(String fieldName, T oldValue, T newValue)</code>
 	 * </ul>
 	 * 
 	 * Further details:
@@ -171,10 +171,10 @@ annotation SetterRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>void fieldNameChanged()
-	 * <li>void fieldNameChanged(T newValue)
-	 * <li>void fieldNameChanged(T oldValue, T newValue)
-	 * <li>void fieldNameChanged(String fieldName, T oldValue, T newValue)
+	 * <li><code>void fieldNameChanged()</code>
+	 * <li><code>void fieldNameChanged(T newValue)</code>
+	 * <li><code>void fieldNameChanged(T oldValue, T newValue)</code>
+	 * <li><code>void fieldNameChanged(String fieldName, T oldValue, T newValue)</code>
 	 * </ul>
 	 * 
 	 * Further details:
@@ -257,10 +257,14 @@ annotation AdderRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>boolean fieldNameBeforeElementAdd(T addedElement)
-	 * <li>boolean fieldNameBeforeElementAdd(String fieldName, T addedElement)
-	 * <li>boolean fieldNameBeforeElementAdd(int index, T addedElement)
-	 * <li>boolean fieldNameBeforeElementAdd(String fieldName, int index, T addedElement)
+	 * <li><code>boolean fieldNameBeforeElementAdd(T addedElement)</code>
+	 * <li><code>boolean fieldNameBeforeElementAdd(String fieldName, T addedElement)</code>
+	 * <li><code>boolean fieldNameBeforeElementAdd(int index, T addedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementAdd(String fieldName, int index, T addedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementAdd(List&lt;T&gt; oldElements, T addedElement)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeElementAdd(String fieldName, List&lt;T&gt; oldElements, T addedElement)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeElementAdd(List&lt;T&gt; oldElements, int index, T addedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementAdd(String fieldName, List&lt;T&gt; oldElements, int index, T addedElement)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * Further details:
@@ -268,7 +272,8 @@ annotation AdderRule {
 	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>addedElement</code> contains the (potentially) added element
-	 * <li><code>index</code> contains the index where the element is going to be added (only supported for lists)
+	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
+	 * <li><code>index</code> contains the index where the element is going to be added
 	 * </ul>
 	 * 
 	 * <p>The method does not necessarily have to specify <code>boolean</code> as return type.
@@ -300,10 +305,14 @@ annotation AdderRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>void fieldNameElementAdded(T addedElement)
-	 * <li>void fieldNameElementAdded(String fieldName, T addedElement)
-	 * <li>void fieldNameElementAdded(int index, T addedElement)
-	 * <li>void fieldNameElementAdded(String fieldName, int index, T addedElement)
+	 * <li><code>void fieldNameElementAdded(T addedElement)</code>
+	 * <li><code>void fieldNameElementAdded(String fieldName, T addedElement)</code>
+	 * <li><code>void fieldNameElementAdded(int index, T addedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementAdded(String fieldName, int index, T addedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementAdded(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T addedElement)</code> - not supported for lists
+	 * <li><code>void fieldNameElementAdded(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T addedElement)</code> - not supported for lists
+	 * <li><code>void fieldNameElementAdded(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T addedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementAdded(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T addedElement)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * Further details:
@@ -311,7 +320,9 @@ annotation AdderRule {
 	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>addedElement</code> contains the added element
-	 * <li><code>index</code> contains the index where the element has been added (only supported for lists)
+	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
+	 * <li><code>newElements</code> contains all elements in the collection after the change (read-only)
+	 * <li><code>index</code> contains the index where the element has been added
 	 * </ul>
 	 * 
 	 * @see AdderRule#beforeElementAdd
@@ -325,11 +336,15 @@ annotation AdderRule {
 	 * <p>The called method, however, must have one of the following signatures:</p>
 	 * 
 	 * <ul>
-	 * <li>boolean fieldNameBeforeAdd()
-	 * <li>boolean fieldNameBeforeAdd(List&lt;T&gt; addedElements)
-	 * <li>boolean fieldNameBeforeAdd(String fieldName, List&lt;T&gt; addedElements)
-	 * <li>boolean fieldNameBeforeAdd(List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)
-	 * <li>boolean fieldNameBeforeAdd(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)
+	 * <li><code>boolean fieldNameBeforeAdd()</code>
+	 * <li><code>boolean fieldNameBeforeAdd(List&lt;T&gt; addedElements)</code>
+	 * <li><code>boolean fieldNameBeforeAdd(String fieldName, List&lt;T&gt; addedElements)</code>
+	 * <li><code>boolean fieldNameBeforeAdd(List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeAdd(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeAdd(List&lt;T&gt; oldElements, List&lt;T&gt; addedElements)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeAdd(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; addedElements)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeAdd(List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeAdd(String fieldName, List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * <p>The main difference is that the found method is not called for each element, but for all elements
@@ -338,6 +353,11 @@ annotation AdderRule {
 	 * <p>If a method based on {@link AdderRule#beforeElementAdd} and a method based on this attribute
 	 * are found, the method based on this attribute will be called after the method for each individual
 	 * element.</p>
+	 * 
+	 * <p>In addition to parameters described in the mentioned {@link AdderRule#beforeElementAdd}, the referenced
+	 * methods here also support:</p>
+	 * <li><code>addedElements</code> contains all (potentially) added elements in the collection before the change (read-only)
+	 * <li><code>indices</code> contains all (potentially) added indices in the collection before the change (read-only, in the same order as <code>addedElements</code>)
 	 * 
 	 * @see AdderRule#beforeElementAdd
 	 * @see AdderRule#afterAdd
@@ -350,11 +370,15 @@ annotation AdderRule {
 	 * <p>The called method, however, must have one of the following signatures:</p>
 	 * 
 	 * <ul>
-	 * <li>void fieldNameAdded()
-	 * <li>void fieldNameAdded(List&lt;T&gt; addedElements)
-	 * <li>void fieldNameAdded(String fieldName, List&lt;T&gt; addedElements)
-	 * <li>void fieldNameAdded(List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)
-	 * <li>void fieldNameAdded(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)
+	 * <li><code>void fieldNameAdded()</code>
+	 * <li><code>void fieldNameAdded(List&lt;T&gt; addedElements)</code>
+	 * <li><code>void fieldNameAdded(String fieldName, List&lt;T&gt; addedElements)</code>
+	 * <li><code>void fieldNameAdded(List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameAdded(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameAdded(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; addedElements)</code> - not supported for lists
+	 * <li><code>void fieldNameAdded(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; addedElements)</code> - not supported for lists
+	 * <li><code>void fieldNameAdded(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameAdded(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; addedElements)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * <p>The main difference is that the found method is not called for each element, but for all elements
@@ -363,6 +387,11 @@ annotation AdderRule {
 	 * <p>If a method based on {@link AdderRule#afterElementAdd} and a method based on this attribute
 	 * are found, the method based on this attribute will be called after the method for each individual
 	 * element.</p>
+	 * 
+	 * <p>In addition to parameters described in the mentioned {@link AdderRule#afterElementAdd}, the referenced
+	 * methods here also support:</p>
+	 * <li><code>addedElements</code> contains all added elements in the collection before the change (read-only)
+	 * <li><code>indices</code> contains all added indices in the collection before the change (read-only, in the same order as <code>addedElements</code>)
 	 * 
 	 * @see AdderRule#afterElementAdd
 	 * @see AdderRule#beforeAdd
@@ -431,10 +460,14 @@ annotation RemoverRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>boolean fieldNameBeforeElementRemove(T removedElement)
-	 * <li>boolean fieldNameBeforeElementRemove(String fieldName, T removedElement)
-	 * <li>boolean fieldNameBeforeElementRemove(int index, T removedElement)
-	 * <li>boolean fieldNameBeforeElementRemove(String fieldName, int index, T removedElement)
+	 * <li><code>boolean fieldNameBeforeElementRemove(T removedElement)</code>
+	 * <li><code>boolean fieldNameBeforeElementRemove(String fieldName, T removedElement)</code>
+	 * <li><code>boolean fieldNameBeforeElementRemove(int index, T removedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementRemove(String fieldName, int index, T removedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementRemove(List&lt;T&gt; oldElements, T removedElement)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeElementRemove(String fieldName, List&lt;T&gt; oldElements, T removedElement)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeElementRemove(List&lt;T&gt; oldElements, int index, T removedElement)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeElementRemove(String fieldName, List&lt;T&gt; oldElements, int index, T removedElement)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * Further details:
@@ -442,7 +475,8 @@ annotation RemoverRule {
 	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>removedElement</code> contains the (potentially) removed element
-	 * <li><code>index</code> contains the index where the element is going to be removed (only supported for lists)
+	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
+	 * <li><code>index</code> contains the index where the element is going to be removed
 	 * </ul>
 	 * 
 	 * <p>The method does not necessarily have to specify <code>boolean</code> as return type.
@@ -474,10 +508,14 @@ annotation RemoverRule {
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
 	 * 
 	 * <ul>
-	 * <li>void fieldNameElementRemoved(T removedElement)
-	 * <li>void fieldNameElementRemoved(String fieldName, T removedElement)
-	 * <li>void fieldNameElementRemoved(int index, T removedElement)
-	 * <li>void fieldNameElementRemoved(String fieldName, int index, T removedElement)
+	 * <li><code>void fieldNameElementRemoved(T removedElement)</code>
+	 * <li><code>void fieldNameElementRemoved(String fieldName, T removedElement)</code>
+	 * <li><code>void fieldNameElementRemoved(int index, T removedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementRemoved(String fieldName, int index, T removedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementRemoved(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T removedElement)</code> - not supported for lists
+	 * <li><code>void fieldNameElementRemoved(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T removedElement)</code> - not supported for lists
+	 * <li><code>void fieldNameElementRemoved(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T removedElement)</code> - only supported for lists
+	 * <li><code>void fieldNameElementRemoved(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T removedElement)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * Further details:
@@ -485,7 +523,9 @@ annotation RemoverRule {
 	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>removedElement</code> contains the removed element
-	 * <li><code>index</code> contains the index where the element has been removed (only supported for lists)
+	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
+	 * <li><code>newElements</code> contains all elements in the collection after the change (read-only)
+	 * <li><code>index</code> contains the index where the element has been removed
 	 * </ul>
 	 * 
 	 * @see RemoverRule#beforeElementRemove
@@ -499,11 +539,15 @@ annotation RemoverRule {
 	 * <p>The called method, however, must have one of the following signatures:</p>
 	 * 
 	 * <ul>
-	 * <li>boolean fieldNameBeforeRemove()
-	 * <li>boolean fieldNameBeforeRemove(List&lt;T&gt; removedElements)
-	 * <li>boolean fieldNameBeforeRemove(String fieldName, List&lt;T&gt; removedElements)
-	 * <li>boolean fieldNameBeforeRemove(List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)
-	 * <li>boolean fieldNameBeforeRemove(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)
+	 * <li><code>boolean fieldNameBeforeRemove()</code>
+	 * <li><code>boolean fieldNameBeforeRemove(List&lt;T&gt; removedElements)</code>
+	 * <li><code>boolean fieldNameBeforeRemove(String fieldName, List&lt;T&gt; removedElements)</code>
+	 * <li><code>boolean fieldNameBeforeRemove(List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeRemove(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeRemove(List&lt;T&gt; oldElements, List&lt;T&gt; removedElements)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeRemove(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; removedElements)</code> - not supported for lists
+	 * <li><code>boolean fieldNameBeforeRemove(List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>boolean fieldNameBeforeRemove(String fieldName, List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * <p>The main difference is that the found method is not called for each element, but for all elements
@@ -512,6 +556,11 @@ annotation RemoverRule {
 	 * <p>If a method based on {@link RemoverRule#beforeElementRemove} and a method based on this attribute
 	 * are found, the method based on this attribute will be called after the method for each individual
 	 * element.</p>
+	 * 
+	 * <p>In addition to parameters described in the mentioned {@link RemoverRule#beforeElementRemove}, the referenced
+	 * methods here also support:</p>
+	 * <li><code>removedElements</code> contains all (potentially) removed elements in the collection before the change (read-only)
+	 * <li><code>indices</code> contains all (potentially) removed indices in the collection before the change (read-only, in the same order as <code>removedElements</code>)
 	 * 
 	 * <p>The method does not necessarily have to specify <code>boolean</code> as return type.
 	 * If it is specified with return type <code>boolean</code>, however, the method can
@@ -529,11 +578,15 @@ annotation RemoverRule {
 	 * <p>The called method, however, must have one of the following signatures:</p>
 	 * 
 	 * <ul>
-	 * <li>void fieldNameRemoved()
-	 * <li>void fieldNameRemoved(List&lt;T&gt; removedElements)
-	 * <li>void fieldNameRemoved(String fieldName, List&lt;T&gt; removedElements)
-	 * <li>void fieldNameRemoved(List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)
-	 * <li>void fieldNameRemoved(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)
+	 * <li><code>void fieldNameRemoved()</code>
+	 * <li><code>void fieldNameRemoved(List&lt;T&gt; removedElements)</code>
+	 * <li><code>void fieldNameRemoved(String fieldName, List&lt;T&gt; removedElements)</code>
+	 * <li><code>void fieldNameRemoved(List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameRemoved(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameRemoved(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; removedElements)</code> - not supported for lists
+	 * <li><code>void fieldNameRemoved(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; removedElements)</code> - not supported for lists
+	 * <li><code>void fieldNameRemoved(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
+	 * <li><code>void fieldNameRemoved(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; removedElements)</code> - only supported for lists
 	 * </ul>
 	 * 
 	 * <p>The main difference is that the found method is not called for each element, but for all elements
@@ -542,6 +595,11 @@ annotation RemoverRule {
 	 * <p>If a method based on {@link RemoverRule#afterElementRemove} and a method based on this attribute
 	 * are found, the method based on this attribute will be called after the method for each individual
 	 * element.</p>
+	 * 
+	 * <p>In addition to parameters described in the mentioned {@link RemoverRule#afterElementRemove}, the referenced
+	 * methods here also support:</p>
+	 * <li><code>removedElements</code> contains all removed elements in the collection before the change (read-only)
+	 * <li><code>indices</code> contains all removed indices in the collection before the change (read-only, in the same order as <code>removedElements</code>)
 	 * 
 	 * @see RemoverRule#afterElementRemove
 	 * @see RemoverRule#beforeRemove
@@ -618,7 +676,7 @@ annotation NotNullRule {
  * <p>While the mechanisms in general do not search for fields but for the setter/adders/removers in the
  * "opposite class", the rule should be used with generated setter/adders/removers. Of course, the rule
  * should also be annotated on both sides in a correlating way.</p>
- *
+ * 
  * <p>If this annotation is used, it should be avoided to throw exceptions within change methods, which are
  * called before the actual change, e.g. set via <code>beforeSet</code> in {@link SetterRule}. 
  * When executing them, there might be inconsistent connection states. If throwing an exception, this
@@ -1388,7 +1446,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 		val methodDeclarationBoolean = (context.primitiveBoolean == methodDeclaration.returnType)
 		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.«interfaceType.simpleName»<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»>() {
 				@Override
-				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«IF multiple»java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_elements«ELSE»«getCollectionTypeArgument(fieldDeclaration, 0, context)» $_element«ENDIF», «IF multiple»java.util.List<Integer> $_indices«ELSE»int $_index«ENDIF») {
+				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«IF multiple»java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_elements«ELSE»«getCollectionTypeArgument(fieldDeclaration, 0, context)» $_element«ENDIF», «IF multiple»java.util.List<Integer> $_indices«ELSE»int $_index«ENDIF», java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_oldElements«IF !isBoolean», java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_newElements«ENDIF») {
 					«IF isBoolean && methodDeclarationBoolean»return «ENDIF»«methodDeclaration.simpleName»(«parameters»);
 					«IF isBoolean && !methodDeclarationBoolean»return true;«ENDIF»
 				}
@@ -1723,6 +1781,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "before add"
 	 * 
@@ -1751,7 +1810,23 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
 						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
-						context.newTypeReference(List).isAssignableFrom(it.get(2).type))
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 2 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 3 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type))
 			],
 			Collection,
 			errors,
@@ -1760,37 +1835,49 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before add"
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeAdd(
 		FieldDeclaration annotatedField, extension T context) {
 
+		val indexSupported = context.newTypeReference(List).type.
+			isAssignableFromConsiderUnprocessed(annotatedField.type?.type, context)
+
 		val method = getMethodBeforeAdd(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 0)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''''', context)
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''$_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(List).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''$_indices, $_elements''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_indices, $_elements''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»": unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
+			annotatedField, if (method.parameters.length == 0)
+				''''''
+			else if (method.parameters.length == 1)
+				'''$_elements'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_elements'''
+			else if (method.parameters.length == 2 && indexSupported)
+				'''$_indices, $_elements'''
+			else if (method.parameters.length == 2 && !indexSupported)
+				'''$_oldElements, $_elements'''
+			else if (method.parameters.length == 3 && indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+			else if (method.parameters.length == 3 && !indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_elements'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_indices, $_elements'''
+			else if (method.parameters.length == 4)
+				'''"«annotatedField.simpleName»", $_oldElements, $_indices, $_elements'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»": unknown signature'''),
+			context)
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "after add"
 	 * 
@@ -1819,7 +1906,27 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
 						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
-						context.newTypeReference(List).isAssignableFrom(it.get(2).type))
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type)) ||
+					(it.length == 5 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(4).type))
 			],
 			Collection,
 			errors,
@@ -1828,6 +1935,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after add"
 	 */
@@ -1837,28 +1945,36 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		val method = getMethodAfterAdd(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 0)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''''', context)
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''$_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(List).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''$_indices, $_elements''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_indices, $_elements''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»": unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
+			annotatedField, if (method.parameters.length == 0)
+				''''''
+			else if (method.parameters.length == 1)
+				'''$_elements'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_elements'''
+			else if (method.parameters.length == 2)
+				'''$_indices, $_elements'''
+			else if (method.parameters.length == 3 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_newElements, $_elements'''
+			else if (method.parameters.length == 4 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_elements'''
+			else if (method.parameters.length == 4)
+				'''$_oldElements, $_newElements, $_indices, $_elements'''
+			else if (method.parameters.length == 5)
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_indices, $_elements'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»": unknown signature'''),
+			context)
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "before element add"
 	 * 
@@ -1883,7 +1999,19 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 2 && indexSupported && it.get(0).type == context.primitiveInt) ||
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
-						it.get(1).type == context.primitiveInt)
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 2 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 3 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						it.get(2).type == context.primitiveInt)
 			],
 			Collection,
 			errors,
@@ -1892,33 +2020,47 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element add"
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeElementAdd(
 		FieldDeclaration annotatedField, extension T context) {
 
+		val indexSupported = context.newTypeReference(List).type.
+			isAssignableFromConsiderUnprocessed(annotatedField.type?.type, context)
+
 		val method = getMethodBeforeElementAdd(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''$_element''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_element''', context)
-		else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''$_index, $_element''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_index, $_element''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»" (element): unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
+			annotatedField, if (method.parameters.length == 1)
+				'''$_element'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_element'''
+			else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
+				'''$_index, $_element'''
+			else if (method.parameters.length == 2)
+				'''$_oldElements, $_element'''
+			else if (method.parameters.length == 3 && indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_index, $_element'''
+			else if (method.parameters.length == 3 && !indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_element'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_index, $_element'''
+			else if (method.parameters.length == 4)
+				'''"«annotatedField.simpleName»", $_oldElements, $_index, $_element'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»" (element): unknown signature'''),
+			context)
 
 	}
 
+// TODO: this is done!
 	/**
 	 * Get method for event "after element add"
 	 * 
@@ -1943,7 +2085,23 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 2 && indexSupported && it.get(0).type == context.primitiveInt) ||
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
-						it.get(1).type == context.primitiveInt)
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 4 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						it.get(2).type == context.primitiveInt) ||
+					(it.length == 5 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						it.get(3).type == context.primitiveInt)
 			],
 			Collection,
 			errors,
@@ -1952,6 +2110,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after element add"
 	 */
@@ -1961,21 +2120,30 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		val method = getMethodAfterElementAdd(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''$_element''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_element''', context)
-		else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''$_index, $_element''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_index, $_element''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»" (element): unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
+			annotatedField, if (method.parameters.length == 1)
+				'''$_element'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_element'''
+			else if (method.parameters.length == 2)
+				'''$_index, $_element'''
+			else if (method.parameters.length == 3 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_index, $_element'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_newElements, $_element'''
+			else if (method.parameters.length == 4 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_element'''
+			else if (method.parameters.length == 4)
+				'''$_oldElements, $_newElements, $_index, $_element'''
+			else if (method.parameters.length == 5)
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_index, $_element'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»" (element): unknown signature'''),
+			context)
 
 	}
 
@@ -2271,6 +2439,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "before remove"
 	 * 
@@ -2299,7 +2468,23 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
 						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
-						context.newTypeReference(List).isAssignableFrom(it.get(2).type))
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 2 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 3 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type))
 			],
 			Collection,
 			errors,
@@ -2308,37 +2493,49 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before remove"
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeRemove(
 		FieldDeclaration annotatedField, extension T context) {
 
+		val indexSupported = context.newTypeReference(List).type.
+			isAssignableFromConsiderUnprocessed(annotatedField.type?.type, context)
+
 		val method = getMethodBeforeRemove(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 0)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''''', context)
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''$_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(List).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''$_indices, $_elements''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_indices, $_elements''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»": unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexBoolean, true, true,
+			annotatedField, if (method.parameters.length == 0)
+				''''''
+			else if (method.parameters.length == 1)
+				'''$_elements'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_elements'''
+			else if (method.parameters.length == 2 && indexSupported)
+				'''$_indices, $_elements'''
+			else if (method.parameters.length == 2 && !indexSupported)
+				'''$_oldElements, $_elements'''
+			else if (method.parameters.length == 3 && indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+			else if (method.parameters.length == 3 && !indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_elements'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_indices, $_elements'''
+			else if (method.parameters.length == 4)
+				'''"«annotatedField.simpleName»", $_oldElements, $_indices, $_elements'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»": unknown signature'''),
+			context)
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "after remove"
 	 * 
@@ -2367,7 +2564,27 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
 						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
-						context.newTypeReference(List).isAssignableFrom(it.get(2).type))
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type)) ||
+					(it.length == 5 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(3).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(4).type))
 			],
 			Collection,
 			errors,
@@ -2376,6 +2593,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after remove"
 	 */
@@ -2385,28 +2603,36 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		val method = getMethodAfterRemove(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 0)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''''', context)
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''$_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_elements''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(List).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''$_indices, $_elements''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
-				annotatedField, '''"«annotatedField.simpleName»", $_indices, $_elements''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»": unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameMultipleIndexVoid, false, true,
+			annotatedField, if (method.parameters.length == 0)
+				''''''
+			else if (method.parameters.length == 1)
+				'''$_elements'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_elements'''
+			else if (method.parameters.length == 2)
+				'''$_indices, $_elements'''
+			else if (method.parameters.length == 3 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_newElements, $_elements'''
+			else if (method.parameters.length == 4 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_elements'''
+			else if (method.parameters.length == 4)
+				'''$_oldElements, $_newElements, $_indices, $_elements'''
+			else if (method.parameters.length == 5)
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_indices, $_elements'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»": unknown signature'''),
+			context)
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "before element remove"
 	 * 
@@ -2431,7 +2657,19 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 2 && indexSupported && it.get(0).type == context.primitiveInt) ||
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
-						it.get(1).type == context.primitiveInt)
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 2 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type)) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 3 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						it.get(2).type == context.primitiveInt)
 			],
 			Collection,
 			errors,
@@ -2440,33 +2678,47 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element remove"
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeElementRemove(
 		FieldDeclaration annotatedField, extension T context) {
 
+		val indexSupported = context.newTypeReference(List).type.
+			isAssignableFromConsiderUnprocessed(annotatedField.type?.type, context)
+
 		val method = getMethodBeforeElementRemove(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''$_element''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_element''', context)
-		else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''$_index, $_element''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_index, $_element''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»" (element): unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexBoolean, true, false,
+			annotatedField, if (method.parameters.length == 1)
+				'''$_element'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_element'''
+			else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
+				'''$_index, $_element'''
+			else if (method.parameters.length == 2)
+				'''$_oldElements, $_element'''
+			else if (method.parameters.length == 3 && indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_index, $_element'''
+			else if (method.parameters.length == 3 && !indexSupported &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_element'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_index, $_element'''
+			else if (method.parameters.length == 4)
+				'''"«annotatedField.simpleName»", $_oldElements, $_index, $_element'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»" (element): unknown signature'''),
+			context)
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Get method for event "after element remove"
 	 * 
@@ -2491,7 +2743,23 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 					(it.length == 2 && indexSupported && it.get(0).type == context.primitiveInt) ||
 					(it.length == 3 && indexSupported &&
 						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
-						it.get(1).type == context.primitiveInt)
+						it.get(1).type == context.primitiveInt) ||
+					(it.length == 3 && !indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type)) ||
+					(it.length == 4 && !indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type)) ||
+					(it.length == 4 && indexSupported &&
+						context.newTypeReference(List).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						it.get(2).type == context.primitiveInt) ||
+					(it.length == 5 && indexSupported &&
+						context.newTypeReference(String).isAssignableFrom(it.get(0).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(1).type) &&
+						context.newTypeReference(List).isAssignableFrom(it.get(2).type) &&
+						it.get(3).type == context.primitiveInt)
 			],
 			Collection,
 			errors,
@@ -2500,6 +2768,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
+	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element remove"
 	 */
@@ -2509,21 +2778,30 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		val method = getMethodAfterElementRemove(annotatedField, null, context)
 		if (method === null)
 			return '''null'''
-		else if (method.parameters.length == 1)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''$_element''', context)
-		else if (method.parameters.length == 2 &&
-			context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_element''', context)
-		else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''$_index, $_element''', context)
-		else if (method.parameters.length == 3)
-			return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
-				annotatedField, '''"«annotatedField.simpleName»", $_index, $_element''', context)
-		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»" (element): unknown signature''')
+
+		return getCollectionMethodCallEmbedded(method, MethodCallCollectionNameSingleIndexVoid, false, false,
+			annotatedField, if (method.parameters.length == 1)
+				'''$_element'''
+			else if (method.parameters.length == 2 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_element'''
+			else if (method.parameters.length == 2)
+				'''$_index, $_element'''
+			else if (method.parameters.length == 3 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_index, $_element'''
+			else if (method.parameters.length == 3)
+				'''$_oldElements, $_newElements, $_element'''
+			else if (method.parameters.length == 4 &&
+				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_element'''
+			else if (method.parameters.length == 4)
+				'''$_oldElements, $_newElements, $_index, $_element'''
+			else if (method.parameters.length == 5)
+				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_index, $_element'''
+			else
+				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»" (element): unknown signature'''),
+			context)
 
 	}
 
@@ -2823,13 +3101,12 @@ class SynchronizationRuleProcessor extends RuleProcessor<FieldDeclaration, Mutab
 		super.doValidate(annotatedField, context)
 
 		val xtendField = annotatedField.primarySourceElement as FieldDeclaration
-		
+
 		val synchronizationRuleInfo = xtendField.getSynchronizationRuleInfo(context)
-		
+
 		// check that value of annotation (name of the lock) is not null or empty
 		if (synchronizationRuleInfo.lockName.isNullOrEmpty) {
-			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must specify a name for the lock''')
+			xtendField.addError('''Annotation @«processedAnnotationType.simpleName» must specify a name for the lock''')
 			return
 		}
 

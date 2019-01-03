@@ -1,59 +1,59 @@
 # Table of Contents
 
-* [ETAI Library - Tutorial](#etai-library---tutorial)
+- [ETAI Library - Tutorial](#etai-library---tutorial)
   * [Introduction](#introduction)
   * [Interface Extraction](#interface-extraction)
-    * [Overview](#overview)
-    * [Basic Usage of Interface Extraction](#basic-usage-of-interface-extraction)
-    * [Adapt Interface Extraction](#adapt-interface-extraction)
-    * [Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
+    + [Overview](#overview)
+    + [Basic Usage of Interface Extraction](#basic-usage-of-interface-extraction)
+    + [Adapt Interface Extraction](#adapt-interface-extraction)
+    + [Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
   * [Automatic Modification of Classes](#automatic-modification-of-classes)
-    * [Overview](#overview-1)
-    * [Generate Accessors and Mutators](#generate-accessors-and-mutators)
-      * [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)
-      * [Generate Adder and Remover Methods](#generate-adder-and-remover-methods)
-      * [Getter Methods for Collections and Maps: *collectionPolicy*](#getter-methods-for-collections-and-maps-collectionpolicy)
-      * [*null* Checks](#-null--checks)
-      * [Change Methods](#change-methods)
-      * [Bidirectional Connections](#bidirectional-connections)
-      * [Multi-Threading and Mutators](#multi-threading-and-mutators)
-    * [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods)
-    * [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)
-      * [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)
-    * [Deactivate and Change Rules](#deactivate-and-change-rules)
-    * [Generate Factory Methods](#generate-factory-methods)
-      * [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
-      * [Factory Method](#factory-method)
-    * [Generate Factories](#generate-factories)
-    * [Generate Default Implementations of Missing Methods](#generate-default-implementations-of-missing-methods)
-    * [Adaption Rule Specification](#adaption-rule-specification)
-      * [Adaption Functions](#adaption-functions)
-      * [Predefined Adaption Variables](#predefined-adaption-variables)
-      * [Adaption Function: *alternative*](#adaption-function-alternative)
-    * [Use Adaption Variables](#use-adaption-variables)
+    + [Overview](#overview-1)
+    + [Generate Accessors and Mutators](#generate-accessors-and-mutators)
+      - [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)
+      - [Generate Adder and Remover Methods](#generate-adder-and-remover-methods)
+      - [Getter Methods for Collections and Maps: *collectionPolicy*](#getter-methods-for-collections-and-maps---collectionpolicy-)
+      - [*null* Checks](#-null--checks)
+      - [Change Methods](#change-methods)
+      - [Bidirectional Connections](#bidirectional-connections)
+      - [Multi-Threading and Mutators](#multi-threading-and-mutators)
+    + [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods)
+    + [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)
+      - [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)
+    + [Deactivate and Change Rules](#deactivate-and-change-rules)
+    + [Generate Factory Methods](#generate-factory-methods)
+      - [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
+      - [Factory Method](#factory-method)
+    + [Generate Factories](#generate-factories)
+    + [Generate Default Implementations of Missing Methods](#generate-default-implementations-of-missing-methods)
+    + [Adaption Rule Specification](#adaption-rule-specification)
+      - [Adaption Functions](#adaption-functions)
+      - [Predefined Adaption Variables](#predefined-adaption-variables)
+      - [Adaption Function: *alternative*](#adaption-function---alternative-)
+    + [Use Adaption Variables](#use-adaption-variables)
   * [Traits](#traits)
-    * [Overview](#overview-2)
-    * [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)
-    * [Exclusive Methods](#exclusive-methods)
-    * [Required Methods](#required-methods)
-    * [Processed Methods](#processed-methods)
-      * [Standard Trait Method Processors](#standard-trait-method-processors)
-      * [Implement Own Trait Method Processor](#implement-own-trait-method-processor)
-    * [Envelope Methods](#envelope-methods)
-      * [Default Value Provider](#default-value-provider)
-    * [Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
-      * [Flag: *required*](#flag-required)
-      * [Flag: *setFinal*](#flag-setfinal)
-    * [Redirection of Trait Methods](#redirection-of-trait-methods)
-    * [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
-      * [Automatic Generation of Constructors](#automatic-generation-of-constructors)
-    * [*this* within Trait Classes](#this-within-trait-classes)
-      * [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
-      * [Usage of *\$extendedThis*](#usage-of-extendedthis)
-    * [Trait Classes and Inheritance](#trait-classes-and-inheritance)
-      * [Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
-      * [Base Trait Classes](#base-trait-classes)
-      * [Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
+    + [Overview](#overview-2)
+    + [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)
+    + [Exclusive Methods](#exclusive-methods)
+    + [Required Methods](#required-methods)
+    + [Processed Methods](#processed-methods)
+      - [Standard Trait Method Processors](#standard-trait-method-processors)
+      - [Implement Own Trait Method Processor](#implement-own-trait-method-processor)
+    + [Envelope Methods](#envelope-methods)
+      - [Default Value Provider](#default-value-provider)
+    + [Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
+      - [Flag: *required*](#flag---required-)
+      - [Flag: *setFinal*](#flag---setfinal-)
+    + [Redirection of Trait Methods](#redirection-of-trait-methods)
+    + [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
+      - [Automatic Generation of Constructors](#automatic-generation-of-constructors)
+    + [*this* within Trait Classes](#-this--within-trait-classes)
+      - [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
+      - [Usage of *\$extendedThis*](#usage-of----extendedthis-)
+    + [Trait Classes and Inheritance](#trait-classes-and-inheritance)
+      - [Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
+      - [Base Trait Classes](#base-trait-classes)
+      - [Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
 
 # ETAI Library - Tutorial
 
@@ -511,25 +511,41 @@ The following table shows an overview of available parameters together with the 
 
 Please note, that multiple methods can be called during one call of a generated mutator. For example, if a field's value is going to be set to a new value, i.e. the value differs from the old one, the method referenced by *beforeChange* will be called before the actual change, and the *boolean* result of this call can even block the change. After the change has been performed the method referenced by *afterChange* will be called.
 
-If adding multiple elements to a collection, the method referenced by *beforeAdd* will be called. Afterwards, the method referenced by *beforeElementAdd* is called **for each element**. Thereby, adding elements can be blocked entirely or individually. For each element, which has actually been added, the method referenced by *afterElementAdd* will be called then. Finally, *afterAdd* will be called, if there are elements, which have been added. For removing elements the same schema is applied.
+If adding multiple elements to a collection, the method referenced by *beforeElementAdd* is called **for each element**. Afterwards, the method referenced by *beforeAdd* will be called. Thereby, adding elements can be blocked individually or entirely. For each element, which has actually been added, the method referenced by *afterElementAdd* will be called then. Finally, *afterAdd* will be called, if there are elements, which have been added. For removing elements the same schema is applied.
 
 All referenced methods must have one of multiple possible signatures. Depending on the signature, information about the change will be available inside the method. The following table shows all supported signatures. The meaning of the individual signature elements will be explained below the table.
 
 | Parameter     | Signature of the called method                   |
 |---------------|-------------------------------------------------:|
-| *beforeChange* /<br>*afterChange* | *void X()*
-| *beforeChange* /<br>*afterChange* | *void X(T newValue)*
-| *beforeChange* /<br>*afterChange* | *void X(T oldValue, T newValue)*
-| *beforeChange* /<br>*afterChange* | *void X(String fieldName, T oldValue, T newValue)*
-| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X()*
-| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(List&lt;T&gt; elements)*
-| *beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(String fieldName, List&lt;T&gt; elements)*
-| supported for *List* only:<br>*beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
-| supported for *List* only:<br>*beforeAdd* /<br>*afterAdd* /<br>*beforeRemove* /<br>*afterRemove* | *void X(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
-| *beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove*&nbsp;/<br>*afterElementRemove* | *void X(T element)*
-| *beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(String fieldName, T element)*
-| supported for *List* only:<br>*beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(int index, T element)*
-| supported for *List* only:<br>*beforeElementAdd* /<br>*afterElementAdd* /<br>*beforeElementRemove* /<br>*afterElementRemove* | *void X(String fieldName, int index, T element)*
+| *beforeChange*&nbsp;/<br>*afterChange* | *void X()*
+| *beforeChange*&nbsp;/<br>*afterChange* | *void X(T newValue)*
+| *beforeChange*&nbsp;/<br>*afterChange* | *void X(T oldValue, T newValue)*
+| *beforeChange*&nbsp;/<br>*afterChange* | *void X(String fieldName, T oldValue, T newValue)*
+| *beforeAdd*&nbsp;/<br>*afterAdd*&nbsp;/<br>*beforeRemove*&nbsp;/<br>*afterRemove* | *void X()*
+| *beforeAdd*&nbsp;/<br>*afterAdd*&nbsp;/<br>*beforeRemove*&nbsp;/<br>*afterRemove* | *void X(List&lt;T&gt; elements)*
+| *beforeAdd*&nbsp;/<br>*afterAdd*&nbsp;/<br>*beforeRemove*&nbsp;/<br>*afterRemove* | *void X(String fieldName, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(String fieldName, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| not supported for *List*:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove* | *void X(List&lt;T&gt; oldElements, List&lt;T&gt; elements)*
+| not supported for *List*:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove* | *void X(List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| not supported for *List*:<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; elements)*
+| not supported for *List*:<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| supported for *List* only:<br>&nbsp;&nbsp;*afterAdd*&nbsp;/<br>&nbsp;&nbsp;*afterRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, List&lt;Integer&gt; indices, List&lt;T&gt; elements)*
+| *beforeElementAdd*&nbsp;/<br>*afterElementAdd*&nbsp;/<br>*beforeElementRemove*&nbsp;/<br>*afterElementRemove* | *void X(T element)*
+| *beforeElementAdd*&nbsp;/<br>*afterElementAdd*&nbsp;/<br>*beforeElementRemove*&nbsp;/<br>*afterElementRemove* | *void X(String fieldName, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(int index, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(String fieldName, int index, T element)*
+| not supported for *List*:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove* | *void X(List&lt;T&gt; oldElements, T element)*
+| not supported for *List*:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove* | *void X(List&lt;T&gt; oldElements, int index, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*beforeElementAdd*&nbsp;/<br>&nbsp;&nbsp;*beforeElementRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, int index, T element)*
+| not supported for *List*:<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T element)*
+| not supported for *List*:<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T element)*
+| supported for *List* only:<br>&nbsp;&nbsp;*afterElementAdd*&nbsp;/<br>&nbsp;&nbsp;*afterElementRemove* | *void X(String fieldName, List&lt;T&gt; oldElements, List&lt;T&gt; newElements, int index, T element)*
 
 The following elements are used in the table above:
 
@@ -538,7 +554,9 @@ The following elements are used in the table above:
 - *fieldName*: the name of the field/collection which shall be changed
 - *oldValue*: the old value of the field
 - *newValue*: the new value of the field (which has or has not already been set)
-- *element* / *elements*: the element(s) which shall be added/removed to/from the collection
+- *element* / *elements*: the element(s) which shall be/have been added/removed to/from the collection (read-only)
+- *oldElements*: the element(s) which have been in the collection before the change (read-only)
+- *newElements*: the element(s) which will be in the collection after the change (read-only)
 - *index* / *indices*: the index/indices of the elements(s) which shall be added/removed to/from the collection
 
 All methods which are triggered before a change also support return type *boolean* in addition to *void*. If *boolean* is used, the return value of the method will **control, if the change is allowed and shall be performed**. If *false* is returned, the change will be aborted. In case of methods called for individual elements of a bigger change (e.g. *beforeElementAdd*) only adding/removing this particular element will be skipped.
@@ -621,6 +639,7 @@ public class Progress {
 		for (int i = $index; i < $index + $c.size(); i++)
 			addedIndices.add(i);
 		log.addAll($index, $c);
+		addedToList("log", addedIndices, addedElements);
 		return true;
 	}
 
@@ -628,11 +647,19 @@ public class Progress {
 		return addAllToLog(log.size(), $c);
 	}
 
+	protected boolean percentageChange(double newPercentage) {
+        if (newPercentage < 0.0 || newPercentage > 100.0)
+            return false;
+        return true;
+    }
+
     protected void percentageChanged() {
         System.out.println("Percentage changed!");
     }
     
-    protected void addedToList(final String fieldname, final List<Integer> indices, final List<String> elements) {
+    protected void addedToList(final String fieldname,
+    		final java.util.List<Integer> indices,
+    		final java.util.List<String> elements) {
         for (int i = 0; (i < indices.size()); i++)
         	System.out.println("Added \"" + elements.get(i) + "\" to list " +
                 fieldname + " at index " + indices.get(i));
@@ -2140,7 +2167,7 @@ class Cat extends Animal implements IXWithName {
 >
 > In addition to this, there is the annotation ***@ConstructRuleDisable***. It can be applied, if a construct rule for a specific trait class is active, i.e., factory methods would be adapted in order to call corresponding construction helper methods. This is not a valid use case for classes which apply *@ConstructRule* or *@ConstructRuleAuto*, but for child classes, because construct rules are also inherited. If construction helper methods must be called manually again there, e.g. because calculations must be performed or parameters shall be controlled completely, a construct rule can be disabled for the specified trait classes via *@ConstructRuleDisable* and its *value*.
 
-##### Warning
+##### Limitation
 
 > Of course, the automatic combination of parameters can lead to ambiguous factory methods. In this case, the described technique cannot be used and construction must be implemented manually. 
 
@@ -2355,4 +2382,4 @@ class Bird extends Animal implements IXExtendedAttributes {}
 
 ##### Hint
 
-> Specifying the usage of other trait classes is also possible via parameter *using* of *@TraitClass*. The annotation *@TraitClassAutoUsing* is just a way to avoid a manual declaration by scanning the listed interfaces and using all trait classes found via their mirror interface (cp. with *@ExtendedByAuto* and *@ExtendedBy* in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
+> Specifying the usage of other trait classes is also possible via parameter *using* of *@TraitClass*. The annotation *@TraitClassAutoUsing* is just a way to avoid a manual declaration by scanning the listed interfaces and using all trait classes found via their mirror interface (cp. with *@ExtendedByAuto* and *@ExtendedBy* in [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)). 
