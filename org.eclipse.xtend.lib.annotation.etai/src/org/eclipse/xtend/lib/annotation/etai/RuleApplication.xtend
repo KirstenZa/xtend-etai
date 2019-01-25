@@ -453,7 +453,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					for (methodToAdaptTemp : methodsToAdaptTemp.keySet)
 						if (methodsNamesAdapted.findFirst[it == methodToAdaptTemp.simpleName] !== null)
 							currentClass.
-								addError('''Trait class "«traitClassRef?.type.simpleName»" contains method "«methodToAdaptTemp.simpleName»", which specifies another type adaption rule''')
+								addError('''Trait class "Â«traitClassRef?.type.simpleNameÂ»" contains method "Â«methodToAdaptTemp.simpleNameÂ»", which specifies another type adaption rule''')
 
 					// copy entries of temporary structures to main structures
 					methodsToAdapt.putAll(methodsToAdaptTemp)
@@ -516,7 +516,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (methodsFound.size > 1 && paramPos == -1) {
 
 				errors?.
-					add('''Retrieving fallback return type of method "«methodDeclaration.simpleName»" not possible because of ambiguity''')
+					add('''Retrieving fallback return type of method "Â«methodDeclaration.simpleNameÂ»" not possible because of ambiguity''')
 
 			}
 
@@ -533,7 +533,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						// error if still more than one method (ambiguity)
 						if (methodsFoundReduced.size > 1)
 							errors?.
-								add('''Retrieving fallback type of parameter #«paramPos» of method "«methodDeclaration.simpleName»" not possible because of ambiguity (try to use different names for parameters)''')
+								add('''Retrieving fallback type of parameter #Â«paramPosÂ» of method "Â«methodDeclaration.simpleNameÂ»" not possible because of ambiguity (try to use different names for parameters)''')
 
 						methodsFoundReduced.get(0)
 
@@ -620,7 +620,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						// error if still more than one constructor (ambiguity)
 						if (constructorsFoundReduced.size > 1)
 							errors?.
-								add('''Retrieving fallback type of parameter #«paramPos» of constructor not possible because of ambiguity (try to use different names for parameters)''')
+								add('''Retrieving fallback type of parameter #Â«paramPosÂ» of constructor not possible because of ambiguity (try to use different names for parameters)''')
 
 						constructorsFoundReduced.get(0)
 
@@ -706,7 +706,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			val annotationTypeAdaptionRule = parameterDeclaration.getAnnotation(TypeAdaptionRule)
 			return annotationTypeAdaptionRule.getStringValue("value")
 
-		} else if (parameterDeclaration instanceof ParameterDeclaration) {
+		} else {
 
 			val executable = parameterDeclaration.declaringExecutable
 
@@ -749,11 +749,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (completeRule === null || completeRule.trim().empty) {
 
 			if (element instanceof MethodDeclaration)
-				return copyTypeReference((element as MethodDeclaration).returnType, typeMap, context)
+				return copyTypeReference((element).returnType, typeMap, context)
 			else if (element instanceof ParameterDeclaration)
-				return copyTypeReference((element as ParameterDeclaration).type, typeMap, context)
+				return copyTypeReference((element).type, typeMap, context)
 			else
-				throw new IllegalArgumentException('''Cannot apply empty adaption rule to given element: «element.toString»''')
+				throw new IllegalArgumentException('''Cannot apply empty adaption rule to given element: Â«element.toStringÂ»''')
 
 		}
 
@@ -779,13 +779,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// use type within supertype's element, if new type not found
 		val paramPos = if (element instanceof ParameterDeclaration)
-				(element as ParameterDeclaration).parameterPosition
+				element.parameterPosition
 			else
 				-1
 
 		if (source instanceof MethodDeclaration)
-			return getSuperClassesMethodFallbackParamType(relevantSuperClass, source as MethodDeclaration, typeMap,
-				paramPos, errors, context)
+			return getSuperClassesMethodFallbackParamType(relevantSuperClass, source, typeMap, paramPos, errors,
+				context)
 		else if (element instanceof ParameterDeclaration)
 			return getSuperClassesConstructorFallbackParamType(relevantSuperClass, source as ConstructorDeclaration,
 				typeMap, paramPos, errors, context)
@@ -895,7 +895,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (adaptedType?.type instanceof TypeParameterDeclaration) {
 
 						errors?.
-							add('''Parameter "«parameter.simpleName»" of method "«source.simpleName»" cannot be adapted to type parameter "«adaptedType.type.simpleName»", because it cannot be checked (type erasure)''')
+							add('''Parameter "Â«parameter.simpleNameÂ»" of method "Â«source.simpleNameÂ»" cannot be adapted to type parameter "Â«adaptedType.type.simpleNameÂ»", because it cannot be checked (type erasure)''')
 
 					}
 
@@ -903,7 +903,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (adaptedType.actualTypeArguments.length > 0) {
 
 						errors?.
-							add('''«WARNING_PREFIX»Parameter "«parameter.simpleName»" of method "«source.simpleName»" should not be adapted to another type with type arguments, because they cannot be checked (type erasure)''')
+							add('''Â«WARNING_PREFIXÂ»Parameter "Â«parameter.simpleNameÂ»" of method "Â«source.simpleNameÂ»" should not be adapted to another type with type arguments, because they cannot be checked (type erasure)''')
 
 					}
 
@@ -1068,7 +1068,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					} else {
 
-						errors?.add('''Error parsing adaption variable specification: "«variableSetting»"''')
+						errors?.add('''Error parsing adaption variable specification: "Â«variableSettingÂ»"''')
 
 					}
 				}
@@ -1217,7 +1217,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (!isDefaultConstructor) {
 
 			newConstructor.docComment = originalConstructor.docComment
-			originalConstructor.docComment = '''This is the implementation of constructor «newConstructor.getJavaDocLinkTo(context)».'''
+			originalConstructor.docComment = '''This is the implementation of constructor Â«newConstructor.getJavaDocLinkTo(context)Â».'''
 
 		} else {
 
@@ -1227,8 +1227,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// add body to new constructor
 		bodySetter.setBody(
-			newConstructor, '''«IF !isDefaultConstructor»this((«dummyVariableType.canonicalName») null«IF (paramNameList.size > 0)», «ENDIF»«paramNameList.join(", ")»);«ENDIF»
-						«additionalBody»''', context)
+			newConstructor, '''Â«IF !isDefaultConstructorÂ»this((Â«dummyVariableType.canonicalNameÂ») nullÂ«IF (paramNameList.size > 0)Â», Â«ENDIFÂ»Â«paramNameList.join(", ")Â»);Â«ENDIFÂ»
+						Â«additionalBodyÂ»''', context)
 
 		// move annotations from original constructor to new constructor
 		if (!isDefaultConstructor) {
@@ -1411,7 +1411,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
 				]) {
 					xtendClass.
-						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(true, false, context).join(", ")»)" cannot be applied to current class, because the method has already been declared.''')
+						addError('''Adaption of method "Â«method.simpleNameÂ»(Â«method.getParametersTypeNames(true, false, context).join(", ")Â»)" cannot be applied to current class, because the method has already been declared.''')
 					return
 				}
 
@@ -1527,8 +1527,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						val isVoid = newMethod.returnType === null || newMethod.returnType.isVoid()
 						val returnTypeReferenceString = newMethod.returnType.
 							getTypeReferenceAsString(true, false, false, false, context)
-						bodySetter.setBody(newMethod, '''«IF !isVoid»return («returnTypeReferenceString») «ENDIF»
-			 			super.«if (newMethod.isTraitMethod) newMethod.getTraitMethodImplName else newMethod.simpleName»(«paramNameList.join(", ")»);''',
+						bodySetter.setBody(newMethod, '''Â«IF !isVoidÂ»return (Â«returnTypeReferenceStringÂ») Â«ENDIFÂ»
+			 			super.Â«if (newMethod.isTraitMethod) newMethod.getTraitMethodImplName else newMethod.simpleNameÂ»(Â«paramNameList.join(", ")Â»);''',
 							context)
 
 					}
@@ -1639,7 +1639,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				} else {
 
 					// generate constructor body, which is a super call
-					bodySetter.setBody(newConstructor, '''super(«paramNameList.join(", ")»);''', context)
+					bodySetter.setBody(newConstructor, '''super(Â«paramNameList.join(", ")Â»);''', context)
 
 				}
 
@@ -1783,7 +1783,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						// transfer type adaption rule in a specific way
 						transferTypeAdaptionRuleToParameter(newAddMethod.parameters.get(0), virtualAddMethod,
 							1, [ rules |
-								'''«rules.get(0)»'''
+								'''Â«rules.get(0)Â»'''
 							], context)
 
 						// add generation annotation
@@ -1805,7 +1805,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							// transfer type adaption rule in a specific way
 							transferTypeAdaptionRuleToParameter(newAddIndexedMethod.parameters.get(1), virtualAddMethod,
 								1, [ rules |
-									'''«rules.get(0)»'''
+									'''Â«rules.get(0)Â»'''
 								], context)
 
 							// add generation annotation
@@ -1832,7 +1832,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							virtualAddAllMethod,
 							1,
 							[ rules |
-								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+								'''Â«AdaptionFunctions.RULE_FUNC_APPLYÂ»(java.util.Collection);Â«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDSÂ»(Â«rules.get(0)Â»)'''
 							],
 							context
 						)
@@ -1856,7 +1856,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							// transfer type adaption rule in a specific way
 							transferTypeAdaptionRuleToParameter(newAddAllIndexedMethod.parameters.get(1),
 								virtualAddAllIndexedMethod, 1, [ rules |
-									'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+									'''Â«AdaptionFunctions.RULE_FUNC_APPLYÂ»(java.util.Collection);Â«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDSÂ»(Â«rules.get(0)Â»)'''
 								], context)
 
 							// add generation annotation
@@ -1882,11 +1882,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						// transfer type adaption rule in a specific way
 						transferTypeAdaptionRuleToParameter(newPutMethod.parameters.get(0),
 							virtualPutMethod, 2, [ rules |
-								'''«rules.get(0)»'''
+								'''Â«rules.get(0)Â»'''
 							], context)
 						transferTypeAdaptionRuleToParameter(newPutMethod.parameters.get(1),
 							virtualPutMethod, 2, [ rules |
-								'''«rules.get(1)»'''
+								'''Â«rules.get(1)Â»'''
 							], context)
 
 						// add generation annotation
@@ -1911,7 +1911,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							virtualPutAllMethod,
 							2,
 							[ rules |
-								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Map);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(1)»)'''
+								'''Â«AdaptionFunctions.RULE_FUNC_APPLYÂ»(java.util.Map);Â«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDSÂ»(Â«rules.get(0)Â»);Â«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDSÂ»(Â«rules.get(1)Â»)'''
 							],
 							context
 						)
@@ -1938,7 +1938,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						false, typeMap, context)
 
 					// apply body
-					bodySetter.setBody(newRemoveMethod, '''«virtualRemoveMethod.basicImplementation»''', context)
+					bodySetter.setBody(newRemoveMethod, '''Â«virtualRemoveMethod.basicImplementationÂ»''', context)
 
 					// transfer type adaption rule in a specific way
 					transferTypeAdaptionRuleToParameter(
@@ -1949,7 +1949,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						else
 							2,
 						[ rules |
-							'''«rules.get(0)»'''
+							'''Â«rules.get(0)Â»'''
 						],
 						context
 					)
@@ -1968,7 +1968,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 						// apply body
 						bodySetter.setBody(
-							newRemoveIndexedMethod, '''«virtualRemoveIndexedMethod.basicImplementation»''', context)
+							newRemoveIndexedMethod, '''Â«virtualRemoveIndexedMethod.basicImplementationÂ»''', context)
 
 						// add generation annotation
 						newRemoveIndexedMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
@@ -1989,7 +1989,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							true, true, false, typeMap, context)
 
 						// apply body
-						bodySetter.setBody(newRemoveAllMethod, '''«virtualRemoveAllMethod.basicImplementation»''',
+						bodySetter.setBody(newRemoveAllMethod, '''Â«virtualRemoveAllMethod.basicImplementationÂ»''',
 							context)
 
 						// transfer type adaption rule in a specific way
@@ -1998,7 +1998,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							virtualRemoveAllMethod,
 							1,
 							[ rules |
-								'''«AdaptionFunctions.RULE_FUNC_APPLY»(java.util.Collection);«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDS»(«rules.get(0)»)'''
+								'''Â«AdaptionFunctions.RULE_FUNC_APPLYÂ»(java.util.Collection);Â«AdaptionFunctions.RULE_FUNC_ADD_TYPE_PARAMS_EXTENDSÂ»(Â«rules.get(0)Â»)'''
 							],
 							context
 						)
@@ -2015,7 +2015,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						false, typeMap, context)
 
 					// apply body
-					bodySetter.setBody(newClearMethod, '''«virtualClearMethod.basicImplementation»''', context)
+					bodySetter.setBody(newClearMethod, '''Â«virtualClearMethod.basicImplementationÂ»''', context)
 
 					// add generation annotation
 					newClearMethod.addAnnotation(GeneratedRemoverMethod.newAnnotationReference)
@@ -2037,7 +2037,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	) {
 
 		// access factory class (inner class)
-		val factoryClass = context.findClass(annotatedClass.getFactoryClassName()) as MutableClassDeclaration
+		val factoryClass = context.findClass(annotatedClass.getFactoryClassName())
 		factoryClass.addAnnotation(GeneratedFactoryClass.newAnnotationReference)
 
 		// hide factory class by default
@@ -2142,7 +2142,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						it.final = factoryMethodRuleInfo.factoryInstanceFinal
 						it.visibility = Visibility.PUBLIC
 						it.type = factoryClass.newTypeReference
-						it.initializer = '''new «factoryClass.qualifiedName»()'''
+						it.initializer = '''new Â«factoryClass.qualifiedNameÂ»()'''
 					]
 
 					// specify annotation
@@ -2280,7 +2280,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						}
 
 						calledConstructorsDocumentation +=
-							'''<li>{@link «annotatedClass.qualifiedName»#«annotatedClass.simpleName»(«regularParamTypeNameList.join(", ")»)}<br>
+							'''<li>{@link Â«annotatedClass.qualifiedNameÂ»#Â«annotatedClass.simpleNameÂ»(Â«regularParamTypeNameList.join(", ")Â»)}<br>
 							'''
 
 					}
@@ -2340,7 +2340,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							// ensure that parameter types match (in xtend type parameters for constructors are not allowed)
 							if (!originalType.typeReferenceEquals(newType, null, true, usedTypeMap, null)) {
 								xtendClass.
-									addError('''Injection of constructor parameters from trait class «traitClass.simpleName» cannot be performed because of a type mismatch of parameter "«parameter.simpleName»" («newType» != «originalType»)''')
+									addError('''Injection of constructor parameters from trait class Â«traitClass.simpleNameÂ» cannot be performed because of a type mismatch of parameter "Â«parameter.simpleNameÂ»" (Â«newTypeÂ» != Â«originalTypeÂ»)''')
 								return
 							}
 
@@ -2371,10 +2371,10 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							}
 
 							bodyDelegationObjectCreation +=
-								'''internal$newObject.«traitClassToConstruct.getConstructorMethodCallName(true)»(«parameterNames.join(", ")»);
+								'''internal$newObject.Â«traitClassToConstruct.getConstructorMethodCallName(true)Â»(Â«parameterNames.join(", ")Â»);
 								'''
 							calledConstructorsDocumentation +=
-								'''<li>{@link «traitClassToConstruct.qualifiedName»#«traitClassToConstruct.simpleName»(java.lang.Object«IF !parameterTypeNames.empty», «parameterTypeNames.join(", ")»«ENDIF»)}
+								'''<li>{@link Â«traitClassToConstruct.qualifiedNameÂ»#Â«traitClassToConstruct.simpleNameÂ»(java.lang.ObjectÂ«IF !parameterTypeNames.emptyÂ», Â«parameterTypeNames.join(", ")Â»Â«ENDIFÂ»)}
 								'''
 
 						}
@@ -2388,7 +2388,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 						for (traitClassToCheck : traitClassesToConstructDisabled) {
 
 							bodyCheckObjectCreation +=
-								'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(internal$newObject, "«traitClassToCheck.delegateObjectName»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClassToCheck.qualifiedName»");
+								'''assert org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.getPrivateFieldValue(internal$newObject, "Â«traitClassToCheck.delegateObjectNameÂ»") != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "Â«traitClassToCheck.qualifiedNameÂ»");
 								'''
 
 						}
@@ -2399,16 +2399,16 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (newFactoryMethodList.methodListContains(newFactoryMethod, TypeMatchingStrategy.MATCH_INVARIANT,
 						TypeMatchingStrategy.MATCH_INVARIANT, false, typeMap, context)) {
 						xtendClass.
-							addError('''The generation of factory methods cannot be finished because the following type combination is ambiguous: «newFactoryMethod.parameters.map[it.type.toString].join(", ")» ''')
+							addError('''The generation of factory methods cannot be finished because the following type combination is ambiguous: Â«newFactoryMethod.parameters.map[it.type.toString].join(", ")Â» ''')
 						return
 					}
 					newFactoryMethodList.add(newFactoryMethod)
 
 					// documentation
-					newFactoryMethod.docComment = '''<p>This is the factory method for creating «annotatedClass.getJavaDocLinkTo(context)» objects. It will call:</p>
+					newFactoryMethod.docComment = '''<p>This is the factory method for creating Â«annotatedClass.getJavaDocLinkTo(context)Â» objects. It will call:</p>
 						<ul>
-							«calledConstructorsDocumentation»
-							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»{@link «annotatedClass.qualifiedName»#«factoryMethodRuleInfo.initMethod»()}«ENDIF»
+							Â«calledConstructorsDocumentationÂ»
+							Â«IF !factoryMethodRuleInfo.initMethod.nullOrEmptyÂ»{@link Â«annotatedClass.qualifiedNameÂ»#Â«factoryMethodRuleInfo.initMethodÂ»()}Â«ENDIFÂ»
 						</ul>'''
 
 					// specify annotation
@@ -2418,16 +2418,16 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					val paramNameList = constructor.parametersNames
 
 					// store type argument string
-					val typeArgumentString = '''«IF (annotatedClass.typeParameters.size > 0)»<«newFactoryMethod.typeParameters.map[it.simpleName].join(", ")»>«ENDIF»'''
+					val typeArgumentString = '''Â«IF (annotatedClass.typeParameters.size > 0)Â»<Â«newFactoryMethod.typeParameters.map[it.simpleName].join(", ")Â»>Â«ENDIFÂ»'''
 
 					// add body to factory method (if not abstract)
 					if (!newFactoryMethod.abstract) {
 
 						bodySetter.setBody(
-							newFactoryMethod, '''«annotatedClass.qualifiedName»«typeArgumentString» internal$newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
-							«bodyDelegationObjectCreation»
-							«bodyCheckObjectCreation»
-							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»internal$newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
+							newFactoryMethod, '''Â«annotatedClass.qualifiedNameÂ»Â«typeArgumentStringÂ» internal$newObject = new Â«annotatedClass.qualifiedNameÂ»Â«typeArgumentStringÂ»(Â«paramNameList.join(", ")Â»);
+							Â«bodyDelegationObjectCreationÂ»
+							Â«bodyCheckObjectCreationÂ»
+							Â«IF !factoryMethodRuleInfo.initMethod.nullOrEmptyÂ»internal$newObject.Â«factoryMethodRuleInfo.initMethodÂ»();Â«ENDIFÂ»
 							return internal$newObject;''', context)
 
 					}
@@ -2482,7 +2482,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				notAutoAdaptedClassFound.set(0, it)
 			else if (notAutoAdaptedClassFound.get(0) !== null)
 				xtendClass.
-					addError('''Supertype "«annotatedClass.qualifiedName»" does specify @ApplyRules, but the closer supertype "«notAutoAdaptedClassFound.get(0).qualifiedName»" does not''')
+					addError('''Supertype "Â«annotatedClass.qualifiedNameÂ»" does specify @ApplyRules, but the closer supertype "Â«notAutoAdaptedClassFound.get(0).qualifiedNameÂ»" does not''')
 
 		]
 

@@ -80,7 +80,7 @@ class ClassWithAdderRemover {
 	@GetterRule
 	@NotNullRule
 	@RemoverRule(multiple=true)
-	SortedSet<Integer> dataWithAdderRemoverSortedSet = new TreeSet<Integer>
+	final SortedSet<Integer> dataWithAdderRemoverSortedSet = new TreeSet<Integer>
 
 	@AdderRule(multiple=true)
 	@GetterRule
@@ -356,7 +356,7 @@ class AdderRemoverTests {
 		assertTrue(obj.addToDataWithAdderRemoverList(10))
 		assertTrue(obj.addAllToDataWithAdderRemoverList(#[2, 5, 3]))
 		assertTrue(obj.addToDataWithAdderRemoverList(0, 0))
-		assertTrue(obj.removeFromDataWithAdderRemoverList(new Integer(2)))
+		assertTrue(obj.removeFromDataWithAdderRemoverList(Integer::valueOf(2)))
 		assertTrue(obj.removeAllFromDataWithAdderRemoverList(#[10, 4]))
 		assertTrue(obj.removeFromDataWithAdderRemoverList(1))
 		assertArrayEquals(#[0, 3], obj.getDataWithAdderRemoverList())
@@ -379,8 +379,8 @@ class AdderRemoverTests {
 		assertFalse(obj.addToDataWithAdderRemoverSet(10))
 		assertTrue(obj.addAllToDataWithAdderRemoverSet(#[2, 5, 3]))
 		assertFalse(obj.addAllToDataWithAdderRemoverSet(#[2, 5, 3]))
-		assertTrue(obj.removeFromDataWithAdderRemoverSet(new Integer(2)))
-		assertFalse(obj.removeFromDataWithAdderRemoverSet(new Integer(2)))
+		assertTrue(obj.removeFromDataWithAdderRemoverSet(Integer::valueOf(2)))
+		assertFalse(obj.removeFromDataWithAdderRemoverSet(Integer::valueOf(2)))
 		assertTrue(obj.removeAllFromDataWithAdderRemoverSet(#[10, 4]))
 		assertFalse(obj.removeAllFromDataWithAdderRemoverSet(#[10, 4]))
 		assertEquals(new HashSet(#[5, 3]), obj.getDataWithAdderRemoverSet())
@@ -409,8 +409,8 @@ class AdderRemoverTests {
 		assertFalse(obj.addToDataWithAdderRemoverSortedSet(10))
 		assertTrue(obj.addAllToDataWithAdderRemoverSortedSet(#[2, 5, 3]))
 		assertFalse(obj.addAllToDataWithAdderRemoverSortedSet(#[2, 5, 3]))
-		assertTrue(obj.removeFromDataWithAdderRemoverSortedSet(new Integer(2)))
-		assertFalse(obj.removeFromDataWithAdderRemoverSortedSet(new Integer(2)))
+		assertTrue(obj.removeFromDataWithAdderRemoverSortedSet(Integer::valueOf(2)))
+		assertFalse(obj.removeFromDataWithAdderRemoverSortedSet(Integer::valueOf(2)))
 		assertTrue(obj.removeAllFromDataWithAdderRemoverSortedSet(#[10, 4]))
 		assertFalse(obj.removeAllFromDataWithAdderRemoverSortedSet(#[10, 4]))
 		assertArrayEquals(#[3, 5], obj.getDataWithAdderRemoverSortedSet())
@@ -507,7 +507,7 @@ class AdderRemoverTests {
 
 		assertEquals(#[5, 6, 2, 99, 1, 3, 4], ClassWithAdderRemover::getDataWithAdderRemoverListStatic())
 
-		ClassWithAdderRemover::removeFromDataWithAdderRemoverListStatic(new Integer(4))
+		ClassWithAdderRemover::removeFromDataWithAdderRemoverListStatic(Integer::valueOf(4))
 		ClassWithAdderRemover::removeFromDataWithAdderRemoverListStatic(3)
 		ClassWithAdderRemover::removeAllFromDataWithAdderRemoverListStatic(#[5, 1])
 
@@ -560,7 +560,7 @@ class AdderRemoverTests {
 			TraitForClassWithCollectionGetterAdderTypeAdaptionDerived::getDataWithAdderRemoverListStaticFromTrait())
 
 		TraitForClassWithCollectionGetterAdderTypeAdaptionDerived::
-			removeFromDataWithAdderRemoverListStaticFromTrait(new Integer(4))
+			removeFromDataWithAdderRemoverListStaticFromTrait(Integer::valueOf(4))
 		TraitForClassWithCollectionGetterAdderTypeAdaptionDerived::removeFromDataWithAdderRemoverListStaticFromTrait(3)
 		TraitForClassWithCollectionGetterAdderTypeAdaptionDerived::
 			removeAllFromDataWithAdderRemoverListStaticFromTrait(#[5, 1])
@@ -1675,14 +1675,6 @@ abstract class TraitClassWithAdderRemover {
 	@ExclusiveMethod
 	static java.util.List<Integer> dataRemoverStatic
 
-	@AdderRule
-	@ExclusiveMethod
-	final java.util.List<Integer> dataAdderFinal = new java.util.ArrayList<Integer>
-
-	@RemoverRule
-	@ExclusiveMethod
-	final java.util.List<Integer> dataRemoverFinal = new java.util.ArrayList<Integer>
-
 }
 
 		'''.compile [
@@ -1695,10 +1687,6 @@ abstract class TraitClassWithAdderRemover {
 				primarySourceElement as FieldDeclaration).problems
 			val problemsFieldDataRemoverStatic = (clazz.findDeclaredField("dataRemoverStatic").
 				primarySourceElement as FieldDeclaration).problems
-			val problemsFieldDataAdderFinal = (clazz.findDeclaredField("dataAdderFinal").
-				primarySourceElement as FieldDeclaration).problems
-			val problemsFieldDataRemoverFinal = (clazz.findDeclaredField("dataRemoverFinal").
-				primarySourceElement as FieldDeclaration).problems
 
 			// do assertions
 			assertEquals(1, problemsFieldDataAdderStatic.size)
@@ -1709,15 +1697,7 @@ abstract class TraitClassWithAdderRemover {
 			assertEquals(Severity.ERROR, problemsFieldDataRemoverStatic.get(0).severity)
 			assertTrue(problemsFieldDataRemoverStatic.get(0).message.contains("static"))
 
-			assertEquals(1, problemsFieldDataAdderFinal.size)
-			assertEquals(Severity.ERROR, problemsFieldDataAdderFinal.get(0).severity)
-			assertTrue(problemsFieldDataAdderFinal.get(0).message.contains("final"))
-
-			assertEquals(1, problemsFieldDataRemoverFinal.size)
-			assertEquals(Severity.ERROR, problemsFieldDataRemoverFinal.get(0).severity)
-			assertTrue(problemsFieldDataRemoverFinal.get(0).message.contains("final"))
-
-			assertEquals(4, allProblems.size)
+			assertEquals(2, allProblems.size)
 
 		]
 

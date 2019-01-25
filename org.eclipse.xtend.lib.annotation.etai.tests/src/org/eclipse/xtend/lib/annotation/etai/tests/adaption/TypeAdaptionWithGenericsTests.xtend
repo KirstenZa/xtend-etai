@@ -186,7 +186,7 @@ class TypeAdaptionWithGenericsTests {
 
 		// must compile, if type is adapted correctly
 		val obj = new TypeAdaptionWithGenericsMainTypeDerived<Integer, Integer>()
-		obj.setTU(new Integer(10))
+		obj.setTU(Integer::valueOf(10))
 		assertEquals(10, obj.getTU().intValue)
 
 	}

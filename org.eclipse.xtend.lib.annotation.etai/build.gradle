@@ -1,0 +1,40 @@
+plugins {
+  id 'base'
+  id 'java'
+  id 'eclipse'
+  id 'org.xtext.xtend' version "2.0.2"
+}
+
+group = 'org.eclipse.xtend.lib.annotation.etai'
+version = rootProject.file('VERSION').text.trim()
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  implementation 'org.eclipse.xtend:org.eclipse.xtend.lib:2.+'
+  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.+'
+}
+
+sourceSets {
+  main.java.srcDirs = ['src','xtend-gen']
+  main.xtendOutputDir = 'xtend-gen'
+}
+
+clean {
+    delete 'xtend-gen'
+}
+
+eclipse {
+  project {
+    natures 'org.eclipse.xtext.ui.shared.xtextNature'
+    buildCommand 'org.eclipse.xtext.ui.shared.xtextBuilder'
+  }
+}
+
+eclipseJdt.doLast {
+    File f = file('.settings/org.eclipse.core.resources.prefs')
+    f.write('eclipse.preferences.version=1\n')
+    f.append('encoding/<project>=UTF-8')
+}

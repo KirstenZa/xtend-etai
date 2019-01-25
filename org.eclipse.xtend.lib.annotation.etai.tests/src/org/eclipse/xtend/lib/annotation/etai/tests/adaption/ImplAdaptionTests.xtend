@@ -200,19 +200,19 @@ class ImplAdaptionTests {
 	@Test
 	def void testImplAdaptionMethodsStatic() {
 
-		assertEquals("10", ReturnAdaptionType1.returnAsString(new Integer(10)))
-		assertEquals("10", ReturnAdaptionType2.returnAsString(new Integer(10)))
-		assertEquals("10", ReturnAdaptionType3.returnAsString(new Integer(10)))
-		assertEquals("10", ReturnAdaptionType4.returnAsString(new Integer(10)))
-		assertEquals("10", ReturnAdaptionType5.returnAsString(new Integer(10)))
-		assertEquals("10", ReturnAdaptionType6.returnAsString(new Integer(10)))
+		assertEquals("10", ReturnAdaptionType1.returnAsString(Integer::valueOf(10)))
+		assertEquals("10", ReturnAdaptionType2.returnAsString(Integer::valueOf(10)))
+		assertEquals("10", ReturnAdaptionType3.returnAsString(Integer::valueOf(10)))
+		assertEquals("10", ReturnAdaptionType4.returnAsString(Integer::valueOf(10)))
+		assertEquals("10", ReturnAdaptionType5.returnAsString(Integer::valueOf(10)))
+		assertEquals("10", ReturnAdaptionType6.returnAsString(Integer::valueOf(10)))
 
 		assertEquals(1, ReturnAdaptionType1.methods.filter[name == "returnAsString"].size)
-		assertEquals("12.0", ReturnAdaptionType2.returnAsString(new Double(10)))
-		assertEquals("13.0", ReturnAdaptionType3.returnAsString(new Double(10)))
-		assertEquals("14.0", ReturnAdaptionType4.returnAsString(new Double(10)))
-		assertEquals("15.0", ReturnAdaptionType5.returnAsString(new Double(10)))
-		assertEquals("16.0", ReturnAdaptionType6.returnAsString(new Double(10)))
+		assertEquals("12.0", ReturnAdaptionType2.returnAsString(Double::valueOf(10)))
+		assertEquals("13.0", ReturnAdaptionType3.returnAsString(Double::valueOf(10)))
+		assertEquals("14.0", ReturnAdaptionType4.returnAsString(Double::valueOf(10)))
+		assertEquals("15.0", ReturnAdaptionType5.returnAsString(Double::valueOf(10)))
+		assertEquals("16.0", ReturnAdaptionType6.returnAsString(Double::valueOf(10)))
 
 	}
 

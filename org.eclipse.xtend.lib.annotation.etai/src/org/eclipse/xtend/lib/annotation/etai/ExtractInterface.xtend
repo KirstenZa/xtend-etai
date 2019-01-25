@@ -130,14 +130,14 @@ class NoInterfaceExtractProcessor extends AbstractMemberProcessor {
 			if (!xtendMember.hasAnnotation(GetterRule) && !xtendMember.hasAnnotation(SetterRule) &&
 				!xtendMember.hasAnnotation(AdderRule) && !xtendMember.hasAnnotation(RemoverRule))
 				xtendMember.
-					addError('''Annotation @«processedAnnotationType.simpleName» can only be applied to methods or fields which trigger method generation''')
+					addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» can only be applied to methods or fields which trigger method generation''')
 
 		}
 
 		// annotation @NoInterfaceExtract must not be used in trait classes
 		if ((xtendMember.declaringType as ClassDeclaration).isTraitClass)
 			xtendMember.
-				addError('''Annotation @«processedAnnotationType.simpleName» must not be used within trait classes''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must not be used within trait classes''')
 
 	}
 
@@ -321,7 +321,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 		val typeLookup = context.class.getMethod("getTypeLookup").invoke(context) as TypeLookup
 		val mirrorInterface = typeLookup.findInterface(
-			annotatedClass.getMirrorInterfaceName) as MutableInterfaceDeclaration
+			annotatedClass.getMirrorInterfaceName)
 
 		mirrorInterface.mutate [
 			annotatedClass.cloneTypeParametersWithoutUpperBounds(mirrorInterface, null, null)
@@ -644,7 +644,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		mirrorInterfaceType.docComment = (if (annotatedClass.docComment !== null)
 			annotatedClass.docComment + "\n\n"
 		else
-			"") + '''Interface extracted from «annotatedClass.getJavaDocLinkTo(context)»'''
+			"") + '''Interface extracted from Â«annotatedClass.getJavaDocLinkTo(context)Â»'''
 
 	}
 
@@ -675,14 +675,14 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		// find the same types as the class
 		if (!annotatedClass.qualifiedName.contains('.'))
 			xtendClass.
-				addError('''Annotation @«getProcessedAnnotationType.simpleName» must not be used for classes within the default package''')
+				addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» must not be used for classes within the default package''')
 
 		// methods must not have an inferred return type
 		for (method : xtendClass.getDeclaredMethodsResolved(true, false, false, context).withoutNoInterfaceExtract) {
 
 			if ((method.returnType === null || method.returnType.inferred) && method.visibility == Visibility.PUBLIC)
 				method.
-					addError('''Method "«method.simpleName»" of must not have an inferred type, because it must be extracted to an interface''')
+					addError('''Method "Â«method.simpleNameÂ»" of must not have an inferred type, because it must be extracted to an interface''')
 
 		}
 

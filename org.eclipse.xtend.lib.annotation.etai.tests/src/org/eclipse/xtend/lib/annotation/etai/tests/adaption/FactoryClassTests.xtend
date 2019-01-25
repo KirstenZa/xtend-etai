@@ -363,15 +363,20 @@ class FactoryClassTests {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
+	// using this method avoids warnings concerning unnecessary instanceof tests
+	static def boolean instanceOf(Object obj, Class<?> clazz) {
+		return clazz.isAssignableFrom(obj.class)
+	}
+
 	@Test
 	def void testFactoryClass() {
 
 		val newDerived1 = ClassWithFactoryClassWithoutConstructorDerived1::FACTORY.create
 		val newDerived3 = ClassWithFactoryClassWithoutConstructorDerived3::FACTORY.create
 
-		assertTrue(newDerived1 instanceof ClassWithFactoryClassWithoutConstructorDerived1)
-		assertFalse(newDerived1 instanceof ClassWithFactoryClassWithoutConstructorDerived3)
-		assertTrue(newDerived3 instanceof ClassWithFactoryClassWithoutConstructorDerived3)
+		assertTrue(newDerived1.instanceOf(ClassWithFactoryClassWithoutConstructorDerived1))
+		assertFalse(newDerived1.instanceOf(ClassWithFactoryClassWithoutConstructorDerived3))
+		assertTrue(newDerived3.instanceOf(ClassWithFactoryClassWithoutConstructorDerived3))
 
 		assertFalse(ClassWithFactoryClassWithoutConstructorDerived2.declaredFields.exists[name == "FACTORY"])
 
@@ -408,12 +413,12 @@ class FactoryClassTests {
 		val newDerived42 = ClassWithFactoryClassWithParametersDerived4::FACTORY_INSTANCE.
 			createClassWithFactoryClassWithParametersDerived4(20)
 
-		assertTrue(newDerived11 instanceof ClassWithFactoryClassWithParametersDerived1)
-		assertTrue(newDerived12 instanceof ClassWithFactoryClassWithParametersDerived1)
-		assertTrue(newDerived2 instanceof ClassWithFactoryClassWithParametersDerived2)
-		assertTrue(newDerived3 instanceof ClassWithFactoryClassWithParametersDerived3)
-		assertTrue(newDerived41 instanceof ClassWithFactoryClassWithParametersDerived4)
-		assertTrue(newDerived42 instanceof ClassWithFactoryClassWithParametersDerived4)
+		assertTrue(newDerived11.instanceOf(ClassWithFactoryClassWithParametersDerived1))
+		assertTrue(newDerived12.instanceOf(ClassWithFactoryClassWithParametersDerived1))
+		assertTrue(newDerived2.instanceOf(ClassWithFactoryClassWithParametersDerived2))
+		assertTrue(newDerived3.instanceOf(ClassWithFactoryClassWithParametersDerived3))
+		assertTrue(newDerived41.instanceOf(ClassWithFactoryClassWithParametersDerived4))
+		assertTrue(newDerived42.instanceOf(ClassWithFactoryClassWithParametersDerived4))
 
 		assertEquals(11, newDerived11.value)
 		assertEquals(14, newDerived12.value)

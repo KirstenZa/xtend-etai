@@ -260,8 +260,6 @@ abstract class AbstractTraitMethodAnnotationProcessor extends AbstractMemberProc
 
 			if (xtendMember.returnType === null || xtendMember.returnType.inferred == true)
 				xtendMember.addError("A trait method must explicitly specify the return type")
-			if (xtendMember.final == true)
-				xtendMember.addError("A trait method must not be declared final")
 			if (xtendMember.static == true)
 				xtendMember.addError("A trait method must not be declared static")
 
@@ -271,8 +269,6 @@ abstract class AbstractTraitMethodAnnotationProcessor extends AbstractMemberProc
 
 		} else if (xtendMember instanceof FieldDeclaration) {
 
-			if (xtendMember.final == true)
-				xtendMember.addError("A trait method must not be declared final")
 			if (xtendMember.static == true)
 				xtendMember.addError("A trait method must not be declared static")
 

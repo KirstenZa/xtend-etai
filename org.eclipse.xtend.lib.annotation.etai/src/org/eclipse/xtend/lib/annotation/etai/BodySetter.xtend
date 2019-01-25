@@ -150,7 +150,7 @@ class BodySetter {
 						val requiredParamterType = newMethodParameter.getAnnotation(AssertParameterType).
 							getClassValue("value")
 						typeAssertionBody +=
-							'''assert «newMethodParameter.simpleName» == null || «newMethodParameter.simpleName» instanceof «requiredParamterType.getTypeReferenceAsString(true, true, false, false, bodyInfo.value.context)» : String.format(org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.TYPE_ADAPTION_PARAMETER_TYPE_ERROR, "«bodyInfo.key.simpleName»", "«newMethodParameter.simpleName»", "«requiredParamterType.getTypeReferenceAsString(true, false, false, false, bodyInfo.value.context)»");
+							'''assert Â«newMethodParameter.simpleNameÂ» == null || Â«newMethodParameter.simpleNameÂ» instanceof Â«requiredParamterType.getTypeReferenceAsString(true, true, false, false, bodyInfo.value.context)Â» : String.format(org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.TYPE_ADAPTION_PARAMETER_TYPE_ERROR, "Â«bodyInfo.key.simpleNameÂ»", "Â«newMethodParameter.simpleNameÂ»", "Â«requiredParamterType.getTypeReferenceAsString(true, false, false, false, bodyInfo.value.context)Â»");
 							'''
 						typeAssertionBody += "\n";
 					}
@@ -159,7 +159,7 @@ class BodySetter {
 				val typeAssertionBodyFinal = typeAssertionBody
 				bodyInfo.key.mutate [
 
-					bodyInfo.key.body = '''«typeAssertionBodyFinal + bodyInfo.value.methodBody»'''
+					bodyInfo.key.body = '''Â«typeAssertionBodyFinal + bodyInfo.value.methodBodyÂ»'''
 
 				]
 

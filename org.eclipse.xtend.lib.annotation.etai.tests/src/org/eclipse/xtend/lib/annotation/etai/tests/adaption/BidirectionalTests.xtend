@@ -15,6 +15,8 @@ import org.eclipse.xtend.lib.annotation.etai.RemoverRule
 import org.eclipse.xtend.lib.annotation.etai.SetterRule
 import org.eclipse.xtend.lib.annotation.etai.SynchronizationRule
 import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IBidirectionalInTraitA
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IBidirectionalInTraitB
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IBidirectionalInterfaceB
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IBidirectionalOnlyInterfaceA
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IBidirectionalOnlyInterfaceB
@@ -24,6 +26,9 @@ import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
+
+class SetDerivation<T> extends HashSet<T> {
+}
 
 @ApplyRules
 class BidirectionalSelf {
@@ -318,6 +323,62 @@ class BidirectionalWithoutGenerationB extends BidirectionalWithoutGenerationBBas
 		calledRemoveFromMultiSingleA++;
 	}
 
+}
+
+@ApplyRules
+class BidirectionalGenericA<T extends BidirectionalGenericB<?>> {
+
+	@GetterRule
+	@AdderRule
+	@RemoverRule
+	@BidirectionalRule("toA")
+	SetDerivation<T> toB = new SetDerivation<T>
+
+}
+
+@ApplyRules
+class BidirectionalGenericB<T extends BidirectionalGenericA<?>> {
+
+	@GetterRule
+	@SetterRule
+	@BidirectionalRule("toB")
+	T toA
+
+}
+
+@TraitClass
+@ApplyRules
+abstract class BidirectionalInTraitA {
+
+	@ExclusiveMethod
+	@BidirectionalRule("a")
+	@AdderRule
+	@RemoverRule
+	@GetterRule
+	Set<IBidirectionalInTraitB> setB = new HashSet<IBidirectionalInTraitB>
+
+}
+
+@TraitClass
+@ApplyRules
+abstract class BidirectionalInTraitB {
+
+	@ExclusiveMethod
+	@BidirectionalRule("setB")
+	@SetterRule
+	@GetterRule
+	IBidirectionalInTraitA a
+
+}
+
+@ExtendedByAuto
+@ApplyRules
+class ExtendedByBidirectionalInTraitA implements IBidirectionalInTraitA {
+}
+
+@ExtendedByAuto
+@ApplyRules
+class ExtendedByBidirectionalInTraitB implements IBidirectionalInTraitB {
 }
 
 class BidirectionalTests {
@@ -1359,6 +1420,74 @@ class BidirectionalTests {
 	}
 
 	@Test
+	def void testBidirectionalWithGenerics() {
+
+		val objA = new BidirectionalGenericA
+		val objB1 = new BidirectionalGenericB
+		val objB2 = new BidirectionalGenericB
+
+		objA.addToToB(objB1)
+		objB2.toA = objA
+
+		assertEquals(2, objA.toB.size)
+		assertTrue(objA.toB.contains(objB1))
+		assertTrue(objA.toB.contains(objB2))
+		assertSame(objA, objB1.toA)
+		assertSame(objA, objB2.toA)
+
+	}
+
+	@Test
+	def void testBidirectionalInTrait() {
+
+		{
+
+			val objA = new ExtendedByBidirectionalInTraitA
+			val objB1 = new ExtendedByBidirectionalInTraitB
+			val objB2 = new ExtendedByBidirectionalInTraitB
+
+			objA.addToSetB(objB2)
+			objA.addToSetB(objB1)
+
+			assertSame(objA, objB1.a)
+			assertSame(objA, objB2.a)
+			assertTrue(objA.setB.contains(objB1))
+			assertTrue(objA.setB.contains(objB2))
+
+			objA.removeFromSetB(objB1)
+
+			assertNull(objB1.a)
+			assertSame(objA, objB2.a)
+			assertFalse(objA.setB.contains(objB1))
+			assertTrue(objA.setB.contains(objB2))
+
+		}
+		{
+
+			val objA = new ExtendedByBidirectionalInTraitA
+			val objB1 = new ExtendedByBidirectionalInTraitB
+			val objB2 = new ExtendedByBidirectionalInTraitB
+
+			objB1.a = objA
+			objB2.a = objA
+
+			assertSame(objA, objB1.a)
+			assertSame(objA, objB2.a)
+			assertTrue(objA.setB.contains(objB1))
+			assertTrue(objA.setB.contains(objB2))
+
+			objB1.a = null
+
+			assertNull(objB1.a)
+			assertSame(objA, objB2.a)
+			assertFalse(objA.setB.contains(objB1))
+			assertTrue(objA.setB.contains(objB2))
+
+		}
+
+	}
+
+	@Test
 	def void testBidirectionalUsedIncorrectly() {
 
 		'''
@@ -1406,8 +1535,6 @@ class UsingBidirectionalCounter {
 				primarySourceElement as FieldDeclaration).problems
 
 			// do assertions
-			assertEquals(3, allProblems.size)
-
 			assertEquals(1, problemsNoGetterSetterAdder.size)
 			assertEquals(Severity.ERROR, problemsNoGetterSetterAdder.get(0).severity)
 			assertTrue(problemsNoGetterSetterAdder.get(0).message.contains("only be used, if also @SetterRule"))
@@ -1419,6 +1546,8 @@ class UsingBidirectionalCounter {
 			assertEquals(1, problemsNoBidirectionalClassOrInterface.size)
 			assertEquals(Severity.ERROR, problemsNoBidirectionalClassOrInterface.get(0).severity)
 			assertTrue(problemsNoBidirectionalClassOrInterface.get(0).message.contains("interface/class type"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 
@@ -1456,11 +1585,11 @@ class UsingBidirectional {
 				primarySourceElement as FieldDeclaration).problems
 
 			// do assertions
-			assertEquals(1, allProblems.size)
-
 			assertEquals(1, problemsNoTypeForSet.size)
 			assertEquals(Severity.ERROR, problemsNoTypeForSet.get(0).severity)
 			assertTrue(problemsNoTypeForSet.get(0).message.contains("type argument"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 
@@ -1509,8 +1638,6 @@ class UsingBidirectionalOpposite {
 				problems
 
 			// do assertions
-			assertEquals(2, allProblems.size)
-
 			assertEquals(1, problemsOpposite1.size)
 			assertEquals(Severity.ERROR, problemsOpposite1.get(0).severity)
 			assertTrue(problemsOpposite1.get(0).message.contains("Cannot find appropriate method"))
@@ -1518,6 +1645,73 @@ class UsingBidirectionalOpposite {
 			assertEquals(1, problemsOpposite2.size)
 			assertEquals(Severity.ERROR, problemsOpposite2.get(0).severity)
 			assertTrue(problemsOpposite2.get(0).message.contains("Cannot find appropriate method"))
+
+			assertEquals(2, allProblems.size)
+
+		]
+
+	}
+
+	@Test
+	def void testBidirectionalWrongUsageInTraitClass() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
+import org.eclipse.xtend.lib.annotation.etai.SetterRule
+import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.RemoverRule
+import org.eclipse.xtend.lib.annotation.etai.BidirectionalRule
+
+@TraitClass
+@ApplyRules
+abstract class BidirectionalInTraitA {
+
+	@ExclusiveMethod
+	@BidirectionalRule("a")
+	@AdderRule
+	@RemoverRule
+	@GetterRule
+	java.util.Set<BidirectionalInTraitB> setB = new java.util.HashSet<BidirectionalInTraitB>
+
+}
+
+@TraitClass
+@ApplyRules
+abstract class BidirectionalInTraitB {
+
+	@ExclusiveMethod
+	@BidirectionalRule("setB")
+	@SetterRule
+	@GetterRule
+	BidirectionalInTraitA a
+
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazzA = findClass('virtual.BidirectionalInTraitA')
+			val clazzB = findClass('virtual.BidirectionalInTraitB')
+
+			val problemsA = (clazzA.findDeclaredField("setB").primarySourceElement as FieldDeclaration).problems
+			val problemsB = (clazzB.findDeclaredField("a").primarySourceElement as FieldDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsA.size)
+			assertEquals(Severity.ERROR, problemsA.get(0).severity)
+			assertTrue(problemsA.get(0).message.contains("trait"))
+
+			assertEquals(1, problemsB.size)
+			assertEquals(Severity.ERROR, problemsB.get(0).severity)
+			assertTrue(problemsB.get(0).message.contains("trait"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

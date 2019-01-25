@@ -129,22 +129,22 @@ class TypeAdaptionConstruct {
 	@Test
 	def void testTypeAdaptionConstructFallback() {
 
-		val obj1 = new TypeAdaptionConstructFallbackDerived(new Integer(10))
+		val obj1 = new TypeAdaptionConstructFallbackDerived(Integer::valueOf(10))
 		assertEquals(1, obj1.testValue)
 
-		val obj2 = new TypeAdaptionConstructFallbackDerived(new Double(20.0))
+		val obj2 = new TypeAdaptionConstructFallbackDerived(Double::valueOf(20.0))
 		assertEquals(99, obj2.testValue)
 
-		val obj3 = new TypeAdaptionConstructFallbackDerived(new Float(20.0f))
+		val obj3 = new TypeAdaptionConstructFallbackDerived(Float::valueOf(20.0f))
 		assertEquals(55, obj3.testValue)
 
-		val obj4 = new TypeAdaptionConstructFallbackDerived(new Integer(10))
+		val obj4 = new TypeAdaptionConstructFallbackDerived(Integer::valueOf(10))
 		assertEquals(1, obj4.testValue)
 
-		val obj5 = new TypeAdaptionConstructFallbackDerived(new Double(20.0))
+		val obj5 = new TypeAdaptionConstructFallbackDerived(Double::valueOf(20.0))
 		assertEquals(99, obj5.testValue)
 
-		val obj6 = new TypeAdaptionConstructFallbackDerived(new Float(20.0f))
+		val obj6 = new TypeAdaptionConstructFallbackDerived(Float::valueOf(20.0f))
 		assertEquals(55, obj6.testValue)
 
 	}

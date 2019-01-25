@@ -166,7 +166,7 @@ class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements
 
 		if (!(xtendMethod.declaringType instanceof ClassDeclaration)) {
 			annotatedMethod.
-				addError('''Annotation @«processedAnnotationType.simpleName» can only be used for methods within classes''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» can only be used for methods within classes''')
 			return
 		}
 

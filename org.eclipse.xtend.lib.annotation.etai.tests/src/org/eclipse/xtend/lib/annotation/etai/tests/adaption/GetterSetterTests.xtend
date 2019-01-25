@@ -107,7 +107,7 @@ class ClassWithSetterGetterT<T> {
 class ClassWithSetterGetterWithExtractInterface {
 
 	@GetterRule
-	int dataWithGetter = 11
+	final int dataWithGetter = 11
 
 	@SetterRule
 	double dataWithSetter = 12.1
@@ -281,7 +281,7 @@ abstract class TraitWithSetterGetter {
 
 	@GetterRule
 	@ExclusiveMethod
-	int dataWithGetter = 11
+	final int dataWithGetter = 11
 
 	@SetterRule
 	@ExclusiveMethod
@@ -680,22 +680,22 @@ class GetterSetterTests {
 		assertEquals(10, obj.getDataIntegerListDirect.get(obj.getDataIntegerListDirect.size - 1))
 
 		// check unmodifiable
-		assertUnmodifiable("getDataIntegerListDirect", false, new Integer(1), null)
-		assertUnmodifiable("getDataDoubleArrayList", true, new Double(1.0), null)
-		assertUnmodifiable("getDataUnspecifiedListCopy", true, new Integer(1), null)
+		assertUnmodifiable("getDataIntegerListDirect", false, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataDoubleArrayList", true, Double::valueOf(1.0), null)
+		assertUnmodifiable("getDataUnspecifiedListCopy", true, Integer::valueOf(1), null)
 		assertUnmodifiable("getDataMyCollectionDirect", false, "a string", null)
 		assertUnmodifiable("getDataMyCollectionUnmodifiable", true, "a string", null)
 		assertUnmodifiable("getDataMyCollectionUnmodifiableCopy", true, "a string", null)
-		assertUnmodifiable("getDataUnspecifiedMap", true, new Integer(1), null)
-		assertUnmodifiable("getDataMap", true, new Integer(1), "something")
-		assertUnmodifiable("getDataMapCopy", true, new Integer(1), "something")
-		assertUnmodifiable("getDataSortedMap", true, new Integer(1), "something")
-		assertUnmodifiable("getDataSortedMapCopy", true, new Integer(1), "something")
-		assertUnmodifiable("getDataSet", true, new Integer(1), null)
-		assertUnmodifiable("getDataSetCopy", true, new Integer(1), null)
-		assertUnmodifiable("getDataSortedSet", true, new Integer(1), null)
-		assertUnmodifiable("getDataSortedSetCopy", true, new Integer(1), null)
-		assertUnmodifiable("getDataTreeMapDirect", false, new Integer(1), null)
+		assertUnmodifiable("getDataUnspecifiedMap", true, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataMap", true, Integer::valueOf(1), "something")
+		assertUnmodifiable("getDataMapCopy", true, Integer::valueOf(1), "something")
+		assertUnmodifiable("getDataSortedMap", true, Integer::valueOf(1), "something")
+		assertUnmodifiable("getDataSortedMapCopy", true, Integer::valueOf(1), "something")
+		assertUnmodifiable("getDataSet", true, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataSetCopy", true, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataSortedSet", true, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataSortedSetCopy", true, Integer::valueOf(1), null)
+		assertUnmodifiable("getDataTreeMapDirect", false, Integer::valueOf(1), null)
 
 		// add some data via original lists
 		originalListUnmodifiable.add(4.0)
@@ -1146,6 +1146,14 @@ class GetterSetterTests {
 	}
 
 	@Test
+	def void testMethodNonFinal() {
+
+		assertTrue(!Modifier.isFinal(ClassWithSetterGetterWithExtractInterface.getDeclaredMethod("getDataWithGetter").modifiers))
+		assertTrue(!Modifier.isFinal(TraitWithSetterGetter.getDeclaredMethod("getDataWithGetter").modifiers))
+
+	}
+
+	@Test
 	def void testNoGetterSetterRulesWithoutApplyRules() {
 
 		'''
@@ -1376,15 +1384,13 @@ abstract class TraitClassWithSetterGetter {
 			assertEquals(Severity.ERROR, problemsFieldDataSetterStatic.get(0).severity)
 			assertTrue(problemsFieldDataSetterStatic.get(0).message.contains("static"))
 
-			assertEquals(1, problemsFieldDataGetterFinal.size)
-			assertEquals(Severity.ERROR, problemsFieldDataGetterFinal.get(0).severity)
-			assertTrue(problemsFieldDataGetterFinal.get(0).message.contains("final"))
+			assertEquals(0, problemsFieldDataGetterFinal.size)
 
 			assertEquals(1, problemsFieldDataSetterFinal.size)
 			assertEquals(Severity.ERROR, problemsFieldDataSetterFinal.get(0).severity)
 			assertTrue(problemsFieldDataSetterFinal.get(0).message.contains("final"))
 
-			assertEquals(4, allProblems.size)
+			assertEquals(3, allProblems.size)
 
 		]
 

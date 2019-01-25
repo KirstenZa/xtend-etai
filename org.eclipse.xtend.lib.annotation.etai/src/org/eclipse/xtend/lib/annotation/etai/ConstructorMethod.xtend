@@ -105,7 +105,7 @@ class ConstructorMethodProcessor extends AbstractMethodProcessor {
 			if (parameterName !== null && (parameterName == TraitClassProcessor.EXTENDED_THIS_FIELD_NAME ||
 				parameterName.startsWith(ProcessUtils.IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)))
 				xtendMethod.
-					addError('''Parameter name "«parameter.simpleName»" is not allowed for trait class constructors''')
+					addError('''Parameter name "Â«parameter.simpleNameÂ»" is not allowed for trait class constructors''')
 		}
 
 	}

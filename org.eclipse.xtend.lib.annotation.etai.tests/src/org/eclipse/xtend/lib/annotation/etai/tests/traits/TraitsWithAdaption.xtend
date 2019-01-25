@@ -150,12 +150,17 @@ class ExtendedClassWithRequiredMethodImplAdaptedNonAbstract extends ExtendedClas
 
 class TraitsWithAdaptionTests extends TraitTestsBase {
 
+	// using this method avoids warnings concerning unnecessary instanceof tests
+	static def boolean instanceOf(Object obj, Class<?> clazz) {
+		return clazz.isAssignableFrom(obj.class)
+	}
+
 	@Test
 	def void testExtensionWithAdaption() {
 
 		val internalObj = new AdaptionClassDerived
 		val obj = new ExtendedClassWithAdaption(internalObj)
-		assertTrue(obj.method1 instanceof AdaptionClassBase)
+		assertTrue(obj.method1.instanceOf(AdaptionClassBase))
 		assertNull(obj.method2)
 
 		assertEquals(2, ExtendedClassWithAdaption.declaredMethods.filter[

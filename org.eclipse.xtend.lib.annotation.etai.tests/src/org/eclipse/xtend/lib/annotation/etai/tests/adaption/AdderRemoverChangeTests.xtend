@@ -741,7 +741,6 @@ class ClassWithAdderRemoverChangeWithOldNewList {
 		assertTrue(expectedIndices.contains(index))
 	}
 
-// TODO: obiges funktioniert nur mit index, tests?
 }
 
 @ApplyRules
@@ -1018,11 +1017,11 @@ class AdderRemoverChangeTests {
 
 		assertTrue(obj.removeFromListData(0))
 		assertArrayEquals(#[11, 25, 10, 25, 26, 10, 22, 20, 30, 30, 30], obj.listData)
-		assertTrue(obj.removeFromListData(new Integer(25)))
+		assertTrue(obj.removeFromListData(Integer::valueOf(25)))
 		assertArrayEquals(#[11, 10, 25, 26, 10, 22, 20, 30, 30, 30], obj.listData)
-		assertTrue(obj.removeFromListData(new Integer(25)))
+		assertTrue(obj.removeFromListData(Integer::valueOf(25)))
 		assertArrayEquals(#[11, 10, 26, 10, 22, 20, 30, 30, 30], obj.listData)
-		assertFalse(obj.removeFromListData(new Integer(29)))
+		assertFalse(obj.removeFromListData(Integer::valueOf(29)))
 		assertArrayEquals(#[11, 10, 26, 10, 22, 20, 30, 30, 30], obj.listData)
 		assertTrue(obj.removeAllFromListData(#[30]))
 		assertArrayEquals(#[11, 10, 26, 10, 22, 20], obj.listData)
@@ -1062,7 +1061,7 @@ class AdderRemoverChangeTests {
 
 		assertFalse(obj.removeFromListDataParam(0))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
-		assertFalse(obj.removeFromListDataParam(new Integer(22)))
+		assertFalse(obj.removeFromListDataParam(Integer::valueOf(22)))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
 		assertFalse(obj.removeAllFromListDataParam(#[20, 21]))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
@@ -1109,7 +1108,7 @@ class AdderRemoverChangeTests {
 		assertArrayEquals(#[10, 11, 12, 13, 14, 15, 16], obj.listDataParamIndex)
 		assertTrue(obj.removeFromListDataParamIndex(6))
 		assertArrayEquals(#[10, 11, 12, 13, 14, 15], obj.listDataParamIndex)
-		assertTrue(obj.removeFromListDataParamIndex(new Integer(15)))
+		assertTrue(obj.removeFromListDataParamIndex(Integer::valueOf(15)))
 		assertArrayEquals(#[10, 11, 12, 13, 14], obj.listDataParamIndex)
 		assertFalse(obj.removeAllFromListDataParamIndex(#[12, 13]))
 		assertArrayEquals(#[10, 11, 12, 13, 14], obj.listDataParamIndex)
@@ -1192,7 +1191,7 @@ class AdderRemoverChangeTests {
 
 		assertFalse(obj.removeFromListDataParam(0))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
-		assertFalse(obj.removeFromListDataParam(new Integer(22)))
+		assertFalse(obj.removeFromListDataParam(Integer::valueOf(22)))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
 		assertFalse(obj.removeAllFromListDataParam(#[20, 21]))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], obj.listDataParam)
@@ -1239,7 +1238,7 @@ class AdderRemoverChangeTests {
 		assertArrayEquals(#[10, 11, 12, 13, 14, 15, 16], obj.listDataParamIndex)
 		assertTrue(obj.removeFromListDataParamIndex(6))
 		assertArrayEquals(#[10, 11, 12, 13, 14, 15], obj.listDataParamIndex)
-		assertTrue(obj.removeFromListDataParamIndex(new Integer(15)))
+		assertTrue(obj.removeFromListDataParamIndex(Integer::valueOf(15)))
 		assertArrayEquals(#[10, 11, 12, 13, 14], obj.listDataParamIndex)
 		assertFalse(obj.removeAllFromListDataParamIndex(#[12, 13]))
 		assertArrayEquals(#[10, 11, 12, 13, 14], obj.listDataParamIndex)
@@ -1318,7 +1317,7 @@ class AdderRemoverChangeTests {
 		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
 		obj.expectedIndices = new ArrayList<Integer>(#[1])
 		obj.notAllowed = null
-		assertTrue(obj.removeFromListDataJustOldNew(new Integer(30)))
+		assertTrue(obj.removeFromListDataJustOldNew(Integer::valueOf(30)))
 		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
 		assertEquals(1, obj.beforeElementRemove)
 		assertEquals(1, obj.beforeRemove)
@@ -1351,7 +1350,7 @@ class AdderRemoverChangeTests {
 		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 8])
 		obj.expectedIndices = new ArrayList<Integer>(#[3])
 		obj.notAllowed = null
-		assertTrue(obj.removeFromListDataJustOldNew(new Integer(10)))
+		assertTrue(obj.removeFromListDataJustOldNew(Integer::valueOf(10)))
 		assertArrayEquals(#[14, 15, 8], obj.listDataJustOldNew)
 		assertEquals(6, obj.beforeElementRemove)
 		assertEquals(4, obj.beforeRemove)
@@ -1462,7 +1461,7 @@ class AdderRemoverChangeTests {
 		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
 		obj.expectedIndices = new ArrayList<Integer>(#[1])
 		obj.notAllowed = null
-		assertTrue(obj.removeFromListDataJustOldNew(new Integer(30)))
+		assertTrue(obj.removeFromListDataJustOldNew(Integer::valueOf(30)))
 		assertArrayEquals(#[14, 15, 4, 8, 10], obj.listDataJustOldNew)
 		assertEquals(1, obj.beforeElementRemove)
 		assertEquals(1, obj.beforeRemove)
@@ -1589,7 +1588,7 @@ class AdderRemoverChangeTests {
 		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
 		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
 		obj.notAllowed = null
-		assertTrue(obj.removeFromSetDataJustOldNew(new Integer(30)))
+		assertTrue(obj.removeFromSetDataJustOldNew(Integer::valueOf(30)))
 		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
 		assertEquals(1, obj.beforeElementRemove)
 		assertEquals(1, obj.beforeRemove)
@@ -1706,7 +1705,7 @@ class AdderRemoverChangeTests {
 		obj.expectedOldElements = new ArrayList<Object>(#[14, 30, 15, 4, 8, 10])
 		obj.expectedNewElements = new ArrayList<Object>(#[14, 15, 4, 8, 10])
 		obj.notAllowed = null
-		assertTrue(obj.removeFromSetDataJustOldNew(new Integer(30)))
+		assertTrue(obj.removeFromSetDataJustOldNew(Integer::valueOf(30)))
 		assertEquals(new HashSet(#[14, 15, 4, 8, 10]), obj.setDataJustOldNew)
 		assertEquals(1, obj.beforeElementRemove)
 		assertEquals(1, obj.beforeRemove)
@@ -1873,7 +1872,7 @@ class AdderRemoverChangeTests {
 
 		assertFalse(ClassWithAdderRemoverChangeStatic::removeFromListDataParamStatic(0))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], ClassWithAdderRemoverChangeStatic::listDataParamStatic)
-		assertFalse(ClassWithAdderRemoverChangeStatic::removeFromListDataParamStatic(new Integer(22)))
+		assertFalse(ClassWithAdderRemoverChangeStatic::removeFromListDataParamStatic(Integer::valueOf(22)))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], ClassWithAdderRemoverChangeStatic::listDataParamStatic)
 		assertFalse(ClassWithAdderRemoverChangeStatic::removeAllFromListDataParamStatic(#[20, 21]))
 		assertArrayEquals(#[20, 20, 21, 20, 21, 20], ClassWithAdderRemoverChangeStatic::listDataParamStatic)

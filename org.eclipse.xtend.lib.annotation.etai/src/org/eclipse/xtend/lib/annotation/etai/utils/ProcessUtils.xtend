@@ -9,6 +9,7 @@ import java.util.Set
 import org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor
 import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
 import org.eclipse.xtend.lib.annotation.etai.AdderRule
+import org.eclipse.xtend.lib.annotation.etai.AssertParameterType
 import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.GetterRule
@@ -21,7 +22,6 @@ import org.eclipse.xtend.lib.annotation.etai.SetterRule
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor
 import org.eclipse.xtend.lib.macro.TransformationContext
-import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.AnnotationTarget
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
@@ -50,14 +50,13 @@ import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.AbstractTraitMethodAnnotationProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructorMethodProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRuleProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.StringUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
-import org.eclipse.xtend.lib.annotation.etai.AssertParameterType
 
 class ProcessUtils {
 
@@ -159,15 +158,7 @@ class ProcessUtils {
 		if (type2 instanceof InterfaceDeclaration && type2.qualifiedName.isUnprocessedMirrorInterface) {
 
 			val mirrorInterfaceExtends = if (context instanceof TransformationContext)
-					getClassOfUnprocessedMirrorInterface(type2.qualifiedName).getMirrorInterfaceExtends(
-						null,
-						if (context instanceof TransformationContext)
-							context
-						else if (context instanceof ValidationContext)
-							context
-						else
-							throw new IllegalArgumentException('''Given context not supported''')
-					)
+					getClassOfUnprocessedMirrorInterface(type2.qualifiedName).getMirrorInterfaceExtends(null, context)
 
 			for (extendedInterface : mirrorInterfaceExtends) {
 
@@ -1023,12 +1014,11 @@ class ProcessUtils {
 			if (executable instanceof MethodDeclaration) {
 				result = currentClassDeclaration.getDeclaredMethodsResolved(resolveUnprocessedMirrorInterfaces,
 					resolveUnprocessedTraitClasses, resolveUnprocessedExtendedClasses, context).getMatchingMethod(
-					executable as MethodDeclaration, parameterTypeMatchingStrategy, returnTypeMatchingStrategy,
-					useAssertParameterType, typeMap, context)
-			} else if (executable instanceof ConstructorDeclaration) {
-				result = currentClassDeclaration.declaredConstructors.getMatchingConstructor(
-					executable as ConstructorDeclaration, parameterTypeMatchingStrategy, useAssertParameterType,
+					executable, parameterTypeMatchingStrategy, returnTypeMatchingStrategy, useAssertParameterType,
 					typeMap, context)
+			} else if (executable instanceof ConstructorDeclaration) {
+				result = currentClassDeclaration.declaredConstructors.getMatchingConstructor(executable,
+					parameterTypeMatchingStrategy, useAssertParameterType, typeMap, context)
 			}
 
 			if (recursive == false || result !== null)
@@ -1395,7 +1385,7 @@ class ProcessUtils {
 
 		if (availableAnnotations.size !== 1)
 			throw new IllegalArgumentException(
-				'''Cannot move annotation of type "«annotationType»" from "«src»" to "«dest»" because the annotation is not existing exactly once''')
+				'''Cannot move annotation of type "Â«annotationTypeÂ»" from "Â«srcÂ»" to "Â«destÂ»" because the annotation is not existing exactly once''')
 
 		val _annotation = availableAnnotations.get(0)
 
@@ -1719,10 +1709,10 @@ class ProcessUtils {
 		return if (typeParameterDeclarator.typeParameters.size == 0)
 			""
 		else {
-			'''<«typeParameterDeclarator.getActualTypeArgumentsUsingTypeMap(typeMap, context).map [
+			'''<Â«typeParameterDeclarator.getActualTypeArgumentsUsingTypeMap(typeMap, context).map [
 							it.getTypeReferenceAsString(qualified, false, false, true, context)
 						].join(
-							", ")»>'''
+							", ")Â»>'''
 
 		}
 
@@ -1802,10 +1792,10 @@ class ProcessUtils {
 	) {
 
 		if (copyParameters == false && modifyTypeMap == false)
-			throw new IllegalArgumentException('''Unable to copy method "«source.simpleName»": either type map must be updated or copying of parameters is handled by copy functionality''')
+			throw new IllegalArgumentException('''Unable to copy method "Â«source.simpleNameÂ»": either type map must be updated or copying of parameters is handled by copy functionality''')
 
 		if (source.returnType === null || source.returnType.inferred)
-			throw new IllegalArgumentException('''Unable to copy method "«source.simpleName»" because the return type is inferred''')
+			throw new IllegalArgumentException('''Unable to copy method "Â«source.simpleNameÂ»" because the return type is inferred''')
 
 		val newMethod = clazz.addMethod(source.simpleName) [
 			it.abstract = source.abstract
@@ -1897,8 +1887,8 @@ class ProcessUtils {
 			val typeStringWithoutBounds = typeDetailString.substring(0, indexOfExtends).trim
 
 			if (typeStringWithoutBounds != "?")
-				errors?.add('''Incorrect type information: expected wildcard instead of "«typeStringWithoutBounds»"''' +
-					if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
+				errors?.add('''Incorrect type information: expected wildcard instead of "Â«typeStringWithoutBoundsÂ»"''' +
+					if (annotationName !== null) ''' (found in type information details of @Â«annotationNameÂ»)''')
 
 			return newWildcardTypeReference(
 				createTypeReferenceInternal(annotationName, subTypeString, typeParameterDeclarators, errors, context))
@@ -1912,8 +1902,8 @@ class ProcessUtils {
 			val subTypeString = typeDetailString.substring(indexOfSuper + 7).trim
 			val typeStringWithoutBounds = typeDetailString.substring(0, indexOfSuper).trim
 			if (typeStringWithoutBounds != "?")
-				errors?.add('''Incorrect type information: expected wildcard instead of "«typeStringWithoutBounds»"''' +
-					if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
+				errors?.add('''Incorrect type information: expected wildcard instead of "Â«typeStringWithoutBoundsÂ»"''' +
+					if (annotationName !== null) ''' (found in type information details of @Â«annotationNameÂ»)''')
 
 			return newWildcardTypeReferenceWithLowerBound(
 				createTypeReferenceInternal(annotationName, subTypeString, typeParameterDeclarators, errors, context))
@@ -1966,7 +1956,7 @@ class ProcessUtils {
 		if (typeNameWithoutTypeArguments.trim.length == 0) {
 
 			errors?.add('''Incorrect type information: empty type is not valid''' +
-				if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
+				if (annotationName !== null) ''' (found in type information details of @Â«annotationNameÂ»)''')
 
 			return null
 
@@ -1992,8 +1982,8 @@ class ProcessUtils {
 					if (givenTypeParameter.simpleName == typeNameWithoutTypeArguments)
 						return givenTypeParameter.newTypeReference()
 
-		errors?.add('''Incorrect type information: type "«typeNameWithoutTypeArguments»" not found''' +
-			if (annotationName !== null) ''' (found in type information details of @«annotationName»)''')
+		errors?.add('''Incorrect type information: type "Â«typeNameWithoutTypeArgumentsÂ»" not found''' +
+			if (annotationName !== null) ''' (found in type information details of @Â«annotationNameÂ»)''')
 
 		return null
 
@@ -2034,20 +2024,20 @@ class ProcessUtils {
 
 		if (element instanceof ConstructorDeclaration) {
 
-			result = '''«element.declaringType.qualifiedName»#«element.declaringType.simpleName»(«paramTypeNameList.join(", ")»)'''
+			result = '''Â«element.declaringType.qualifiedNameÂ»#Â«element.declaringType.simpleNameÂ»(Â«paramTypeNameList.join(", ")Â»)'''
 
 		} else if (element instanceof MethodDeclaration) {
 
-			result = '''«element.declaringType.qualifiedName»#«element.simpleName»(«paramTypeNameList.join(", ")»)'''
+			result = '''Â«element.declaringType.qualifiedNameÂ»#Â«element.simpleNameÂ»(Â«paramTypeNameList.join(", ")Â»)'''
 
 		} else if (element instanceof TypeDeclaration) {
 
-			result = '''«element.qualifiedName»'''
+			result = '''Â«element.qualifiedNameÂ»'''
 
 		} else {
 
 			throw new IllegalArgumentException(
-				'''Element type «element.class» it not provided''')
+				'''Element type Â«element.classÂ» it not provided''')
 
 		}
 

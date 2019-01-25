@@ -66,7 +66,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_APPLY»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_APPLYÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -92,7 +92,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_APPEND»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_APPENDÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -118,7 +118,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_PREPEND»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_PREPENDÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -147,7 +147,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_APPLY_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_APPLY_VARIABLEÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -176,7 +176,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_APPEND_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_APPEND_VARIABLEÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -205,7 +205,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_PREPEND_VARIABLE»(«ENDIF»«parameter»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_PREPEND_VARIABLEÂ»(Â«ENDIFÂ»Â«parameterÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -233,7 +233,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«adaptionFunctionName»(«ENDIF»«AdaptionFunctions.printFunctions(nestedAdaptionFunctions)»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«adaptionFunctionNameÂ»(Â«ENDIFÂ»Â«AdaptionFunctions.printFunctions(nestedAdaptionFunctions)Â»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 		/**
@@ -379,7 +379,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_REPLACEÂ»(Â«ENDIFÂ»Â«targetÂ»,Â«replacementÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -407,7 +407,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE_ALL»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_REPLACE_ALLÂ»(Â«ENDIFÂ»Â«targetÂ»,Â«replacementÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -435,7 +435,7 @@ package class AdaptionFunctions {
 		}
 
 		override String print(boolean onlyParameters) {
-			return '''«IF !onlyParameters»«RULE_FUNC_REPLACE_FIRST»(«ENDIF»«target»,«replacement»«IF !onlyParameters»)«ENDIF»'''
+			return '''Â«IF !onlyParametersÂ»Â«RULE_FUNC_REPLACE_FIRSTÂ»(Â«ENDIFÂ»Â«targetÂ»,Â«replacementÂ»Â«IF !onlyParametersÂ»)Â«ENDIFÂ»'''
 		}
 
 	}
@@ -505,7 +505,7 @@ package class AdaptionFunctions {
 			}
 		}
 
-		errors?.add('''Function "«functionName»" with «parameters.size» parameters not found''')
+		errors?.add('''Function "Â«functionNameÂ»" with Â«parameters.sizeÂ» parameters not found''')
 
 		return null
 
@@ -589,7 +589,7 @@ package class AdaptionFunctions {
 					// function "alternative" must not be nested
 					if (AdaptionFunction instanceof Alternative && isTopLevel == false)
 						errors?.
-							add('''Function "«RULE_FUNC_ALTERNATIVE»" inside type adaption rule must not be nested''')
+							add('''Function "Â«RULE_FUNC_ALTERNATIVEÂ»" inside type adaption rule must not be nested''')
 					else if (AdaptionFunction !== null) {
 
 						// ensure that "alternative" is at the end of the function call list
@@ -597,7 +597,7 @@ package class AdaptionFunctions {
 							alternativeSequenceOn = true
 						else if (alternativeSequenceOn == true)
 							errors?.
-								add('''Calls of "«RULE_FUNC_ALTERNATIVE»" functions must be at the end of the function call list''')
+								add('''Calls of "Â«RULE_FUNC_ALTERNATIVEÂ»" functions must be at the end of the function call list''')
 
 						result.add(AdaptionFunction)
 

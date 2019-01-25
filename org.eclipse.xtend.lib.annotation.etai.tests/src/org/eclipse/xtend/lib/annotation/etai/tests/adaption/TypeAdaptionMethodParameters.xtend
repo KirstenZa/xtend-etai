@@ -266,13 +266,13 @@ class TypeAdaptionMethodParametersTests {
 
 		val obj1 = new TypeAdaptionMethodParametersFallbackDerived()
 
-		obj1.myMethod(new Integer(10))
+		obj1.myMethod(Integer::valueOf(10))
 		assertEquals(1, obj1.testValue)
 
-		obj1.myMethod(new Double(20.0))
+		obj1.myMethod(Double::valueOf(20.0))
 		assertEquals(99, obj1.testValue)
 
-		obj1.myMethod(new Float(20.0f))
+		obj1.myMethod(Float::valueOf(20.0f))
 		assertEquals(55, obj1.testValue)
 
 		exceptionThrown = false
@@ -285,13 +285,13 @@ class TypeAdaptionMethodParametersTests {
 
 		val obj2 = new TypeAdaptionMethodParametersFallbackAnotherDerived()
 
-		obj2.myMethod(new Integer(10))
+		obj2.myMethod(Integer::valueOf(10))
 		assertEquals(1, obj2.testValue)
 
-		obj2.myMethod(new Double(20.0))
+		obj2.myMethod(Double::valueOf(20.0))
 		assertEquals(99, obj2.testValue)
 
-		obj2.myMethod(new Float(20.0f))
+		obj2.myMethod(Float::valueOf(20.0f))
 		assertEquals(55, obj2.testValue)
 
 		exceptionThrown = false

@@ -18,9 +18,20 @@
 	<property name="input.dir.css" value="css" />
 	<property name="temp.dir" value="temp" />
 	<property name="output.dir" value="output" />
+	
+	<!-- define files -->
+	<property name="markdown.preprocessed.filename" value="tutorial.txt" />
+	<property name="markdown.preprocessed_with_toc.filename" value="tutorial_with_toc.txt" />
+	<property name="html.filename" value="tutorial.html" />
+	<property name="css.filename" value="tutorial.css" />
+	<property name="markdown.preprocessed.absolute" value="${base.dir}/${temp.dir}/${markdown.preprocessed.filename}" />
+	<property name="markdown.preprocessed_with_toc.absolute" value="${base.dir}/${temp.dir}/${markdown.preprocessed_with_toc.filename}" />
+	<property name="html.absolute" value="${base.dir}/${output.dir}/${html.filename}" />
 
 	<!-- define executables -->
 	<property name="pandoc" location="${eclipse.home}/addons/pandoc/pandoc.exe" />
+	<property name="dot" location="${eclipse.home}/addons/GraphViz/bin/dot.exe" />
+	<property name="markdown-toc-generator" location="${project.dir}/tutorial/lib/toc-generator.jar" />
 
 	<!-- Cleans up generated files. -->
 	<target name="clean">
@@ -50,8 +61,8 @@
 	<!-- Generate UML images with PlantUML. -->
 	<target name="build-img" depends="clean, create-target-dir">
 
-		<plantuml  dir="${project.dir}/tutorial/diagrams" output="${project.dir}/tutorial/output/images"
-			graphvizDot="${eclipse.home}/addons/GraphViz/bin/dot.exe" />
+		<plantuml dir="${base.dir}/diagrams" output="${base.dir}/${output.dir}/images"
+			graphvizDot="${dot}" />
 
 		<!-- refresh Eclipse -->
 		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
@@ -62,17 +73,34 @@
 	<!-- Preprocess markdown documentation files. -->
 	<target name="preprocess-markdown" depends="clean, create-target-dir">
 
-		<!-- Run preprocessor -->
+		<!-- Run preprocessor (past files together) -->
 		<java classname="org.eclipse.xtend.lib.annotation.etai.doc.Preprocessor"
 			fork="true">
-			<arg value="${base.dir}/${input.dir}" />
-			<arg value="${base.dir}/${temp.dir}" />
-			<arg value="tutorial.txt" />
+			<arg value='"${base.dir}/${input.dir}"' />
+			<arg value='"${base.dir}/${temp.dir}"' />
+			<arg value='${markdown.preprocessed.filename}' />
 			<classpath>
 				<pathelement location="${project.dir}/bin" />
 				<pathelement path="${java.class.path}" />
 			</classpath>
 		</java>
+		
+		<!-- Run generation of TOC -->
+		<exec dir="${temp.dir}" executable="java">
+			<arg line='-Dsrc="${markdown.preprocessed.absolute}"' />
+			<arg line='-Dtarget="${markdown.preprocessed_with_toc.absolute}"'/>
+			<arg line='-DdeepLevel=6' />
+			<arg line='-jar "${markdown-toc-generator}"'/>
+		</exec>
+		
+		<!-- Adjust look of TOC -->
+		<replaceregexp file="${markdown.preprocessed_with_toc.absolute}" match="\*\*Table of Contents\*\*[^\n]*" replace="## Table of Contents" flags="g" />
+
+		<!-- Remove entries, which are too deep (adjusting deepLevel removes headlines) -->
+		<replaceregexp file="${markdown.preprocessed_with_toc.absolute}" match="        - [^\n]*\n" replace="" flags="g" />
+		
+		<!-- Remove TOC instruction in original file -->
+		<replace file="${markdown.preprocessed.absolute}" token="{toc.placeholder}" value=""/>
 
 		<!-- refresh Eclipse -->
 		<eclipse.refreshLocal resource="org.eclipse.xtend.lib.annotation.etai.doc"
@@ -89,15 +117,15 @@
 		<!-- copy the stylesheet to the same directory as the HTML files -->
 		<copy todir="${output.dir}">
 			<fileset dir="${input.dir.css}">
-				<include name="tutorial.css" />
+				<include name="${css.filename}" />
 			</fileset>
 		</copy>
 
 		<!-- generate HTML from markup using pandoc -->
 		<exec dir="${temp.dir}" executable="${pandoc}">
-			<arg line="-o ../${output.dir}/tutorial.html" />
-			<arg line="tutorial.txt" />
-			<arg line="--css tutorial.css" />
+			<arg line='-o "${html.absolute}"' />
+			<arg line='${markdown.preprocessed.filename}' />
+			<arg line='--css ${css.filename}' />
 			<arg line="--toc --toc-depth=4" />
 		</exec>
 

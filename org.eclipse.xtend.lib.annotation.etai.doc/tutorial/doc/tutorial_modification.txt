@@ -33,7 +33,7 @@ Besides getters and setters the ETAI library also supports a special treatment f
 
 In the following, getter methods will also be referenced as **accessors**. Setter, adder and remover methods will also be called **mutators**. 
 
-Active annotations for generating accessors and mutators can only be applied to **non-*public* fields**. However, the methodology supports *static* fields. In this case, the generated methods will also be *static*. 
+Active annotations for generating accessors and mutators can only be applied to **non-*public* fields**. However, the methodology supports *static* fields. In this case, the generated methods will also be *static*. However, even if the field is declared *final*, the generated method will be non-*final*.
 
 The generated methods will perform their basic job, of course. In addition, they are able to
 

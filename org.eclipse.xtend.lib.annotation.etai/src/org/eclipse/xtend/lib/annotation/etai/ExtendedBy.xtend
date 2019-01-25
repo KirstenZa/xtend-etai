@@ -349,7 +349,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		} catch (Exception ex) {
 
 			errors?.add('''Cannot add trait classes to mirror interface because of exception:
-			    «StringUtils.getStackTrace(ex)»''')
+			    Â«StringUtils.getStackTrace(ex)Â»''')
 
 		}
 
@@ -402,7 +402,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 						specifiedTraitClassesNames.add(specifiedTraitClass.name)
 					else
 						errors?.
-							add('''Type "«specifiedTraitClass.name»" is not a trait class, i.e. it does not use @TraitClass or @TraitClassAutoUsing''')
+							add('''Type "Â«specifiedTraitClass.nameÂ»" is not a trait class, i.e. it does not use @TraitClass or @TraitClassAutoUsing''')
 
 				}
 
@@ -417,7 +417,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (errors !== null && specifiedTraitClassesNames !== null)
 			if (specifiedTraitClassesNames.size > 0)
 				errors?.
-					add('''Trait class "«specifiedTraitClassesNames.get(0)»" specified, but not found in list of implemented interfaces''')
+					add('''Trait class "Â«specifiedTraitClassesNames.get(0)Â»" specified, but not found in list of implemented interfaces''')
 
 		// add indirectly applied trait classes (i.e. trait classes, which are implemented by directly applied trait classes)
 		if (includeIndirect) {
@@ -528,12 +528,12 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 					// it is an error, if trait class shall be applied directly
 					if (traitClassRefIsAppliedDirectly)
 						errors?.
-							add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«classAlreadyApplied.qualifiedName»") has already been applied to a super type''')
+							add('''Cannot apply the trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«classAlreadyApplied.qualifiedNameÂ»") has already been applied to a super type''')
 					// otherwise (indirect trait class shall be applied) it is an error, if it is not a super type of an already applied trait class (so it is a more concrete or otherwise related type)
 					else if (!traitClassRef.type.isAssignableFromConsiderUnprocessed(typeReferenceAlreadyApplied.type,
 						context))
 						errors?.
-							add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«classAlreadyApplied.qualifiedName»"), which is not a derived from it, has already been applied to a super type of this class''')
+							add('''Cannot apply the (indirectly applied) trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«classAlreadyApplied.qualifiedNameÂ»"), which is not a derived from it, has already been applied to a super type of this class''')
 
 				}
 
@@ -560,7 +560,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 							// it is an error, if two inconsistent trait classes shall be applied directly
 							errors?.
-								add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
+								add('''Cannot apply the trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«foundTypeReference.type.qualifiedNameÂ»") has already been applied''')
 
 						} else {
 
@@ -579,7 +579,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 								// otherwise, it is an error
 								errors?.
-									add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
+									add('''Cannot apply the trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«foundTypeReference.type.qualifiedNameÂ»") has already been applied indirectly''')
 
 							}
 						}
@@ -592,7 +592,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 							if (!traitClassRef.type.
 								isAssignableFromConsiderUnprocessed(foundTypeReference.type, context))
 								errors?.
-									add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
+									add('''Cannot apply the (indirectly applied) trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«foundTypeReference.type.qualifiedNameÂ»") has already been applied''')
 
 						} else {
 
@@ -604,7 +604,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 								if (!foundTypeReference.type.isAssignableFromConsiderUnprocessed(traitClassRef.type,
 									context))
 									errors?.
-										add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
+										add('''Cannot apply the (indirectly applied) trait class "Â«traitClassRef.type.qualifiedNameÂ»", because a type related to this trait class ("Â«foundTypeReference.type.qualifiedNameÂ»") has already been applied indirectly''')
 								else {
 
 									// otherwise, the more concrete type shall be used
@@ -684,7 +684,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				if (!recursionProtection.add(extensionRedirectionInfo.redirectedMethodName)) {
 
 					annotatedClass.
-						addError('''Trait method redirection cycle detected (method: "«extensionRedirectionInfo.redirectedMethodName»")''')
+						addError('''Trait method redirection cycle detected (method: "Â«extensionRedirectionInfo.redirectedMethodNameÂ»")''')
 
 					return foundMethod
 
@@ -798,12 +798,12 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				if (traitClass.hasNonEmptyConstructorMethod(context)) {
 					initializer = '''null'''
 				} else {
-					initializer = '''new «traitClass.qualifiedName»(this«IF !traitClass.hasConstructorMethod(context)», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null«ENDIF»)'''
+					initializer = '''new Â«traitClass.qualifiedNameÂ»(thisÂ«IF !traitClass.hasConstructorMethod(context)Â», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) nullÂ«ENDIFÂ»)'''
 
 					final = true
 				}
 
-				docComment = '''This is the delegation object for the functionality of trait class «traitClass.getJavaDocLinkTo(context)»'''
+				docComment = '''This is the delegation object for the functionality of trait class Â«traitClass.getJavaDocLinkTo(context)Â»'''
 
 			]
 
@@ -851,8 +851,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				]
 
 				// documentation
-				constructionHelperMethod.docComment = '''<p>Method for constructing the delegation object for trait class «traitClass.getJavaDocLinkTo(context)».</p>
-							«IF isAutoConstructed»<p>If auto construction is not disabled in a subclass, it will be called automatically during construction via factory method.«ELSE»It must be called in the constructor of the extended class.</p>«ENDIF»'''
+				constructionHelperMethod.docComment = '''<p>Method for constructing the delegation object for trait class Â«traitClass.getJavaDocLinkTo(context)Â».</p>
+							Â«IF isAutoConstructedÂ»<p>If auto construction is not disabled in a subclass, it will be called automatically during construction via factory method.Â«ELSEÂ»It must be called in the constructor of the extended class.</p>Â«ENDIFÂ»'''
 
 				// specify annotation
 				constructionHelperMethod.addAnnotation(ExtendedConstructionHelperMethod.newAnnotationReference)
@@ -863,8 +863,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// call constructor and set delegation object of extended object
 				bodySetter.setBody(
-					constructionHelperMethod, '''assert «traitClass.delegateObjectName» == null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_ALREADY_CONSTRUCTED_ERROR, "«traitClass.qualifiedName»");
-							this.«traitClass.delegateObjectName» = new «traitClass.qualifiedName»(this«IF (paramNameList.size > 0)», «ENDIF»«paramNameList.join(", ")»);''',
+					constructionHelperMethod, '''assert Â«traitClass.delegateObjectNameÂ» == null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_ALREADY_CONSTRUCTED_ERROR, "Â«traitClass.qualifiedNameÂ»");
+							this.Â«traitClass.delegateObjectNameÂ» = new Â«traitClass.qualifiedNameÂ»(thisÂ«IF (paramNameList.size > 0)Â», Â«ENDIFÂ»Â«paramNameList.join(", ")Â»);''',
 					context)
 
 			}
@@ -882,7 +882,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			if ((annotatedClass.primarySourceElement as ClassDeclaration).declaredConstructors.size == 0) {
 				xtendClass.addError(
-					'''This class must create constructors in order to construct delegation objects for trait classes: «currentTraitClassesManualConstruction.map[it.simpleName].join(", ")»''')
+					'''This class must create constructors in order to construct delegation objects for trait classes: Â«currentTraitClassesManualConstruction.map[it.simpleName].join(", ")Â»''')
 				return
 			}
 
@@ -893,7 +893,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				var String constructorCheckBody = ""
 				for (traitClass : currentTraitClassesManualConstruction)
 					constructorCheckBody +=
-						'''assert «traitClass.delegateObjectName» != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "«traitClass.qualifiedName»");
+						'''assert Â«traitClass.delegateObjectNameÂ» != null : String.format(org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.TRAIT_OBJECT_NOT_CONSTRUCTED_ERROR, "Â«traitClass.qualifiedNameÂ»");
 						'''
 
 				// add body to constructor
@@ -965,7 +965,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// types in existing methods must not be inferred
 			if (existingMethod.returnType.inferred) {
 				xtendClass.
-					addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as it has an inferred return type''')
+					addError('''Cannot extend method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» as it has an inferred return type''')
 				return
 			}
 
@@ -973,11 +973,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (existingMethod.final && !traitClassMethod.isRequiredMethod) {
 				if (!existingMethodInCurrentClass) {
 					xtendClass.
-						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as it has been declared final in a superclass''')
+						addError('''Cannot extend method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» as it has been declared final in a superclass''')
 					return
 				} else if (existingMethod.hasAnnotation(ExtendedDelegationMethod)) {
 					xtendClass.
-						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» by the functionality in trait class "«traitClass.simpleName»" because it has been set to final by another trait class''')
+						addError('''Cannot extend method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» by the functionality in trait class "Â«traitClass.simpleNameÂ»" because it has been set to final by another trait class''')
 					return
 				}
 			}
@@ -986,10 +986,10 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (existingMethod.static == true) {
 				if (traitClassMethod.isRequiredMethod)
 					xtendClass.
-						addError('''Method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» is required by trait class "«traitClass.simpleName»", but it is declared static''')
+						addError('''Method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» is required by trait class "Â«traitClass.simpleNameÂ»", but it is declared static''')
 				else
 					xtendClass.
-						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as it is declared static''')
+						addError('''Cannot extend method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» as it is declared static''')
 				return
 			}
 
@@ -997,10 +997,10 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (existingMethod.visibility == Visibility.PRIVATE && existingMethodInCurrentClass) {
 				if (traitClassMethod.isRequiredMethod)
 					xtendClass.
-						addError('''Method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» is required by trait class "«traitClass.simpleName»", but it is declared private''')
+						addError('''Method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» is required by trait class "Â«traitClass.simpleNameÂ»", but it is declared private''')
 				else
 					xtendClass.
-						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as it is declared private''')
+						addError('''Cannot extend method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» as it is declared private''')
 				return
 			}
 
@@ -1012,7 +1012,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// if claimed it might be an error that method exists in extended class
 			if (traitClassMethodRedirected.isExclusiveMethod) {
 				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" declares method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as exclusive trait method, so it must not exist in the extended class ("«annotatedClass.qualifiedName»")''')
+					addError('''Trait class "Â«traitClass.qualifiedNameÂ»" declares method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» as exclusive trait method, so it must not exist in the extended class ("Â«annotatedClass.qualifiedNameÂ»")''')
 				return
 			}
 
@@ -1021,7 +1021,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// error if the implementation of this method inside of extended class is required
 			if (isRequired && !autoImplementation)
 				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" requires method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» to be implemented in the extended class''')
+					addError('''Trait class "Â«traitClass.qualifiedNameÂ»" requires method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» to be implemented in the extended class''')
 
 		}
 
@@ -1033,7 +1033,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (!autoImplementation) {
 
 				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" requires method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» to be implemented in the non-abstract, extended class''')
+					addError('''Trait class "Â«traitClass.qualifiedNameÂ»" requires method "Â«traitClassMethod.getMethodAsString(false, context)Â»"Â«IF (methodRedirected)Â» (redirected to "Â«traitClassMethodRedirected.simpleNameÂ»")Â«ENDIFÂ» to be implemented in the non-abstract, extended class''')
 
 				return
 
@@ -1114,7 +1114,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// just call functionality of superclass
 					bodySetter.setBody(
-						originalMethodWrapper, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«traitClassMethod.simpleName»(«paramNameList.join(", ")»);''',
+						originalMethodWrapper, '''Â«IF !isVoidÂ»return Â«ENDIFÂ»Â«annotatedClass.qualifiedNameÂ».super.Â«traitClassMethod.simpleNameÂ»(Â«paramNameList.join(", ")Â»);''',
 						context)
 
 				}
@@ -1172,7 +1172,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// check if new name is valid
 			if (methodClosureCache.exists[it.simpleName == newName]) {
 				xtendClass.
-					addError('''Trait method "«existingMethod.getMethodAsString(false, context)»" cannot be renamed to "«newName»" because method already exists''')
+					addError('''Trait method "Â«existingMethod.getMethodAsString(false, context)Â»" cannot be renamed to "Â«newNameÂ»" because method already exists''')
 				return;
 			}
 
@@ -1196,11 +1196,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				implMethod.abstract = false
 
 				// documentation
-				implMethod.docComment = '''This is a generated method for calling the supertype method {@link «(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«existingMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}.'''
+				implMethod.docComment = '''This is a generated method for calling the supertype method {@link Â«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedNameÂ»#Â«existingMethod.simpleNameÂ»(Â«paramTypeNameListJavadoc.join(", ")Â»)}.'''
 
 				// just call functionality of superclass
 				bodySetter.setBody(
-					implMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					implMethod, '''Â«IF !isVoidÂ»return Â«ENDIFÂ»Â«annotatedClass.qualifiedNameÂ».super.Â«existingMethod.simpleNameÂ»(Â«paramNameList.join(", ")Â»);''',
 					context)
 
 			}
@@ -1238,10 +1238,10 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			if (existingMethodOnlyInSuperClass) {
 
-				delegationMethod.docComment = '''This is a generated method for calling the supertype method {@link «(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«existingMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}.'''
+				delegationMethod.docComment = '''This is a generated method for calling the supertype method {@link Â«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedNameÂ»#Â«existingMethod.simpleNameÂ»(Â«paramTypeNameListJavadoc.join(", ")Â»)}.'''
 
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					delegationMethod, '''Â«IF !isVoidÂ»return Â«ENDIFÂ»Â«annotatedClass.qualifiedNameÂ».super.Â«existingMethod.simpleNameÂ»(Â«paramNameList.join(", ")Â»);''',
 					context)
 
 			}
@@ -1294,7 +1294,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// set body (simply call trait class functionality)
 			val delegationMethodFinal = delegationMethod
 			bodySetter.setBody(
-				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, false, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''',
+				delegationMethod, '''Â«IF !isVoidÂ»return (Â«delegationMethodFinal.returnType.getTypeReferenceAsString(true, false, false, false, context)Â») Â«ENDIFÂ»Â«traitClass.delegateObjectNameÂ».Â«traitClassMethod.getTraitMethodImplNameÂ»(Â«paramNameList.join(", ")Â»);''',
 				context)
 
 			return;
@@ -1314,7 +1314,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			methodBody = '''java.util.List<Object> internal$arguments = new java.util.ArrayList<Object>();'''
 
 			for (paramNameDelegationMethod : paramNameListDelegationMethod)
-				methodBody += "\n" + '''internal$arguments.add(«paramNameDelegationMethod»);'''
+				methodBody += "\n" + '''internal$arguments.add(Â«paramNameDelegationMethodÂ»);'''
 		}
 
 		// construct parameter passing code
@@ -1322,15 +1322,15 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		var paramCounter = 0
 		for (paramNameDelegationMethod : paramNameListDelegationMethod) {
 			paramCallList.
-				add('''(«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, false, false, false,context)») getArgument(«paramCounter++»)''')
+				add('''(Â«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, false, false, false,context)Â») getArgument(Â«paramCounter++Â»)''')
 		}
 
 		// lazy evaluation of functionality in trait class
 		methodBody += "\n" +
-			'''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation internal$lazyValueExtension = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluationAbstract(«traitClass.delegateObjectName», internal$arguments) {
+			'''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation internal$lazyValueExtension = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluationAbstract(Â«traitClass.delegateObjectNameÂ», internal$arguments) {
 					public Object eval() {
-						«IF !isVoid»return «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramCallList.join(", ")»);
-						«IF isVoid»return null;«ENDIF»
+						Â«IF !isVoidÂ»return Â«ENDIFÂ»Â«traitClass.delegateObjectNameÂ».Â«traitClassMethod.getTraitMethodImplNameÂ»(Â«paramCallList.join(", ")Â»);
+						Â«IF isVoidÂ»return null;Â«ENDIFÂ»
 					}
 				};'''
 
@@ -1353,17 +1353,17 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (processorMustCallExtendedMethod)
 			methodBody += "\n" + '''org.eclipse.xtend.lib.annotation.etai.LazyEvaluation internal$lazyValueExtended = new org.eclipse.xtend.lib.annotation.etai.LazyEvaluationAbstract(this, internal$arguments) {
 					public Object eval() {
-						«IF !isVoid»return «ENDIF»«existingMethodCall»(«paramCallList.join(", ")»);
-						«IF isVoid»return null;«ENDIF»
+						Â«IF !isVoidÂ»return Â«ENDIFÂ»Â«existingMethodCallÂ»(Â«paramCallList.join(", ")Â»);
+						Â«IF isVoidÂ»return null;Â«ENDIFÂ»
 					}
 				};'''
 
 		// trait method processor call
-		val processorCall = '''internal$resultTraitMethodProcessor.call(internal$lazyValueExtension, «IF processorMustCallExtendedMethod»internal$lazyValueExtended«ELSE»null«ENDIF»)'''
+		val processorCall = '''internal$resultTraitMethodProcessor.call(internal$lazyValueExtension, Â«IF processorMustCallExtendedMethodÂ»internal$lazyValueExtendedÂ«ELSEÂ»nullÂ«ENDIFÂ»)'''
 
 		// compute result via trait method processor
 		methodBody += "\n" +
-			'''org.eclipse.xtend.lib.annotation.etai.TraitMethodProcessor internal$resultTraitMethodProcessor = new «processor.qualifiedName»();'''
+			'''org.eclipse.xtend.lib.annotation.etai.TraitMethodProcessor internal$resultTraitMethodProcessor = new Â«processor.qualifiedNameÂ»();'''
 
 		// check if return conversion (in case of arrays) is required
 		var boolean returnArrayConversionRequired = false
@@ -1392,22 +1392,22 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			// specific handling of array types (cannot be simply casted in case of covariance)
 			methodBody += "\n" +
-				'''«traitClassMethodReturnType» internal$resultArray = («traitClassMethodReturnType») «processorCall»;'''
+				'''Â«traitClassMethodReturnTypeÂ» internal$resultArray = (Â«traitClassMethodReturnTypeÂ») Â«processorCallÂ»;'''
 			methodBody += "\n" +
-				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)».class);'''
+				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, Â«delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)Â».class);'''
 
 		} else {
 			methodBody += "\n" +
-				'''«IF !isVoid»return («delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)») «ENDIF»«processorCall»;'''
+				'''Â«IF !isVoidÂ»return (Â«delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)Â») Â«ENDIFÂ»Â«processorCallÂ»;'''
 
 		}
 
 		// documentation
 		delegationMethod.docComment = '''<p>This method combines the call of:</p>
-			<ul><li>{@link «IF existingMethodInCurrentClass»#«existingMethod.simpleName»«ELSE»«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«traitClassMethod.simpleName»«ENDIF»(«paramTypeNameListJavadoc.join(", ")»)}</ul>
+			<ul><li>{@link Â«IF existingMethodInCurrentClassÂ»#Â«existingMethod.simpleNameÂ»Â«ELSEÂ»Â«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedNameÂ»#Â«traitClassMethod.simpleNameÂ»Â«ENDIFÂ»(Â«paramTypeNameListJavadoc.join(", ")Â»)}</ul>
 			<p>and</p>
-			<ul><li>{@link «traitClass.qualifiedName»#«delegationMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}</ul>
-			<p>via processor «processor.getJavaDocLinkTo(context)»</p>'''
+			<ul><li>{@link Â«traitClass.qualifiedNameÂ»#Â«delegationMethod.simpleNameÂ»(Â«paramTypeNameListJavadoc.join(", ")Â»)}</ul>
+			<p>via processor Â«processor.getJavaDocLinkTo(context)Â»</p>'''
 
 		// apply method body
 		bodySetter.setBody(delegationMethod, methodBody, context)
@@ -1456,7 +1456,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// some variable names must not be used
 			for (parameter : xtendConstructor.parameters)
 				if (parameter.simpleName.startsWith(ProcessUtils.IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX))
-					xtendConstructor.addError('''Parameter name "«parameter.simpleName»" is not allowed''')
+					xtendConstructor.addError('''Parameter name "Â«parameter.simpleNameÂ»" is not allowed''')
 
 		}
 
@@ -1481,7 +1481,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// check for type
 			if (!(traitClassRefToApply.type instanceof ClassDeclaration)) {
 
-				xtendClass.addError('''Type "«traitClassRefToApply.type.qualifiedName»" is not class''')
+				xtendClass.addError('''Type "Â«traitClassRefToApply.type.qualifiedNameÂ»" is not class''')
 				return
 
 			}
@@ -1492,7 +1492,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (traitClass.isTraitBaseClass) {
 
 				xtendClass.
-					addError('''Type "«traitClass.qualifiedName»" is a trait base class, i.e. it cannot be used as trait in @ExtendedBy or @ExtendedByAuto''')
+					addError('''Type "Â«traitClass.qualifiedNameÂ»" is a trait base class, i.e. it cannot be used as trait in @ExtendedBy or @ExtendedByAuto''')
 
 			}
 
@@ -1500,14 +1500,14 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (traitClass.hasAnnotation(ApplyRules) && !xtendClass.hasAnnotation(ApplyRules)) {
 
 				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" is auto adapted, so also this class must apply @ApplyRules''')
+					addError('''Trait class "Â«traitClass.qualifiedNameÂ»" is auto adapted, so also this class must apply @ApplyRules''')
 
 			}
 
 			// check that no simple name is used multiple times (important for naming conventions)
 			if (alreadyAppliedTraitClassesSimpleName.contains(traitClassRefToApply.simpleName))
 				xtendClass.
-					addError('''Name of trait class "«traitClassRefToApply.simpleName»" (non-qualified) is used multiple times in context of this class, which is not allowed because of naming conventions in automatically generated methods''')
+					addError('''Name of trait class "Â«traitClassRefToApply.simpleNameÂ»" (non-qualified) is used multiple times in context of this class, which is not allowed because of naming conventions in automatically generated methods''')
 			else
 				alreadyAppliedTraitClassesSimpleName.add(traitClassRefToApply.simpleName)
 

@@ -51,7 +51,7 @@ abstract class AbstractProcessor<T extends NamedElement, U extends MutableNamedE
 
 			if (!annotatedNamedElementSupported(annotatedNamedElement))
 				annotatedNamedElement.
-					addError('''Annotation @«getProcessedAnnotationType.simpleName» cannot be applied to «annotatedNamedElement.class»''')
+					addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» cannot be applied to Â«annotatedNamedElement.classÂ»''')
 			else
 				doValidate(annotatedNamedElement, context)
 

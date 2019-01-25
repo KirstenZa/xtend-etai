@@ -60,14 +60,19 @@ class ExtendedMethodTypeArguments implements ITraitMethodTypeArguments {
 }
 
 class TraitsMethodTypeArgumentsTests extends TraitTestsBase {
+	
+	// using this method avoids warnings concerning unnecessary instanceof tests
+	static def boolean instanceOf(Object obj, Class<?> clazz) {
+		return clazz.isAssignableFrom(obj.class)
+	}
 
 	@Test
 	def void testTraitMethodTypeArgumentReturns() {
 
 		val obj = new ExtendedMethodTypeArguments
 		assertNull(obj.getSomething1(String))
-		assertTrue(obj.getSomething2(TypeA) instanceof TypeA)
-		assertTrue(obj.getSomething3(TypeA) instanceof List<?>)
+		assertTrue(obj.getSomething2(TypeA).instanceOf(TypeA))
+		assertTrue(obj.getSomething3(TypeA).instanceOf(List))
 
 	}
 

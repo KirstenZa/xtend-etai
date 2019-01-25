@@ -1,0 +1,4 @@
+include ':org.eclipse.xtend.lib.annotation.etai'
+include ':org.eclipse.xtend.lib.annotation.etai.tests'
+
+

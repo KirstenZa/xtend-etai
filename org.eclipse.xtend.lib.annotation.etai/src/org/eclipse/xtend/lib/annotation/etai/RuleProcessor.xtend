@@ -29,12 +29,12 @@ abstract class RuleProcessor<T extends NamedElement, U extends MutableNamedEleme
 				xtendDeclaration.declaringExecutable.declaringType
 			else
 				throw new IllegalArgumentException(
-				'''Internal error: Annotation for rule processor cannot be applied to «xtendDeclaration.class»''')
+				'''Internal error: Annotation for rule processor cannot be applied to Â«xtendDeclaration.classÂ»''')
 
 		// check if in context of ApplyRules
 		if (!classWithDeclaration.hasAnnotation(ApplyRules))
 			xtendDeclaration.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used in context of a class with annotation @ApplyRules''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must be used in context of a class with annotation @ApplyRules''')
 
 	}
 

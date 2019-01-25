@@ -198,7 +198,7 @@ class TypeMap {
 					}
 			}
 
-			val classDeclaration = type as ClassDeclaration
+			val classDeclaration = type
 			if (classDeclaration.extendedClass !== null && classDeclaration.extendedClass.type !== null) {
 				val superType = classDeclaration.extendedClass.type as ClassDeclaration
 				if (superType !== null)
@@ -231,7 +231,7 @@ class TypeMap {
 
 		} else if (type instanceof InterfaceDeclaration) {
 
-			val interfaceDeclaration = type as InterfaceDeclaration
+			val interfaceDeclaration = type
 
 			for (interfaceReference : interfaceDeclaration.extendedInterfaces) {
 				val superType = interfaceReference.type as InterfaceDeclaration

@@ -219,6 +219,11 @@ class FactoryMethodTests {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
+	// using this method avoids warnings concerning unnecessary instanceof tests
+	static def boolean instanceOf(Object obj, Class<?> clazz) {
+		return clazz.isAssignableFrom(obj.class)
+	}
+
 	@Test
 	def void testFactoryMethods() {
 
@@ -226,16 +231,16 @@ class FactoryMethodTests {
 		val newDerived2 = ClassWithFactoryMethodWithoutConstructorDerived2.create
 		val newDerived3 = ClassWithFactoryMethodWithoutConstructorDerived3.create
 
-		assertTrue(newDerived1 instanceof ClassWithFactoryMethodWithoutConstructorDerived1)
-		assertFalse(newDerived1 instanceof ClassWithFactoryMethodWithoutConstructorDerived2)
-		assertFalse(newDerived1 instanceof ClassWithFactoryMethodWithoutConstructorDerived3)
+		assertTrue(newDerived1.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived1))
+		assertFalse(newDerived1.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived2))
+		assertFalse(newDerived1.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived3))
 
 		// objects for abstract classes cannot be constructed
-		assertTrue(newDerived2 instanceof ClassWithFactoryMethodWithoutConstructorDerived1)
-		assertFalse(newDerived2 instanceof ClassWithFactoryMethodWithoutConstructorDerived2)
-		assertFalse(newDerived2 instanceof ClassWithFactoryMethodWithoutConstructorDerived3)
+		assertTrue(newDerived2.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived1))
+		assertFalse(newDerived2.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived2))
+		assertFalse(newDerived2.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived3))
 
-		assertTrue(newDerived3 instanceof ClassWithFactoryMethodWithoutConstructorDerived3)
+		assertTrue(newDerived3.instanceOf(ClassWithFactoryMethodWithoutConstructorDerived3))
 
 		assertFalse(ClassWithFactoryMethodWithoutConstructorDerived2.declaredMethods.exists[name == "create"])
 
@@ -272,12 +277,12 @@ class FactoryMethodTests {
 		val newDerived42 = ClassWithFactoryMethodWithParametersDerived4.
 			createClassWithFactoryMethodWithParametersDerived4(20)
 
-		assertTrue(newDerived11 instanceof ClassWithFactoryMethodWithParametersDerived1)
-		assertTrue(newDerived12 instanceof ClassWithFactoryMethodWithParametersDerived1)
-		assertTrue(newDerived2 instanceof ClassWithFactoryMethodWithParametersDerived2)
-		assertTrue(newDerived3 instanceof ClassWithFactoryMethodWithParametersDerived3)
-		assertTrue(newDerived41 instanceof ClassWithFactoryMethodWithParametersDerived4)
-		assertTrue(newDerived42 instanceof ClassWithFactoryMethodWithParametersDerived4)
+		assertTrue(newDerived11.instanceOf(ClassWithFactoryMethodWithParametersDerived1))
+		assertTrue(newDerived12.instanceOf(ClassWithFactoryMethodWithParametersDerived1))
+		assertTrue(newDerived2.instanceOf(ClassWithFactoryMethodWithParametersDerived2))
+		assertTrue(newDerived3.instanceOf(ClassWithFactoryMethodWithParametersDerived3))
+		assertTrue(newDerived41.instanceOf(ClassWithFactoryMethodWithParametersDerived4))
+		assertTrue(newDerived42.instanceOf(ClassWithFactoryMethodWithParametersDerived4))
 
 		assertEquals(11, newDerived11.value)
 		assertEquals(14, newDerived12.value)

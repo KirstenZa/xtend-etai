@@ -28,7 +28,7 @@ class ExtendedBody implements ITraitClassBody {
 
 		new TypeA() {
 
-			Object obj = new Integer(1)
+			Object obj = Integer::valueOf(1)
 
 			def method() {
 				obj

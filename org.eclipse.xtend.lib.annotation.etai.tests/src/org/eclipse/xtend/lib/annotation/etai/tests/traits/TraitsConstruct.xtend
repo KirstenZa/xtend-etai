@@ -432,7 +432,7 @@ class TraitsConstructTests extends TraitTestsBase {
 
 		val obj2 = ExtendedClassConstructNoConstructor::createExtendedClassConstructNoConstructor("mystr", 'c')
 		assertEquals("mystr", obj2.string)
-		assertEquals(new Character('c'), obj2.character)
+		assertEquals(Character::valueOf('c'), obj2.character)
 
 	}
 
@@ -450,7 +450,7 @@ class TraitsConstructTests extends TraitTestsBase {
 		val obj2 = ExtendedClassConstructAdapted::createExtendedClassConstructAdapted(4, "mystr", 'c')
 		assertEquals(4, obj2.value)
 		assertEquals("mystr", obj2.string)
-		assertEquals(new Character('c'), obj2.character)
+		assertEquals(Character::valueOf('c'), obj2.character)
 
 		val obj3 = ExtendedClassConstructAdapted::createExtendedClassConstructAdapted(BigInteger::valueOf(5),
 			newInternalObject)
@@ -461,7 +461,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			'c')
 		assertEquals(BigInteger::valueOf(5), obj4.bigInteger)
 		assertEquals("mystr", obj4.string)
-		assertEquals(new Character('c'), obj4.character)
+		assertEquals(Character::valueOf('c'), obj4.character)
 
 	}
 
@@ -481,7 +481,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructAdaptedLocalInherited(4, "mystr", 'c')
 		assertEquals(4, obj2.value)
 		assertEquals("mystr", obj2.string)
-		assertEquals(new Character('c'), obj2.character)
+		assertEquals(Character::valueOf('c'), obj2.character)
 
 		val obj3 = ExtendedClassConstructAdaptedLocalInherited::
 			createExtendedClassConstructAdaptedLocalInherited(BigInteger::valueOf(5), newInternalObject)
@@ -492,7 +492,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructAdaptedLocalInherited(BigInteger::valueOf(5), "mystr", 'c')
 		assertEquals(BigInteger::valueOf(5), obj4.bigInteger)
 		assertEquals("mystr", obj4.string)
-		assertEquals(new Character('c'), obj4.character)
+		assertEquals(Character::valueOf('c'), obj4.character)
 
 	}
 
@@ -511,7 +511,7 @@ class TraitsConstructTests extends TraitTestsBase {
 		val obj2 = ExtendedClassConstructOwnConstructor::createExtendedClassConstructOwnConstructor(4, "mystr", 'c')
 		assertEquals(4, obj2.value)
 		assertEquals("mystr", obj2.string)
-		assertEquals(new Character('c'), obj2.character)
+		assertEquals(Character::valueOf('c'), obj2.character)
 
 	}
 
@@ -523,7 +523,7 @@ class TraitsConstructTests extends TraitTestsBase {
 		val obj1 = ExtendedClassConstructDerivedOneConstructor::
 			createExtendedClassConstructDerivedOneConstructor("mystr")
 		assertEquals("mystr", obj1.string)
-		assertEquals(new Character('X'), obj1.character)
+		assertEquals(Character::valueOf('X'), obj1.character)
 
 	}
 
@@ -554,7 +554,7 @@ class TraitsConstructTests extends TraitTestsBase {
 		val obj3 = ExtendedClassConstructNoConstructorFourExtensions::
 			createExtendedClassConstructNoConstructorFourExtensions("mystr1", 'c', "mystr", myByte, 8.0)
 		assertEquals("mystr1", obj3.string)
-		assertEquals(new Character('c'), obj3.character)
+		assertEquals(Character::valueOf('c'), obj3.character)
 		assertEquals(myByte, obj3.byteParam)
 		assertEquals("mystr", obj3.stringSecond)
 		assertEquals(8.0, obj3.doubleExt, 0.001)
@@ -563,7 +563,7 @@ class TraitsConstructTests extends TraitTestsBase {
 		val obj4 = ExtendedClassConstructNoConstructorFourExtensions::
 			createExtendedClassConstructNoConstructorFourExtensions("mystr1", 'c', myByte, 8.0)
 		assertEquals("mystr1", obj4.string)
-		assertEquals(new Character('c'), obj4.character)
+		assertEquals(Character::valueOf('c'), obj4.character)
 		assertEquals(myByte, obj4.byteParam)
 		assertEquals("notset", obj4.stringSecond)
 		assertEquals(8.0, obj4.doubleExt, 0.001)
@@ -601,7 +601,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensions(22, "mystr1", 'c', "mystr", myByte, 5.0)
 		assertEquals(22, obj3.intNumber)
 		assertEquals("mystr1", obj3.string)
-		assertEquals(new Character('c'), obj3.character)
+		assertEquals(Character::valueOf('c'), obj3.character)
 		assertEquals(myByte, obj3.byteParam)
 		assertEquals("mystr", obj3.stringSecond)
 		assertEquals(5.0, obj3.doubleExt, 0.001)
@@ -611,7 +611,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensions(22, "mystr1", 'c', myByte, 5.0)
 		assertEquals(22, obj4.intNumber)
 		assertEquals("mystr1", obj4.string)
-		assertEquals(new Character('c'), obj4.character)
+		assertEquals(Character::valueOf('c'), obj4.character)
 		assertEquals(myByte, obj4.byteParam)
 		assertEquals("notset", obj4.stringSecond)
 		assertEquals(5.0, obj4.doubleExt, 0.001)
@@ -639,7 +639,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensions(23.0f, "mystr1", 'c', "mystr", myByte, 5.0)
 		assertEquals(23.0f, obj7.floatNumber, 0.00)
 		assertEquals("mystr1", obj7.string)
-		assertEquals(new Character('c'), obj7.character)
+		assertEquals(Character::valueOf('c'), obj7.character)
 		assertEquals(myByte, obj7.byteParam)
 		assertEquals("mystr", obj7.stringSecond)
 		assertEquals(5.0, obj7.doubleExt, 0.001)
@@ -649,7 +649,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensions(23.0f, "mystr1", 'c', myByte, 5.0)
 		assertEquals(23.0f, obj8.floatNumber, 0.00)
 		assertEquals("mystr1", obj8.string)
-		assertEquals(new Character('c'), obj8.character)
+		assertEquals(Character::valueOf('c'), obj8.character)
 		assertEquals(myByte, obj8.byteParam)
 		assertEquals("notset", obj8.stringSecond)
 		assertEquals(5.0, obj8.doubleExt, 0.001)
@@ -688,7 +688,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensionAdaptedAll(22, "mystr1", 'c', "mystr", myByte, 5.0)
 		assertEquals(22, obj3.intNumber)
 		assertEquals("mystr1", obj3.string)
-		assertEquals(new Character('c'), obj3.character)
+		assertEquals(Character::valueOf('c'), obj3.character)
 		assertEquals(myByte, obj3.byteParam)
 		assertEquals("mystr", obj3.stringSecond)
 		assertEquals(5.0, obj3.doubleExt, 0.001)
@@ -698,7 +698,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensionAdaptedAll(22, "mystr1", 'c', myByte, 5.0)
 		assertEquals(22, obj4.intNumber)
 		assertEquals("mystr1", obj4.string)
-		assertEquals(new Character('c'), obj4.character)
+		assertEquals(Character::valueOf('c'), obj4.character)
 		assertEquals(myByte, obj4.byteParam)
 		assertEquals("notset", obj4.stringSecond)
 		assertEquals(5.0, obj4.doubleExt, 0.001)
@@ -728,7 +728,7 @@ class TraitsConstructTests extends TraitTestsBase {
 				5.0)
 		assertEquals(23.0f, obj7.floatNumber, 0.00)
 		assertEquals("mystr1", obj7.string)
-		assertEquals(new Character('c'), obj7.character)
+		assertEquals(Character::valueOf('c'), obj7.character)
 		assertEquals(myByte, obj7.byteParam)
 		assertEquals("mystr", obj7.stringSecond)
 		assertEquals(5.0, obj7.doubleExt, 0.001)
@@ -738,7 +738,7 @@ class TraitsConstructTests extends TraitTestsBase {
 			createExtendedClassConstructOwnConstructorsFourExtensionAdaptedAll(23.0f, "mystr1", 'c', myByte, 5.0)
 		assertEquals(23.0f, obj8.floatNumber, 0.00)
 		assertEquals("mystr1", obj8.string)
-		assertEquals(new Character('c'), obj8.character)
+		assertEquals(Character::valueOf('c'), obj8.character)
 		assertEquals(myByte, obj8.byteParam)
 		assertEquals("notset", obj8.stringSecond)
 		assertEquals(5.0, obj8.doubleExt, 0.001)
@@ -762,7 +762,7 @@ class TraitsConstructTests extends TraitTestsBase {
 
 		val obj2 = ExtendedClassConstructDuplicateParameters::
 			createExtendedClassConstructDuplicateParameters("mystr", 'c')
-		assertEquals(new Character('c'), obj2.character)
+		assertEquals(Character::valueOf('c'), obj2.character)
 		assertEquals("mystr", obj2.string)
 		assertEquals("mystr", obj2.localStr)
 		assertEquals("mystr", obj1.stringThird)

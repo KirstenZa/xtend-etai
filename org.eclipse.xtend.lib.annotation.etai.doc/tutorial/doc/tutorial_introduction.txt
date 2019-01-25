@@ -1,0 +1,51 @@
+## Introduction
+
+The ETAI library contains several [Active Annotations for Xtend](https://eclipse.org/xtend/documentation/204_activeannotations.html). The major purpose of the provided Active Annotations is to avoid boilerplate code by providing different means. These means include the automatic **extraction** of interfaces from classes, an extension mechanism for classes by methods of so-called **trait** classes, and the automatic **adaption** and **implementation** of methods and constructors. Based on these keywords, this Active Annotation library is called ETAI.
+
+### Usage
+
+The easiest way to build the ETAI library is to use [Gradle](https://gradle.org/). Necessary build files are already included in the repository. However, no wrapper is provided, so Gradle should but installed on your system.
+
+The following sections will explain how to use Gradle in order to use the ETAI library.
+
+#### Build and Use the Library
+
+To perform a build it is enough to run the following command in the project's root directory. 
+
+```shell
+foo@bar:~$ gradle build
+```
+
+Afterwards, a JAR containing all necessary annotations is available:
+
+```shell
+org.eclipse.xtend.lib.annotation.etai/build/libs/org.eclipse.xtend.lib.annotation.etai-<version>.jar
+```
+
+This JAR can be added as dependency to an appropriate Xtend project in order to enable the active annotations and all features explained in this tutorial.
+
+#### Test the Library
+
+The ETAI library contains several test sets. All tests can be run via this command from the project's root directory:
+
+```shell
+foo@bar:~$ gradle test
+```
+
+The test report can be found here:
+
+```shell
+org.eclipse.xtend.lib.annotation.etai.tests/build/reports/tests/test/index.html
+```
+
+#### Setup for Eclipse
+
+There is also the possibility to easily setup the configuration needed for opening and use the projects in the [Eclipse IDE](https://www.eclipse.org/). Just use the following command from the project's root directory:
+
+```shell
+foo@bar:~$ gradle eclipse
+```
+
+Afterwards, it is possible to import the ETAI library projects into Eclipse via "Import... -> Existing Projects into Workspace".
+
+In order to play around just create another Xtend project, put project *org.eclipse.xtend.lib.annotation.etai* into its "Java Build Path" and all features shown in this tutorial can be used there.

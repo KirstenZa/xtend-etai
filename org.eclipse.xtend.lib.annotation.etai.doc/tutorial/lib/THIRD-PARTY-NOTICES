@@ -1,0 +1,17 @@
+The generation of the ETAI tutorial needs the
+following third-party libraries. The according JAR files must be copied
+into this directory.
+
+PlantUML
+--------
+
+JAR: plantuml.jar
+GitHub.com: https://github.com/plantuml
+License can be found in file: plantuml-LICENSE
+
+MarkdownTocGenerator
+--------------------
+
+JAR: toc-generator.jar
+GitHub.com: https://github.com/YuraAAA/Markdown-Toc-Generator/
+License can be found in file: toc-generator-LICENSE

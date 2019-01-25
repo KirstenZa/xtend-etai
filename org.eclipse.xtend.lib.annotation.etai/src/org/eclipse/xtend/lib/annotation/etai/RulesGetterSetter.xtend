@@ -905,6 +905,19 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
+	 * Returns the code which shall be used to refer to "this" (is "$extendedThis()" within trait classes)
+	 */
+	static def String getThisCode(FieldDeclaration fieldDeclaration) {
+
+		// special return value inside of trait class
+		if (fieldDeclaration.declaringType.hasAnnotation(TraitClass))
+			return "$extendedThis()"
+
+		return "this"
+
+	}
+
+	/**
 	 * Retrieves a method, which shall be called on a specific event (e.g. changing the value of a field,
 	 * adding an element to the field's collection etc.).
 	 * 
@@ -927,7 +940,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 				isAssignableFromConsiderUnprocessed(annotatedField.type?.type, context)) {
 
 			if (!methodName.isNullOrEmpty)
-				errors?.add('''Field "«annotatedField.simpleName»" does not support event "«eventDescription»"''')
+				errors?.add('''Field "Â«annotatedField.simpleNameÂ»" does not support event "Â«eventDescriptionÂ»"''')
 			return null
 
 		}
@@ -950,13 +963,13 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 
 		if (methodsWithMatchingNameAndTypes.size == 0) {
 			errors?.
-				add('''Cannot find method "«methodNameToSearch»", which shall be called on event "«eventDescription»" for field "«annotatedField.simpleName»"''')
+				add('''Cannot find method "Â«methodNameToSearchÂ»", which shall be called on event "Â«eventDescriptionÂ»" for field "Â«annotatedField.simpleNameÂ»"''')
 			return null
 		}
 
 		if (methodsWithMatchingNameAndTypes.size > 1)
 			errors?.
-				add('''Multiple method candidates found for being called on event "«eventDescription»" for field "«annotatedField.simpleName»"''')
+				add('''Multiple method candidates found for being called on event "Â«eventDescriptionÂ»" for field "Â«annotatedField.simpleNameÂ»"''')
 
 		// method will be called (only if not in validation phase)
 		if (errors === null && methodsWithMatchingNameAndTypes.get(0) instanceof MutableMethodDeclaration)
@@ -986,12 +999,12 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 		// check that field has (not inferred) type
 		if (xtendField.type === null || xtendField.type.inferred)
 			xtendField.
-				addError('''@«getProcessedAnnotationType().simpleName» does not support fields with inferred type''')
+				addError('''@Â«getProcessedAnnotationType().simpleNameÂ» does not support fields with inferred type''')
 
 		// check that field is not public
 		if (xtendField.visibility == Visibility.PUBLIC)
 			xtendField.
-				addError('''A field with @«getProcessedAnnotationType().simpleName» must not be declared public''')
+				addError('''A field with @Â«getProcessedAnnotationType().simpleNameÂ» must not be declared public''')
 
 		// check for abstract modifier
 		if (getterSetterRuleInfo.visibility != Visibility.PUBLIC &&
@@ -1038,7 +1051,7 @@ class GetterRuleProcessor extends GetterSetterRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated getter method for retrieving {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated getter method for retrieving {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1056,13 +1069,13 @@ class GetterRuleProcessor extends GetterSetterRuleProcessor {
 			val synchronizationLockName = getSynchronizationLockName(fieldDeclaration, context)
 
 			return '''return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.getValue(
-					«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName»,
-					org.eclipse.xtend.lib.annotation.etai.CollectionGetterPolicy.«collectionPolicy»,
-					"«fieldDeclaration.simpleName»",
-					«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullSelf»«ELSE»false«ENDIF»,
-					«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullKeyOrElement»«ELSE»false«ENDIF»,
-					«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullValue»«ELSE»false«ENDIF»,
-					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+					Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ»,
+					org.eclipse.xtend.lib.annotation.etai.CollectionGetterPolicy.Â«collectionPolicyÂ»,
+					"Â«fieldDeclaration.simpleNameÂ»",
+					Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullSelfÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+					Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullKeyOrElementÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+					Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullValueÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+					Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 		}
 
@@ -1130,7 +1143,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated setter method for setting {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated setter method for setting {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1144,26 +1157,26 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 			val synchronizationLockName = getSynchronizationLockName(fieldDeclaration, context)
 
 			return '''return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.setValue(
-					«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName», $«fieldDeclaration.simpleName»,
+					Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ», $Â«fieldDeclaration.simpleNameÂ»,
 					new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.MethodCallBoolean() {
 						@Override
 							public boolean call() {
-								return «fieldDeclaration.declaringType.qualifiedName».«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName» != $«fieldDeclaration.simpleName»;
+								return Â«fieldDeclaration.declaringType.qualifiedNameÂ».Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ» != $Â«fieldDeclaration.simpleNameÂ»;
 							}
 					},
 					new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.MethodCallVoid() {
 						@Override
 							public void call() {
-								«fieldDeclaration.declaringType.qualifiedName».«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName» = $«fieldDeclaration.simpleName»;
+								Â«fieldDeclaration.declaringType.qualifiedNameÂ».Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ» = $Â«fieldDeclaration.simpleNameÂ»;
 							}
 					},
-					«getMethodCallBeforeChange(fieldDeclaration, context)»,
-					«getMethodCallAfterChange(fieldDeclaration, context)»,
-					"«fieldDeclaration.simpleName»",
-					«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-					«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullSelf»«ELSE»false«ENDIF»,
-					«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
-					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+					Â«getMethodCallBeforeChange(fieldDeclaration, context)Â»,
+					Â«getMethodCallAfterChange(fieldDeclaration, context)Â»,
+					"Â«fieldDeclaration.simpleNameÂ»",
+					Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+					Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullSelfÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+					Â«IF supportsBidirectional && !oppositeFieldName.isNullOrEmptyÂ»"Â«oppositeFieldNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»,
+					Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 		}
 
@@ -1203,11 +1216,11 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 
 		val methodDeclarationBoolean = (context.primitiveBoolean == methodDeclaration.returnType)
 		val objectTypeString = fieldDeclaration.type.getTypeReferenceAsString(true, false, false, true, context)
-		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.«interfaceType.simpleName»<«objectTypeString»>() {
+		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.Â«interfaceType.simpleNameÂ»<Â«objectTypeStringÂ»>() {
 				@Override
-				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«objectTypeString» oldValue, «objectTypeString» newValue) {
-					«IF isBoolean && methodDeclarationBoolean»return «ENDIF»«methodDeclaration.simpleName»(«parameters»);
-					«IF isBoolean && !methodDeclarationBoolean»return true;«ENDIF»
+				public Â«IF isBooleanÂ»booleanÂ«ELSEÂ»voidÂ«ENDIFÂ» call(Â«objectTypeStringÂ» oldValue, Â«objectTypeStringÂ» newValue) {
+					Â«IF isBoolean && methodDeclarationBooleanÂ»return Â«ENDIFÂ»Â«methodDeclaration.simpleNameÂ»(Â«parametersÂ»);
+					Â«IF isBoolean && !methodDeclarationBooleanÂ»return true;Â«ENDIFÂ»
 				}
 			}'''
 
@@ -1258,9 +1271,9 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 				annotatedField, '''oldValue, newValue''', context)
 		else if (method.parameters.length == 3)
 			return getSetterMethodCallEmbedded(method, MethodCallValueChangeBoolean, true,
-				annotatedField, '''"«annotatedField.simpleName»", oldValue, newValue''', context)
+				annotatedField, '''"Â«annotatedField.simpleNameÂ»", oldValue, newValue''', context)
 		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before field "«annotatedField.simpleName»" is changed: unknown signature''')
+			throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" before field "Â«annotatedField.simpleNameÂ»" is changed: unknown signature''')
 
 	}
 
@@ -1309,9 +1322,9 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 				annotatedField, '''oldValue, newValue''', context)
 		else if (method.parameters.length == 3)
 			return getSetterMethodCallEmbedded(method, MethodCallValueChangeVoid, false,
-				annotatedField, '''"«annotatedField.simpleName»", oldValue, newValue''', context)
+				annotatedField, '''"Â«annotatedField.simpleNameÂ»", oldValue, newValue''', context)
 		else
-			throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after field "«annotatedField.simpleName»" has been changed: unknown signature''')
+			throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" after field "Â«annotatedField.simpleNameÂ»" has been changed: unknown signature''')
 
 	}
 
@@ -1326,6 +1339,10 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 		getMethodBeforeChange(annotatedField, errors, context)
 		getMethodAfterChange(annotatedField, errors, context)
 		xtendField.reportErrors(errors, context)
+
+		// field must not be final
+		if (xtendField.final == true)
+			xtendField.addError("A field with setter rule must not be declared final")
 
 	}
 
@@ -1444,11 +1461,11 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 		extension TypeReferenceProvider context) {
 
 		val methodDeclarationBoolean = (context.primitiveBoolean == methodDeclaration.returnType)
-		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.«interfaceType.simpleName»<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»>() {
+		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.Â«interfaceType.simpleNameÂ»<Â«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)Â»>() {
 				@Override
-				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«IF multiple»java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_elements«ELSE»«getCollectionTypeArgument(fieldDeclaration, 0, context)» $_element«ENDIF», «IF multiple»java.util.List<Integer> $_indices«ELSE»int $_index«ENDIF», java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_oldElements«IF !isBoolean», java.util.List<«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)»> $_newElements«ENDIF») {
-					«IF isBoolean && methodDeclarationBoolean»return «ENDIF»«methodDeclaration.simpleName»(«parameters»);
-					«IF isBoolean && !methodDeclarationBoolean»return true;«ENDIF»
+				public Â«IF isBooleanÂ»booleanÂ«ELSEÂ»voidÂ«ENDIFÂ» call(Â«IF multipleÂ»java.util.List<Â«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)Â»> $_elementsÂ«ELSEÂ»Â«getCollectionTypeArgument(fieldDeclaration, 0, context)Â» $_elementÂ«ENDIFÂ», Â«IF multipleÂ»java.util.List<Integer> $_indicesÂ«ELSEÂ»int $_indexÂ«ENDIFÂ», java.util.List<Â«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)Â»> $_oldElementsÂ«IF !isBooleanÂ», java.util.List<Â«getCollectionTypeArgumentAsString(fieldDeclaration, 0, context)Â»> $_newElementsÂ«ENDIFÂ») {
+					Â«IF isBoolean && methodDeclarationBooleanÂ»return Â«ENDIFÂ»Â«methodDeclaration.simpleNameÂ»(Â«parametersÂ»);
+					Â«IF isBoolean && !methodDeclarationBooleanÂ»return true;Â«ENDIFÂ»
 				}
 			}'''
 
@@ -1487,7 +1504,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 				isAssignableFromConsiderUnprocessed(xtendField.type?.type, context) &&
 			!context.newTypeReference(Map).type.isAssignableFromConsiderUnprocessed(xtendField.type?.type, context))
 			xtendField.
-				addError('''Annotation @«getProcessedAnnotationType.simpleName» can only be used with collection or map type''')
+				addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» can only be used with collection or map type''')
 
 	}
 
@@ -1532,28 +1549,28 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 			if (this instanceof MethodDeclarationFromAdder_PutTo<?> ||
 				this instanceof MethodDeclarationFromAdder_PutAllTo<?>)
-				return '''«preCode»
-					«IF !(this instanceof MethodDeclarationFromAdder_PutAllTo<?>)»return «ENDIF»org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.putToMap(
-						«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName»,
-						«elements»,
-						"«fieldDeclaration.simpleName»",
-						«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-						«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullKeyOrElement»«ELSE»false«ENDIF»,
-						«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullValue»«ELSE»false«ENDIF»,
-						«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+				return '''Â«preCodeÂ»
+					Â«IF !(this instanceof MethodDeclarationFromAdder_PutAllTo<?>)Â»return Â«ENDIFÂ»org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.putToMap(
+						Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ»,
+						Â«elementsÂ»,
+						"Â«fieldDeclaration.simpleNameÂ»",
+						Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+						Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullKeyOrElementÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+						Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullValueÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+						Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 			else
-				return '''«preCode»
-					return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.addTo«IF index === null && context.newTypeReference(List).type.isAssignableFromConsiderUnprocessed(fieldDeclaration.type?.type, context)»List«ELSE»Collection«ENDIF»(
-						«IF !fieldDeclaration.isStatic»this.«ENDIF»«fieldDeclaration.simpleName», «elements», «IF index !== null || !context.newTypeReference(List).type.isAssignableFromConsiderUnprocessed(fieldDeclaration.type?.type, context)»«IF index === null»0«ELSE»«index»«ENDIF»,«ENDIF»
-						«getMethodCallBeforeElementAdd(fieldDeclaration, context)»,
-						«getMethodCallBeforeAdd(fieldDeclaration, context)»,
-						«getMethodCallAfterElementAdd(fieldDeclaration, context)»,
-						«getMethodCallAfterAdd(fieldDeclaration, context)»,
-						"«fieldDeclaration.simpleName»",
-						«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-						«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullKeyOrElement»«ELSE»false«ENDIF»,
-						«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
-						«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+				return '''Â«preCodeÂ»
+					return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.addToÂ«IF index === null && context.newTypeReference(List).type.isAssignableFromConsiderUnprocessed(fieldDeclaration.type?.type, context)Â»ListÂ«ELSEÂ»CollectionÂ«ENDIFÂ»(
+						Â«IF !fieldDeclaration.isStaticÂ»this.Â«ENDIFÂ»Â«fieldDeclaration.simpleNameÂ», Â«elementsÂ», Â«IF index !== null || !context.newTypeReference(List).type.isAssignableFromConsiderUnprocessed(fieldDeclaration.type?.type, context)Â»Â«IF index === nullÂ»0Â«ELSEÂ»Â«indexÂ»Â«ENDIFÂ»,Â«ENDIFÂ»
+						Â«getMethodCallBeforeElementAdd(fieldDeclaration, context)Â»,
+						Â«getMethodCallBeforeAdd(fieldDeclaration, context)Â»,
+						Â«getMethodCallAfterElementAdd(fieldDeclaration, context)Â»,
+						Â«getMethodCallAfterAdd(fieldDeclaration, context)Â»,
+						"Â«fieldDeclaration.simpleNameÂ»",
+						Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+						Â«IF notNullRuleInfo !== nullÂ»Â«notNullRuleInfo.notNullKeyOrElementÂ»Â«ELSEÂ»falseÂ«ENDIFÂ»,
+						Â«IF supportsBidirectional && !oppositeFieldName.isNullOrEmptyÂ»"Â«oppositeFieldNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»,
+						Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 		}
 
@@ -1579,7 +1596,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for adding an element to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated adder method for adding an element to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1588,7 +1605,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 		override String getBasicImplementation() {
 
-			return getBasicImplementation('''java.util.List<«getCollectionTypeArgumentAsString(0)»> $elements = new java.util.ArrayList<«getCollectionTypeArgumentAsString(0)»>();
+			return getBasicImplementation('''java.util.List<Â«getCollectionTypeArgumentAsString(0)Â»> $elements = new java.util.ArrayList<Â«getCollectionTypeArgumentAsString(0)Â»>();
 					$elements.add($element);''', "$elements", null)
 
 		}
@@ -1614,12 +1631,12 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for adding an element to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)} at the specified index.'''
+			return '''This is a generated adder method for adding an element to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)} at the specified index.'''
 		}
 
 		override String getBasicImplementation() {
 
-			return getBasicImplementation('''java.util.List<«getCollectionTypeArgumentAsString(0)»> $elements = new java.util.ArrayList<«getCollectionTypeArgumentAsString(0)»>();
+			return getBasicImplementation('''java.util.List<Â«getCollectionTypeArgumentAsString(0)Â»> $elements = new java.util.ArrayList<Â«getCollectionTypeArgumentAsString(0)Â»>();
 					$elements.add($element);''', "$elements", "$index")
 
 		}
@@ -1647,7 +1664,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for putting a key/value pair to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated adder method for putting a key/value pair to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1655,7 +1672,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override String getBasicImplementation() {
-			return getBasicImplementation('''java.util.Map<«getCollectionTypeArgumentAsString(0)», «getCollectionTypeArgumentAsString(1)»> $m = new java.util.HashMap<«getCollectionTypeArgumentAsString(0)», «getCollectionTypeArgumentAsString(1)»>();
+			return getBasicImplementation('''java.util.Map<Â«getCollectionTypeArgumentAsString(0)Â», Â«getCollectionTypeArgumentAsString(1)Â»> $m = new java.util.HashMap<Â«getCollectionTypeArgumentAsString(0)Â», Â«getCollectionTypeArgumentAsString(1)Â»>();
 					$m.put($key, $value);''', "$m", null)
 		}
 
@@ -1684,7 +1701,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for adding multiple elements to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated adder method for adding multiple elements to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1716,7 +1733,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for adding multiple element to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)} at the specified index.'''
+			return '''This is a generated adder method for adding multiple element to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)} at the specified index.'''
 		}
 
 		override String getBasicImplementation() {
@@ -1749,7 +1766,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated adder method for putting multiple key/value pairs to {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated adder method for putting multiple key/value pairs to {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -1781,7 +1798,6 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "before add"
 	 * 
@@ -1835,7 +1851,6 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before add"
 	 */
@@ -1856,28 +1871,27 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_elements'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_elements'''
 			else if (method.parameters.length == 2 && indexSupported)
 				'''$_indices, $_elements'''
 			else if (method.parameters.length == 2 && !indexSupported)
 				'''$_oldElements, $_elements'''
 			else if (method.parameters.length == 3 && indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_indices, $_elements'''
 			else if (method.parameters.length == 3 && !indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_elements'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_indices, $_elements'''
 			else if (method.parameters.length == 4)
-				'''"«annotatedField.simpleName»", $_oldElements, $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_indices, $_elements'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»": unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" before adding to field "Â«annotatedField.simpleNameÂ»": unknown signature'''),
 			context)
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "after add"
 	 * 
@@ -1935,7 +1949,6 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after add"
 	 */
@@ -1953,28 +1966,27 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_elements'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_elements'''
 			else if (method.parameters.length == 2)
 				'''$_indices, $_elements'''
 			else if (method.parameters.length == 3 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_indices, $_elements'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_newElements, $_elements'''
 			else if (method.parameters.length == 4 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_elements'''
 			else if (method.parameters.length == 4)
 				'''$_oldElements, $_newElements, $_indices, $_elements'''
 			else if (method.parameters.length == 5)
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_indices, $_elements'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»": unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" after adding to field "Â«annotatedField.simpleNameÂ»": unknown signature'''),
 			context)
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "before element add"
 	 * 
@@ -2020,7 +2032,6 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element add"
 	 */
@@ -2039,28 +2050,27 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_element'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_element'''
 			else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
 				'''$_index, $_element'''
 			else if (method.parameters.length == 2)
 				'''$_oldElements, $_element'''
 			else if (method.parameters.length == 3 && indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_index, $_element'''
 			else if (method.parameters.length == 3 && !indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_element'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_index, $_element'''
 			else if (method.parameters.length == 4)
-				'''"«annotatedField.simpleName»", $_oldElements, $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_index, $_element'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before adding to field "«annotatedField.simpleName»" (element): unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" before adding to field "Â«annotatedField.simpleNameÂ»" (element): unknown signature'''),
 			context)
 
 	}
 
-// TODO: this is done!
 	/**
 	 * Get method for event "after element add"
 	 * 
@@ -2110,7 +2120,6 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after element add"
 	 */
@@ -2126,23 +2135,23 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_element'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_element'''
 			else if (method.parameters.length == 2)
 				'''$_index, $_element'''
 			else if (method.parameters.length == 3 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_index, $_element'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_newElements, $_element'''
 			else if (method.parameters.length == 4 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_element'''
 			else if (method.parameters.length == 4)
 				'''$_oldElements, $_newElements, $_index, $_element'''
 			else if (method.parameters.length == 5)
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_index, $_element'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after adding to field "«annotatedField.simpleName»" (element): unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" after adding to field "Â«annotatedField.simpleNameÂ»" (element): unknown signature'''),
 			context)
 
 	}
@@ -2206,17 +2215,17 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 			val oppositeFieldName = getOppositeFieldName(fieldDeclaration, context)
 			val synchronizationLockName = getSynchronizationLockName(fieldDeclaration, context)
 
-			return '''«preCode»
+			return '''Â«preCodeÂ»
 				return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.removeFromCollection(
-					«fieldDeclaration.simpleName», «elementName», «index», «multiple»,
-					«getMethodCallBeforeElementRemove(fieldDeclaration, context)»,
-					«getMethodCallBeforeRemove(fieldDeclaration, context)»,
-					«getMethodCallAfterElementRemove(fieldDeclaration, context)»,
-					«getMethodCallAfterRemove(fieldDeclaration, context)»,
-					"«fieldDeclaration.simpleName»",
-					«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-					«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
-					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+					Â«fieldDeclaration.simpleNameÂ», Â«elementNameÂ», Â«indexÂ», Â«multipleÂ»,
+					Â«getMethodCallBeforeElementRemove(fieldDeclaration, context)Â»,
+					Â«getMethodCallBeforeRemove(fieldDeclaration, context)Â»,
+					Â«getMethodCallAfterElementRemove(fieldDeclaration, context)Â»,
+					Â«getMethodCallAfterRemove(fieldDeclaration, context)Â»,
+					"Â«fieldDeclaration.simpleNameÂ»",
+					Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+					Â«IF supportsBidirectional && !oppositeFieldName.isNullOrEmptyÂ»"Â«oppositeFieldNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»,
+					Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 		}
 
@@ -2265,9 +2274,9 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 			if (context.newTypeReference(Map).type.isAssignableFromConsiderUnprocessed(fieldDeclaration.type?.type,
 				context))
-				return '''This is a generated remover method for removing a key/value pair from {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)} via key.'''
+				return '''This is a generated remover method for removing a key/value pair from {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)} via key.'''
 			else
-				return '''This is a generated remover method for removing an element from {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+				return '''This is a generated remover method for removing an element from {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 
 		}
 
@@ -2283,14 +2292,14 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				val synchronizationLockName = getSynchronizationLockName(fieldDeclaration, context)
 
 				return '''return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.removeFromMap(
-					«fieldDeclaration.simpleName», «getFirstParameterName()»,
-					"«fieldDeclaration.simpleName»",
-					«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+					Â«fieldDeclaration.simpleNameÂ», Â«getFirstParameterName()Â»,
+					"Â«fieldDeclaration.simpleNameÂ»",
+					Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+					Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 			} else {
 
-				return getBasicImplementation('''java.util.List<«getCollectionTypeArgumentAsString(0)»> $elements = new java.util.ArrayList<«getCollectionTypeArgumentAsString(0)»>();
+				return getBasicImplementation('''java.util.List<Â«getCollectionTypeArgumentAsString(0)Â»> $elements = new java.util.ArrayList<Â«getCollectionTypeArgumentAsString(0)Â»>();
 					$elements.add($element);''', "$elements", "null", false)
 
 			}
@@ -2323,7 +2332,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated remover method for removing an element from {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)} at the specified index.'''
+			return '''This is a generated remover method for removing an element from {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)} at the specified index.'''
 		}
 
 		override getSimpleName() {
@@ -2331,7 +2340,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override String getBasicImplementation() {
-			return getBasicImplementation('''java.util.List<«getCollectionTypeArgumentAsString(0)»> $elements = new java.util.ArrayList<«getCollectionTypeArgumentAsString(0)»>(«fieldDeclaration.simpleName»);''',
+			return getBasicImplementation('''java.util.List<Â«getCollectionTypeArgumentAsString(0)Â»> $elements = new java.util.ArrayList<Â«getCollectionTypeArgumentAsString(0)Â»>(Â«fieldDeclaration.simpleNameÂ»);''',
 				"null", "$index", false)
 		}
 
@@ -2360,7 +2369,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated remover method for removing multiple elements from {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated remover method for removing multiple elements from {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -2389,7 +2398,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 		}
 
 		override getDocComment() {
-			return '''This is a generated remover method for clearing all elements from {@link «(declaringType as ClassDeclaration).qualifiedName»#«fieldDeclaration.simpleName»»)}.'''
+			return '''This is a generated remover method for clearing all elements from {@link Â«(declaringType as ClassDeclaration).qualifiedNameÂ»#Â«fieldDeclaration.simpleNameÂ»Â»)}.'''
 		}
 
 		override getSimpleName() {
@@ -2404,14 +2413,14 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				val synchronizationLockName = getSynchronizationLockName(fieldDeclaration, context)
 
 				return '''return org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.clearMap(
-					«fieldDeclaration.simpleName»,
-					"«fieldDeclaration.simpleName»",
-					«IF fieldDeclaration.isStatic»null«ELSE»this«ENDIF»,
-					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
+					Â«fieldDeclaration.simpleNameÂ»,
+					"Â«fieldDeclaration.simpleNameÂ»",
+					Â«IF fieldDeclaration.isStaticÂ»nullÂ«ELSEÂ»Â«getThisCode(fieldDeclaration)Â»Â«ENDIFÂ»,
+					Â«IF !synchronizationLockName.isNullOrEmptyÂ»"Â«synchronizationLockNameÂ»"Â«ELSEÂ»nullÂ«ENDIFÂ»);'''
 
 			} else {
 
-				return getBasicImplementation('''java.util.List<«getCollectionTypeArgumentAsString(0)»> $elements = new java.util.ArrayList<«getCollectionTypeArgumentAsString(0)»>(«fieldDeclaration.simpleName»);''',
+				return getBasicImplementation('''java.util.List<Â«getCollectionTypeArgumentAsString(0)Â»> $elements = new java.util.ArrayList<Â«getCollectionTypeArgumentAsString(0)Â»>(Â«fieldDeclaration.simpleNameÂ»);''',
 					"$elements", "null", true)
 
 			}
@@ -2439,7 +2448,6 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "before remove"
 	 * 
@@ -2493,7 +2501,6 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before remove"
 	 */
@@ -2514,28 +2521,27 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_elements'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_elements'''
 			else if (method.parameters.length == 2 && indexSupported)
 				'''$_indices, $_elements'''
 			else if (method.parameters.length == 2 && !indexSupported)
 				'''$_oldElements, $_elements'''
 			else if (method.parameters.length == 3 && indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_indices, $_elements'''
 			else if (method.parameters.length == 3 && !indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_elements'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_indices, $_elements'''
 			else if (method.parameters.length == 4)
-				'''"«annotatedField.simpleName»", $_oldElements, $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_indices, $_elements'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»": unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" before removing from field "Â«annotatedField.simpleNameÂ»": unknown signature'''),
 			context)
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "after remove"
 	 * 
@@ -2593,7 +2599,6 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "after remove"
 	 */
@@ -2611,28 +2616,27 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_elements'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_elements'''
 			else if (method.parameters.length == 2)
 				'''$_indices, $_elements'''
 			else if (method.parameters.length == 3 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_indices, $_elements'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_newElements, $_elements'''
 			else if (method.parameters.length == 4 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_elements'''
 			else if (method.parameters.length == 4)
 				'''$_oldElements, $_newElements, $_indices, $_elements'''
 			else if (method.parameters.length == 5)
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_indices, $_elements'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_indices, $_elements'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»": unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" after removing from field "Â«annotatedField.simpleNameÂ»": unknown signature'''),
 			context)
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "before element remove"
 	 * 
@@ -2678,7 +2682,6 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element remove"
 	 */
@@ -2697,28 +2700,27 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_element'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_element'''
 			else if (method.parameters.length == 2 && method.parameters.get(0).type == context.primitiveInt)
 				'''$_index, $_element'''
 			else if (method.parameters.length == 2)
 				'''$_oldElements, $_element'''
 			else if (method.parameters.length == 3 && indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_index, $_element'''
 			else if (method.parameters.length == 3 && !indexSupported &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_element'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_index, $_element'''
 			else if (method.parameters.length == 4)
-				'''"«annotatedField.simpleName»", $_oldElements, $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_index, $_element'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" before removing from field "«annotatedField.simpleName»" (element): unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" before removing from field "Â«annotatedField.simpleNameÂ»" (element): unknown signature'''),
 			context)
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Get method for event "after element remove"
 	 * 
@@ -2768,7 +2770,6 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 
 	}
 
-	// TODO: this is done!
 	/**
 	 * Gets the call (string) of the method for event "before element remove"
 	 */
@@ -2784,23 +2785,23 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 				'''$_element'''
 			else if (method.parameters.length == 2 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_element'''
 			else if (method.parameters.length == 2)
 				'''$_index, $_element'''
 			else if (method.parameters.length == 3 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_index, $_element'''
 			else if (method.parameters.length == 3)
 				'''$_oldElements, $_newElements, $_element'''
 			else if (method.parameters.length == 4 &&
 				context.newTypeReference(String).isAssignableFrom(method.parameters.get(0).type))
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_element'''
 			else if (method.parameters.length == 4)
 				'''$_oldElements, $_newElements, $_index, $_element'''
 			else if (method.parameters.length == 5)
-				'''"«annotatedField.simpleName»", $_oldElements, $_newElements, $_index, $_element'''
+				'''"Â«annotatedField.simpleNameÂ»", $_oldElements, $_newElements, $_index, $_element'''
 			else
-				throw new IllegalArgumentException('''Unable to call method "«method.simpleName»" after removing from field "«annotatedField.simpleName»" (element): unknown signature'''),
+				throw new IllegalArgumentException('''Unable to call method "Â«method.simpleNameÂ»" after removing from field "Â«annotatedField.simpleNameÂ»" (element): unknown signature'''),
 			context)
 
 	}
@@ -2885,7 +2886,7 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 		// check that field has (not inferred) type
 		if (xtendField.type === null || xtendField.type.inferred) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» does not support fields with inferred type''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» does not support fields with inferred type''')
 			return
 		}
 
@@ -2893,13 +2894,13 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 		if (notNullRuleInfo.notNullSelf && !xtendField.hasAnnotation(SetterRule) &&
 			!xtendField.hasAnnotation(GetterRule))
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @GetterRule or @SetterRule, if notNullSelf is set''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must be used together with @GetterRule or @SetterRule, if notNullSelf is set''')
 
 		// check if in context of adder rules
 		if ((notNullRuleInfo.notNullKeyOrElement || notNullRuleInfo.notNullValue) &&
 			!xtendField.hasAnnotation(AdderRule))
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @AdderRule, if notNullKeyOrElement or notNullValue is set''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must be used together with @AdderRule, if notNullKeyOrElement or notNullValue is set''')
 
 		// check for concrete types
 		if (notNullRuleInfo.notNullKeyOrElement &&
@@ -2914,7 +2915,7 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 		// check if not used with primitive types
 		if (xtendField.type.primitive)
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must not be used with primitive types''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must not be used with primitive types''')
 
 	}
 
@@ -2970,14 +2971,14 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 		if (!xtendField.hasAnnotation(SetterRule) &&
 			!(xtendField.hasAnnotation(AdderRule) && xtendField.hasAnnotation(RemoverRule))) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if also @SetterRule or @AdderRule together with @RemoverRule are used''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must only be used, if also @SetterRule or @AdderRule together with @RemoverRule are used''')
 			return
 		}
 
 		// check that bidirectional field is set
 		if (bidirectionalRuleProcessorInfo.oppositeField.nullOrEmpty) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must specify name of opposite field''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must specify name of opposite field''')
 			return
 		}
 
@@ -2990,7 +2991,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 			// sets must specify type argument
 			if (xtendField.type.actualTypeArguments.size == 0) {
 				xtendField.
-					addError('''Annotation @«processedAnnotationType.simpleName» must only be used for sets, if also a type argument is applied (i.e. the type of the opposite type must be known)''')
+					addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must only be used for sets, if also a type argument is applied (i.e. the type of the opposite type must be known)''')
 				return
 			}
 
@@ -3002,16 +3003,31 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 
 		}
 
+		// analyze further in case of type parameter ("extends" is expected)
+		if (oppositeType.type !== null && oppositeType.type instanceof TypeParameterDeclaration &&
+			(oppositeType.type as TypeParameterDeclaration).upperBounds.size == 1)
+			oppositeType = (oppositeType.type as TypeParameterDeclaration).upperBounds.get(0)
+
 		// ensure that type is class/interface
-		var TypeDeclaration oppositeTypeDeclaration
-		if (oppositeType === null || (!(oppositeType.type instanceof ClassDeclaration) &&
-			!(oppositeType.type instanceof InterfaceDeclaration))) {
+		if (oppositeType === null || oppositeType.type === null ||
+			!(oppositeType.type instanceof ClassDeclaration || oppositeType.type instanceof InterfaceDeclaration)) {
+
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if opposite interface/class type is specified''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must only be used, if opposite interface/class type is specified''')
 			return
-		} else {
-			oppositeTypeDeclaration = oppositeType.type as TypeDeclaration
+
 		}
+
+		// ensure that no trait class is referenced (directly)
+		if (oppositeType.type instanceof ClassDeclaration && (oppositeType.type as ClassDeclaration).hasAnnotation(TraitClass)) {
+
+			xtendField.
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must not be used, if opposite type is a trait class (in spite of that its interface can be used)''')
+			return
+
+		}
+
+		val oppositeTypeDeclaration = oppositeType.type as TypeDeclaration
 
 		// check if opposite field (resp. setter/adder/remover) exist
 		var List<MethodDeclaration> oppositeMethods
@@ -3048,7 +3064,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 		] === null)) {
 
 			xtendField.
-				addError('''Cannot find appropriate method (setter/adder/remover) for bidirectional connections in opposite class "«oppositeTypeDeclaration.simpleName»"''')
+				addError('''Cannot find appropriate method (setter/adder/remover) for bidirectional connections in opposite class "Â«oppositeTypeDeclaration.simpleNameÂ»"''')
 			return
 
 		}
@@ -3106,7 +3122,7 @@ class SynchronizationRuleProcessor extends RuleProcessor<FieldDeclaration, Mutab
 
 		// check that value of annotation (name of the lock) is not null or empty
 		if (synchronizationRuleInfo.lockName.isNullOrEmpty) {
-			xtendField.addError('''Annotation @«processedAnnotationType.simpleName» must specify a name for the lock''')
+			xtendField.addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must specify a name for the lock''')
 			return
 		}
 
@@ -3114,7 +3130,7 @@ class SynchronizationRuleProcessor extends RuleProcessor<FieldDeclaration, Mutab
 		if (!xtendField.hasAnnotation(SetterRule) && !xtendField.hasAnnotation(GetterRule) &&
 			!xtendField.hasAnnotation(AdderRule) && !xtendField.hasAnnotation(RemoverRule)) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if also @GetterRule, @SetterRule, @AdderRule or @RemoverRule are used''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» must only be used, if also @GetterRule, @SetterRule, @AdderRule or @RemoverRule are used''')
 			return
 		}
 

@@ -107,7 +107,7 @@ class ProcessQueue {
 
 		LogUtils.log(
 			Severity.
-				INFO, '''Transformation tracking started (Phase: «phase») for «annotatedClass.qualifiedName» => [«registeredName»]''')
+				INFO, '''Transformation tracking started (Phase: Â«phaseÂ») for Â«annotatedClass.qualifiedNameÂ» => [Â«registeredNameÂ»]''')
 
 	}
 
@@ -172,7 +172,7 @@ class ProcessQueue {
 
 							LogUtils.log(
 								Severity.
-									INFO, '''Transformation starting (Phase: «currentPhase») for «IF transformation.annotatedElement instanceof TypeDeclaration»«(transformation.annotatedElement as TypeDeclaration).qualifiedName»«ELSE»«transformation.annotatedElement.simpleName» in «IF transformation.annotatedElement instanceof MemberDeclaration»«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedName»«ENDIF»«ENDIF» => [«transformation.registeredName»] «compilationUnit.filePath»''')
+									INFO, '''Transformation starting (Phase: Â«currentPhaseÂ») for Â«IF transformation.annotatedElement instanceof TypeDeclarationÂ»Â«(transformation.annotatedElement as TypeDeclaration).qualifiedNameÂ»Â«ELSEÂ»Â«transformation.annotatedElement.simpleNameÂ» in Â«IF transformation.annotatedElement instanceof MemberDeclarationÂ»Â«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedNameÂ»Â«ENDIFÂ»Â«ENDIFÂ» => [Â«transformation.registeredNameÂ»] Â«compilationUnit.filePathÂ»''')
 
 							LogUtils.changeIndentation(1)
 							try {
@@ -195,8 +195,8 @@ class ProcessQueue {
 
 							LogUtils.log(
 								Severity.
-									INFO, '''Transformation error (Phase: «currentPhase») for «IF transformation.annotatedElement instanceof TypeDeclaration»«(transformation.annotatedElement as TypeDeclaration).qualifiedName»«ELSE»«transformation.annotatedElement.simpleName» in «IF transformation.annotatedElement instanceof MemberDeclaration»«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedName»«ENDIF»«ENDIF» => [«transformation.registeredName»] «compilationUnit.filePath»:
-										«StringUtils.getStackTrace(exception)»''')
+									INFO, '''Transformation error (Phase: Â«currentPhaseÂ») for Â«IF transformation.annotatedElement instanceof TypeDeclarationÂ»Â«(transformation.annotatedElement as TypeDeclaration).qualifiedNameÂ»Â«ELSEÂ»Â«transformation.annotatedElement.simpleNameÂ» in Â«IF transformation.annotatedElement instanceof MemberDeclarationÂ»Â«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedNameÂ»Â«ENDIFÂ»Â«ENDIFÂ» => [Â«transformation.registeredNameÂ»] Â«compilationUnit.filePathÂ»:
+										Â«StringUtils.getStackTrace(exception)Â»''')
 
 						}
 
@@ -204,7 +204,7 @@ class ProcessQueue {
 
 							LogUtils.log(
 								Severity.
-									INFO, '''Transformation performed (Phase: «currentPhase») for «IF transformation.annotatedElement instanceof TypeDeclaration»«(transformation.annotatedElement as TypeDeclaration).qualifiedName»«ELSE»«transformation.annotatedElement.simpleName» in «IF transformation.annotatedElement instanceof MemberDeclaration»«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedName»«ENDIF»«ENDIF» => [«transformation.registeredName»] «compilationUnit.filePath»''')
+									INFO, '''Transformation performed (Phase: Â«currentPhaseÂ») for Â«IF transformation.annotatedElement instanceof TypeDeclarationÂ»Â«(transformation.annotatedElement as TypeDeclaration).qualifiedNameÂ»Â«ELSEÂ»Â«transformation.annotatedElement.simpleNameÂ» in Â«IF transformation.annotatedElement instanceof MemberDeclarationÂ»Â«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedNameÂ»Â«ENDIFÂ»Â«ENDIFÂ» => [Â«transformation.registeredNameÂ»] Â«compilationUnit.filePathÂ»''')
 
 							// if transformation has been performed, stop tracking
 							ProcessQueue.stopTrackTransformation(currentPhase, transformation.annotatedElement,
@@ -217,7 +217,7 @@ class ProcessQueue {
 
 							LogUtils.log(
 								Severity.
-									INFO, '''Transformation was not performed (Phase: «currentPhase») for «IF transformation.annotatedElement instanceof TypeDeclaration»«(transformation.annotatedElement as TypeDeclaration).qualifiedName»«ELSE»«transformation.annotatedElement.simpleName» in «IF transformation.annotatedElement instanceof MemberDeclaration»«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedName»«ENDIF»«ENDIF» => [«transformation.registeredName»] «compilationUnit.filePath»''')
+									INFO, '''Transformation was not performed (Phase: Â«currentPhaseÂ») for Â«IF transformation.annotatedElement instanceof TypeDeclarationÂ»Â«(transformation.annotatedElement as TypeDeclaration).qualifiedNameÂ»Â«ELSEÂ»Â«transformation.annotatedElement.simpleNameÂ» in Â«IF transformation.annotatedElement instanceof MemberDeclarationÂ»Â«(transformation.annotatedElement as MemberDeclaration).declaringType.qualifiedNameÂ»Â«ENDIFÂ»Â«ENDIFÂ» => [Â«transformation.registeredNameÂ»] Â«compilationUnit.filePathÂ»''')
 
 							currentTransformation++
 

@@ -1,19 +1,19 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
+import java.lang.reflect.Modifier
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.EPVoidPre
 import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
-import java.lang.reflect.Modifier
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinal
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
-import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinal
 
 @TraitClassAutoUsing
 abstract class TraitClassFinal {
@@ -38,6 +38,14 @@ abstract class TraitClassFinal {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method7() {}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassFinalTraitMethod {
+
+	@ExclusiveMethod
+	final override void method() {}
 
 }
 
@@ -81,6 +89,13 @@ class TraitsFinalTests extends TraitTestsBase {
 	def void testApplyExtensionToFinal() {
 
 		assertTrue(Modifier.isFinal(ExtendedClassFinal.getDeclaredMethod("method7").modifiers))
+
+	}
+	
+	@Test
+	def void testFinalTraitMethod() {
+
+		assertTrue(Modifier.isFinal(TraitClassFinalTraitMethod.getDeclaredMethod("method").modifiers))
 
 	}
 
@@ -172,16 +187,16 @@ class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implemen
 
 		val tester = new TraitsAmbiguousTests
 
-		tester.testTraitClassCombinationInternal("Exclusive", "(setFinal=true)", "Processed",
-			"(processor=EPVoidPre)", "final");
-		tester.testTraitClassCombinationInternal("Exclusive", "(setFinal=false)", "Processed",
-			"(processor=EPVoidPre)", null);
+		tester.testTraitClassCombinationInternal("Exclusive", "(setFinal=true)", "Processed", "(processor=EPVoidPre)",
+			"final");
+		tester.testTraitClassCombinationInternal("Exclusive", "(setFinal=false)", "Processed", "(processor=EPVoidPre)",
+			null);
 		tester.testTraitClassCombinationInternal("Processed", "(setFinal=true,processor=EPVoidPre)", "Processed",
 			"(processor=EPVoidPre)", "final");
 		tester.testTraitClassCombinationInternal("Processed", "(setFinal=false,processor=EPVoidPre)", "Processed",
 			"(processor=EPVoidPre,setFinal=true)", null);
-		tester.testTraitClassCombinationInternal("Envelope", "(required=false)", "Processed",
-			"(processor=EPVoidPre)", "final");
+		tester.testTraitClassCombinationInternal("Envelope", "(required=false)", "Processed", "(processor=EPVoidPre)",
+			"final");
 		tester.testTraitClassCombinationInternal("Envelope", "(setFinal=false,required=false)", "Processed",
 			"(processor=EPVoidPre,setFinal=true)", null);
 

@@ -221,7 +221,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					specifiedTraitClassesNames.add(specifiedTraitClass.name)
 				else
 					errorsDirectSpecification?.
-						add('''Type "«specifiedTraitClass.name»" is not a trait class, i.e. it does not use @TraitClass or @TraitClassAutoUsing''')
+						add('''Type "Â«specifiedTraitClass.nameÂ»" is not a trait class, i.e. it does not use @TraitClass or @TraitClassAutoUsing''')
 
 			}
 
@@ -235,7 +235,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		if (errorsDirectSpecification !== null && specifiedTraitClassesNames !== null)
 			if (specifiedTraitClassesNames.size > 0)
 				errorsDirectSpecification?.
-					add('''Trait class "«specifiedTraitClassesNames.get(0)»" specified as "used", but not found in list of implemented interfaces''')
+					add('''Trait class "Â«specifiedTraitClassesNames.get(0)Â»" specified as "used", but not found in list of implemented interfaces''')
 
 		return typeReferences
 
@@ -380,7 +380,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		if (annotationTraitClass === null)
 			annotationTraitClass = annotatedClass.getAnnotation(TraitClassAutoUsing)
 		if (annotationTraitClass === null)
-			throw new IllegalArgumentException('''Class «annotatedClass.qualifiedName» is not a trait class, so checking attributes is not possible''')
+			throw new IllegalArgumentException('''Class Â«annotatedClass.qualifiedNameÂ» is not a trait class, so checking attributes is not possible''')
 
 		return annotationTraitClass.getBooleanValue("baseClass")
 
@@ -590,11 +590,11 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 			]
 
-			extendedThisMethod.body = '''return «EXTENDED_THIS_FIELD_NAME»;''';
+			extendedThisMethod.body = '''return Â«EXTENDED_THIS_FIELD_NAMEÂ»;''';
 
 		} else {
 
-			extendedThisMethod.body = '''return («mirrorInterfaceTypeRef.getTypeReferenceAsString(true, false, false, false,context)») super.«EXTENDED_THIS_METHOD_NAME»();''';
+			extendedThisMethod.body = '''return (Â«mirrorInterfaceTypeRef.getTypeReferenceAsString(true, false, false, false,context)Â») super.Â«EXTENDED_THIS_METHOD_NAMEÂ»();''';
 
 		}
 
@@ -607,7 +607,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 		for (envelopeMethod : envelopeMethods) {
 
 			// retrieve envelope information
-			val envelopeInfo = (envelopeMethod as MethodDeclaration).getEnvelopeMethodInfo(context)
+			val envelopeInfo = envelopeMethod.getEnvelopeMethodInfo(context)
 
 			// create new method which is able to call the functionality of extended class
 			// inside of envelope method
@@ -623,7 +623,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			val paramTypeNameList = envelopeMethod.getParametersTypeNames(false, false, context)
 
 			// documentation
-			newMethod.docComment = '''This is a helper method for calling «envelopeMethod.getJavaDocLinkTo(context)» of extended class.'''
+			newMethod.docComment = '''This is a helper method for calling Â«envelopeMethod.getJavaDocLinkTo(context)Â» of extended class.'''
 
 			// specify annotation
 			newMethod.addAnnotation(TraitClassExtendedCallHelperMethod.newAnnotationReference)
@@ -636,12 +636,12 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					"null"
 
 			bodySetter.setBody(
-				newMethod, '''«IF !isVoid»return («newMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)»)«ENDIF»
-						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(«EXTENDED_THIS_METHOD_NAME»(), "«envelopeMethod.getExtendedMethodImplName(annotatedClass)»",
-						«defaultValueProviderObj»,
-						«isVoid»,
-						new Class<?> [] { «paramTypeNameList.map[it + ".class"] .join(", ")» },
-						new Object [] { «paramNameList.join(", ")» });''', context)
+				newMethod, '''Â«IF !isVoidÂ»return (Â«newMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)Â»)Â«ENDIFÂ»
+						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(Â«EXTENDED_THIS_METHOD_NAMEÂ»(), "Â«envelopeMethod.getExtendedMethodImplName(annotatedClass)Â»",
+						Â«defaultValueProviderObjÂ»,
+						Â«isVoidÂ»,
+						new Class<?> [] { Â«paramTypeNameList.map[it + ".class"] .join(", ")Â» },
+						new Object [] { Â«paramNameList.join(", ")Â» });''', context)
 
 		}
 
@@ -664,7 +664,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 					implMethod.visibility = Visibility.PUBLIC
 
 					// documentation
-					implMethod.docComment = '''This is the trait class implementation of method «method.getJavaDocLinkTo(context)».'''
+					implMethod.docComment = '''This is the trait class implementation of method Â«method.getJavaDocLinkTo(context)Â».'''
 
 					// specify annotation
 					implMethod.addAnnotation(TraitClassMethodImpl.newAnnotationReference)
@@ -691,7 +691,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 					if (foundEnvelopeMethod !== null)
 						xtendClass.
-							addError('''Method "«method.getMethodAsString(false, context)»" has been annotated by @EnvelopeMethod in a super type, so also this type must be used here''')
+							addError('''Method "Â«method.getMethodAsString(false, context)Â»" has been annotated by @EnvelopeMethod in a super type, so also this type must be used here''')
 
 				}
 
@@ -714,14 +714,14 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 			constructorMethod.copyParameters(newConstructor, 0, false, null, context)
 
 			// documentation
-			newConstructor.docComment = '''This constructor delegates to constructor method «constructorMethod.getJavaDocLinkTo(context)».'''
+			newConstructor.docComment = '''This constructor delegates to constructor method Â«constructorMethod.getJavaDocLinkTo(context)Â».'''
 
 			// specific annotation for new constructor
 			newConstructor.addAnnotation(TraitClassDelegationConstructor.newAnnotationReference)
 
 			// rename new method and move body from trait method to new method
-			bodySetter.setBody(newConstructor, '''this(«EXTENDED_THIS_FIELD_NAME», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);
-							«constructorMethod.simpleName»(«paramNameList.join(", ")»);
+			bodySetter.setBody(newConstructor, '''this(Â«EXTENDED_THIS_FIELD_NAMEÂ», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);
+							Â«constructorMethod.simpleNameÂ»(Â«paramNameList.join(", ")Â»);
 						''', context)
 
 		}
@@ -743,8 +743,8 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 		// add body to set delegation reference
 		bodySetter.setBody(
-			basicConstructor, '''«IF xtendClass.extendedClass !== null && xtendClass.extendedClass.type.qualifiedName != Object.canonicalName»super(«EXTENDED_THIS_FIELD_NAME», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);«ELSE»
-					this.«EXTENDED_THIS_FIELD_NAME» = «EXTENDED_THIS_FIELD_NAME»;«ENDIF»''', context)
+			basicConstructor, '''Â«IF xtendClass.extendedClass !== null && xtendClass.extendedClass.type.qualifiedName != Object.canonicalNameÂ»super(Â«EXTENDED_THIS_FIELD_NAMEÂ», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null);Â«ELSEÂ»
+					this.Â«EXTENDED_THIS_FIELD_NAMEÂ» = Â«EXTENDED_THIS_FIELD_NAMEÂ»;Â«ENDIFÂ»''', context)
 
 		// specific annotation for new constructor
 		basicConstructor.addAnnotation(TraitClassDelegationConstructor.newAnnotationReference)
@@ -846,11 +846,11 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 				val paramNameList = delegationMethodBlueprint.parametersNames
 
 				// cast is necessary to support covariance
-				val delegateCasted = '''(«EXTENDED_THIS_METHOD_NAME»())'''
+				val delegateCasted = '''(Â«EXTENDED_THIS_METHOD_NAMEÂ»())'''
 
 				// method is accessible
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)») «ENDIF» «delegateCasted».«delegationMethodBlueprint.simpleName»(«paramNameList.join(", ")»);''',
+					delegationMethod, '''Â«IF !isVoidÂ»return (Â«methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)Â») Â«ENDIFÂ» Â«delegateCastedÂ».Â«delegationMethodBlueprint.simpleNameÂ»(Â«paramNameList.join(", ")Â»);''',
 					context)
 
 			} else {
@@ -860,12 +860,12 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 				val paramTypeNameList = delegationMethodBlueprint.getParametersTypeNames(false, false, context)
 
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return («methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)»)«ENDIF»
-						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(«EXTENDED_THIS_METHOD_NAME»(),"«methodFinal.simpleName»",
+					delegationMethod, '''Â«IF !isVoidÂ»return (Â«methodFinal.returnType.getTypeReferenceAsString(true, false, false,false, context)Â»)Â«ENDIFÂ»
+						org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils.callExtendedMethod(Â«EXTENDED_THIS_METHOD_NAMEÂ»(),"Â«methodFinal.simpleNameÂ»",
 						null,
-						«isVoid»,
-						new Class<?> [] { «paramTypeNameList.map[it + ".class"] .join(", ")» },
-						new Object [] { «paramNameList.join(", ")» });''', context)
+						Â«isVoidÂ»,
+						new Class<?> [] { Â«paramTypeNameList.map[it + ".class"] .join(", ")Â» },
+						new Object [] { Â«paramNameList.join(", ")Â» });''', context)
 
 			}
 
@@ -949,10 +949,10 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 				// check type hierarchy
 				if (superTypesThis.contains(directlyUsedTraitClass))
 					xtendClass.
-						addError('''Cannot apply trait class «directlyUsedTraitClass.simpleName» because it is in own type hierarchy''')
+						addError('''Cannot apply trait class Â«directlyUsedTraitClass.simpleNameÂ» because it is in own type hierarchy''')
 				else if (superTypesUsed.contains(annotatedClass))
 					xtendClass.
-						addError('''Cannot apply trait class «directlyUsedTraitClass.simpleName» because it is a derived class from this class''')
+						addError('''Cannot apply trait class Â«directlyUsedTraitClass.simpleNameÂ» because it is a derived class from this class''')
 				else {
 
 					val superTypesWithoutThis = annotatedClass.getSuperClasses(false)
@@ -961,7 +961,7 @@ class TraitClassProcessor extends ExtractInterfaceProcessor implements QueuedTra
 
 						if (!foundError && superType.isTraitClass && superTypesUsed.contains(superType)) {
 							xtendClass.
-								addError('''Cannot apply trait class «directlyUsedTraitClass.simpleName» because they have a common base (trait) class «superType.simpleName»''')
+								addError('''Cannot apply trait class Â«directlyUsedTraitClass.simpleNameÂ» because they have a common base (trait) class Â«superType.simpleNameÂ»''')
 							foundError = true
 						}
 

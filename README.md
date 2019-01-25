@@ -1,65 +1,116 @@
-# Table of Contents
-
-- [ETAI Library - Tutorial](#etai-library---tutorial)
-  * [Introduction](#introduction)
-  * [Interface Extraction](#interface-extraction)
-    + [Overview](#overview)
-    + [Basic Usage of Interface Extraction](#basic-usage-of-interface-extraction)
-    + [Adapt Interface Extraction](#adapt-interface-extraction)
-    + [Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
-  * [Automatic Modification of Classes](#automatic-modification-of-classes)
-    + [Overview](#overview-1)
-    + [Generate Accessors and Mutators](#generate-accessors-and-mutators)
-      - [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)
-      - [Generate Adder and Remover Methods](#generate-adder-and-remover-methods)
-      - [Getter Methods for Collections and Maps: *collectionPolicy*](#getter-methods-for-collections-and-maps---collectionpolicy-)
-      - [*null* Checks](#-null--checks)
-      - [Change Methods](#change-methods)
-      - [Bidirectional Connections](#bidirectional-connections)
-      - [Multi-Threading and Mutators](#multi-threading-and-mutators)
-    + [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods)
-    + [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)
-      - [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)
-    + [Deactivate and Change Rules](#deactivate-and-change-rules)
-    + [Generate Factory Methods](#generate-factory-methods)
-      - [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
-      - [Factory Method](#factory-method)
-    + [Generate Factories](#generate-factories)
-    + [Generate Default Implementations of Missing Methods](#generate-default-implementations-of-missing-methods)
-    + [Adaption Rule Specification](#adaption-rule-specification)
-      - [Adaption Functions](#adaption-functions)
-      - [Predefined Adaption Variables](#predefined-adaption-variables)
-      - [Adaption Function: *alternative*](#adaption-function---alternative-)
-    + [Use Adaption Variables](#use-adaption-variables)
-  * [Traits](#traits)
-    + [Overview](#overview-2)
-    + [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)
-    + [Exclusive Methods](#exclusive-methods)
-    + [Required Methods](#required-methods)
-    + [Processed Methods](#processed-methods)
-      - [Standard Trait Method Processors](#standard-trait-method-processors)
-      - [Implement Own Trait Method Processor](#implement-own-trait-method-processor)
-    + [Envelope Methods](#envelope-methods)
-      - [Default Value Provider](#default-value-provider)
-    + [Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
-      - [Flag: *required*](#flag---required-)
-      - [Flag: *setFinal*](#flag---setfinal-)
-    + [Redirection of Trait Methods](#redirection-of-trait-methods)
-    + [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
-      - [Automatic Generation of Constructors](#automatic-generation-of-constructors)
-    + [*this* within Trait Classes](#-this--within-trait-classes)
-      - [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
-      - [Usage of *\$extendedThis*](#usage-of----extendedthis-)
-    + [Trait Classes and Inheritance](#trait-classes-and-inheritance)
-      - [Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
-      - [Base Trait Classes](#base-trait-classes)
-      - [Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
+## Table of Contents
+- [ ETAI Library - Tutorial](#etai-library---tutorial)
+  - [ Introduction](#introduction)
+    - [ Usage](#usage)
+      - [ Build and Use the Library](#build-and-use-the-library)
+      - [ Test the Library](#test-the-library)
+      - [ Setup for Eclipse](#setup-for-eclipse)
+  - [ Interface Extraction](#interface-extraction)
+    - [ Overview](#overview)
+    - [ Basic Usage of Interface Extraction](#basic-usage-of-interface-extraction)
+    - [ Adapt Interface Extraction](#adapt-interface-extraction)
+    - [ Behavior of Interface Extraction in Hierarchies](#behavior-of-interface-extraction-in-hierarchies)
+  - [ Automatic Modification of Classes](#automatic-modification-of-classes)
+    - [ Overview](#overview)
+    - [ Generate Accessors and Mutators](#generate-accessors-and-mutators)
+      - [ Generate Getter and Setter Methods](#generate-getter-and-setter-methods)
+      - [ Generate Adder and Remover Methods](#generate-adder-and-remover-methods)
+      - [ Getter Methods for Collections and Maps: *collectionPolicy*](#getter-methods-for-collections-and-maps-collectionpolicy)
+      - [ *null* Checks](#null-checks)
+      - [ Change Methods](#change-methods)
+      - [ Bidirectional Connections](#bidirectional-connections)
+      - [ Multi-Threading and Mutators](#multi-threading-and-mutators)
+    - [ Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods)
+    - [ Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)
+      - [ Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)
+    - [ Deactivate and Change Rules](#deactivate-and-change-rules)
+    - [ Generate Factory Methods](#generate-factory-methods)
+      - [ Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)
+      - [ Factory Method  ](#factory-method)
+    - [ Generate Factories](#generate-factories)
+    - [ Generate Default Implementations of Missing Methods](#generate-default-implementations-of-missing-methods)
+    - [ Adaption Rule Specification](#adaption-rule-specification)
+      - [ Adaption Functions](#adaption-functions)
+      - [ Predefined Adaption Variables](#predefined-adaption-variables)
+      - [ Adaption Function: *alternative*](#adaption-function-alternative)
+    - [ Use Adaption Variables](#use-adaption-variables)
+  - [ Traits](#traits)
+    - [ Overview](#overview)
+    - [ Basic Usage of Trait Classes](#basic-usage-of-trait-classes)
+    - [ Exclusive Methods](#exclusive-methods)
+    - [ Required Methods](#required-methods)
+    - [ Processed Methods](#processed-methods)
+      - [ Standard Trait Method Processors](#standard-trait-method-processors)
+      - [ Implement Own Trait Method Processor](#implement-own-trait-method-processor)
+    - [ Envelope Methods](#envelope-methods)
+      - [ Default Value Provider](#default-value-provider)
+    - [ Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
+      - [ Flag: *required*](#flag-required)
+      - [ Flag: *setFinal*](#flag-setfinal)
+    - [ Redirection of Trait Methods](#redirection-of-trait-methods)
+    - [ Constructor Methods and Construction Process](#constructor-methods-and-construction-process)
+      - [ Automatic Generation of Constructors](#automatic-generation-of-constructors)
+    - [ *this* within Trait Classes](#this-within-trait-classes)
+      - [ Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
+      - [ Usage of *\$extendedThis*](#usage-of-\extendedthis)
+    - [ Trait Classes and Inheritance](#trait-classes-and-inheritance)
+      - [ Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
+      - [ Base Trait Classes](#base-trait-classes)
+      - [ Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
 
 # ETAI Library - Tutorial
 
 ## Introduction
 
 The ETAI library contains several [Active Annotations for Xtend](https://eclipse.org/xtend/documentation/204_activeannotations.html). The major purpose of the provided Active Annotations is to avoid boilerplate code by providing different means. These means include the automatic **extraction** of interfaces from classes, an extension mechanism for classes by methods of so-called **trait** classes, and the automatic **adaption** and **implementation** of methods and constructors. Based on these keywords, this Active Annotation library is called ETAI.
+
+### Usage
+
+The easiest way to build the ETAI library is to use [Gradle](https://gradle.org/). Necessary build files are already included in the repository. However, no wrapper is provided, so Gradle should but installed on your system.
+
+The following sections will explain how to use Gradle in order to use the ETAI library.
+
+#### Build and Use the Library
+
+To perform a build it is enough to run the following command in the project's root directory. 
+
+```shell
+foo@bar:~$ gradle build
+```
+
+Afterwards, a JAR containing all necessary annotations is available:
+
+```shell
+org.eclipse.xtend.lib.annotation.etai/build/libs/org.eclipse.xtend.lib.annotation.etai-<version>.jar
+```
+
+This JAR can be added as dependency to an appropriate Xtend project in order to enable the active annotations and all features explained in this tutorial.
+
+#### Test the Library
+
+The ETAI library contains several test sets. All tests can be run via this command from the project's root directory:
+
+```shell
+foo@bar:~$ gradle test
+```
+
+The test report can be found here:
+
+```shell
+org.eclipse.xtend.lib.annotation.etai.tests/build/reports/tests/test/index.html
+```
+
+#### Setup for Eclipse
+
+There is also the possibility to easily setup the configuration needed for opening and use the projects in the [Eclipse IDE](https://www.eclipse.org/). Just use the following command from the project's root directory:
+
+```shell
+foo@bar:~$ gradle eclipse
+```
+
+Afterwards, it is possible to import the ETAI library projects into Eclipse via "Import... -> Existing Projects into Workspace".
+
+In order to play around just create another Xtend project, put project *org.eclipse.xtend.lib.annotation.etai* into its "Java Build Path" and all features shown in this tutorial can be used there.
 
 ## Interface Extraction
 
@@ -277,7 +328,7 @@ Besides getters and setters the ETAI library also supports a special treatment f
 
 In the following, getter methods will also be referenced as **accessors**. Setter, adder and remover methods will also be called **mutators**. 
 
-Active annotations for generating accessors and mutators can only be applied to **non-*public* fields**. However, the methodology supports *static* fields. In this case, the generated methods will also be *static*. 
+Active annotations for generating accessors and mutators can only be applied to **non-*public* fields**. However, the methodology supports *static* fields. In this case, the generated methods will also be *static*. However, even if the field is declared *final*, the generated method will be non-*final*.
 
 The generated methods will perform their basic job, of course. In addition, they are able to
 

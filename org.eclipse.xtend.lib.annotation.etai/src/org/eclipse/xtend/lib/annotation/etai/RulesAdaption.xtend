@@ -286,19 +286,19 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 			if (executableInContext instanceof MethodDeclaration)
 				if (executableInContext.static && !executableInContext.hasAnnotation(ImplAdaptionRule))
 					declarationForShowingError.
-						addError('''Annotation @«getProcessedAnnotationType.simpleName» without @ImplAdaptionRule cannot be used with static methods''')
+						addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» without @ImplAdaptionRule cannot be used with static methods''')
 
 		} else if (annotatedDeclaration instanceof FieldDeclaration) {
 
 			if (!annotatedDeclaration.hasAnnotation(GetterRule) && !annotatedDeclaration.hasAnnotation(SetterRule) &&
 				!annotatedDeclaration.hasAnnotation(AdderRule) && !annotatedDeclaration.hasAnnotation(RemoverRule))
 				declarationForShowingError.
-					addError('''Annotation @«getProcessedAnnotationType.simpleName» cannot be applied to a field, which is not annotated by @GetterRule, @SetterRule, @AdderRule or @RemoverRule''')
+					addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» cannot be applied to a field, which is not annotated by @GetterRule, @SetterRule, @AdderRule or @RemoverRule''')
 
 		} else {
 
 			declarationForShowingError.
-				addError('''Annotation @«getProcessedAnnotationType.simpleName» cannot be applied to this element type''')
+				addError('''Annotation @Â«getProcessedAnnotationType.simpleNameÂ» cannot be applied to this element type''')
 
 			return
 
@@ -316,7 +316,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 			for (adaptionFunction : adaptionFunctions)
 				if (adaptionFunction instanceof Alternative)
 					declarationForShowingError.
-						addError('''Function "«AdaptionFunctions.RULE_FUNC_ALTERNATIVE»" must not be used in context of @AdderRule or @RemoverRule''')
+						addError('''Function "Â«AdaptionFunctions.RULE_FUNC_ALTERNATIVEÂ»" must not be used in context of @AdderRule or @RemoverRule''')
 
 	}
 

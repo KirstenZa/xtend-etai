@@ -364,7 +364,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 					(it.visibility == Visibility.PUBLIC || it.visibility == Visibility.PROTECTED)
 			])
 				xtendClass.
-					addError('''A non-static init method named "«factoryMethodRuleInfo.initMethod»" without parameters and void return type must be declared and visible within this class.''')
+					addError('''A non-static init method named "Â«factoryMethodRuleInfo.initMethodÂ»" without parameters and void return type must be declared and visible within this class.''')
 
 		}
 
@@ -488,7 +488,7 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 		// require at least one specified class
 		if (!isConstructRuleAuto && traitClassAutoConstructRefs.size <= 0)
 			xtendClass.
-				addError('''Annotation @«processedAnnotationType.simpleName» requires at least one specified trait class''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» requires at least one specified trait class''')
 
 		val traitClassCurrentClassTypes = new ArrayList<ClassDeclaration>
 		for (traitClassCurrentClassRef : traitClassCurrentClassRefs)
@@ -499,7 +499,7 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 			// retrieve type
 			if (traitClassAutoConstructRef === null || traitClassAutoConstructRef.type === null) {
 				xtendClass.
-					addError('''Could not find one of the given trait classes specified in @«processedAnnotationType.simpleName»''')
+					addError('''Could not find one of the given trait classes specified in @Â«processedAnnotationType.simpleNameÂ»''')
 				return
 			}
 
@@ -508,19 +508,19 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 			// check that class is actually extended by the specified class
 			if (!traitClassCurrentClassTypes.contains(traitClassAutoConstruct))
 				xtendClass.
-					addError('''Trait class "«traitClassAutoConstruct.simpleName»" is not extending this class via @ExtendedBy or @ExtendedByAuto''')
+					addError('''Trait class "Â«traitClassAutoConstruct.simpleNameÂ»" is not extending this class via @ExtendedBy or @ExtendedByAuto''')
 
 			// check constructor methods of trait class
 			if (!traitClassAutoConstruct.hasNonEmptyConstructorMethod(context))
 				xtendClass.
-					addError('''Trait class "«traitClassAutoConstruct.simpleName»" does not contain constructor methods with parameters, so it is not applicable to auto construction''')
+					addError('''Trait class "Â«traitClassAutoConstruct.simpleNameÂ»" does not contain constructor methods with parameters, so it is not applicable to auto construction''')
 
 			for (constructorMethod : traitClassAutoConstruct.getConstructorMethods(context)) {
 
 				// must not specify varargs
 				if (constructorMethod.isVarArgsFixed)
 					xtendClass.
-						addError('''Constructor method "«constructorMethod.simpleName»" of trait class "«traitClassAutoConstruct.simpleName»" is not applicable to auto construction: variable argument lists are not supported''')
+						addError('''Constructor method "Â«constructorMethod.simpleNameÂ»" of trait class "Â«traitClassAutoConstruct.simpleNameÂ»" is not applicable to auto construction: variable argument lists are not supported''')
 
 			}
 
@@ -628,21 +628,21 @@ class ConstructRuleDisableProcessor extends RuleProcessor<ClassDeclaration, Muta
 		// require at least one specified class
 		if (traitClassAutoConstructDisabledRefs.size <= 0)
 			xtendClass.
-				addError('''Annotation @«processedAnnotationType.simpleName» requires at least one specified trait class''')
+				addError('''Annotation @Â«processedAnnotationType.simpleNameÂ» requires at least one specified trait class''')
 
 		for (traitClassAutoConstructDisabledRef : traitClassAutoConstructDisabledRefs) {
 
 			// retrieve type
 			if (traitClassAutoConstructDisabledRef === null || traitClassAutoConstructDisabledRef.type === null) {
 				xtendClass.
-					addError('''Could not find one of the given trait classes specified in @«processedAnnotationType.simpleName»''')
+					addError('''Could not find one of the given trait classes specified in @Â«processedAnnotationType.simpleNameÂ»''')
 				return
 			}
 
 			// disabling is only possible, if supertype contains an auto construct rule for the according class
 			if (!traitClassAutoConstruct.contains(traitClassAutoConstructDisabledRef.type)) {
 				xtendClass.
-					addError('''Auto construction for class "«traitClassAutoConstructDisabledRef.type.qualifiedName»" cannot be disabled because it is not found in list of automatically constructed trait classes (starting from the supertype of this class)''')
+					addError('''Auto construction for class "Â«traitClassAutoConstructDisabledRef.type.qualifiedNameÂ»" cannot be disabled because it is not found in list of automatically constructed trait classes (starting from the supertype of this class)''')
 				return
 			}
 
