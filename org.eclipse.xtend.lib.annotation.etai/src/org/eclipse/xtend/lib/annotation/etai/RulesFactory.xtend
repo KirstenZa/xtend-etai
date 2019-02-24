@@ -3,7 +3,9 @@ package org.eclipse.xtend.lib.annotation.etai
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 import java.util.ArrayList
+import java.util.HashMap
 import java.util.List
+import java.util.Map
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.ValidationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
@@ -18,9 +20,9 @@ import org.eclipse.xtend.lib.macro.services.TypeLookup
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
  * This annotation can be used in order to generate a factory method for constructing an
@@ -196,6 +198,87 @@ annotation ConstructRuleDisable {
  */
 class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClassDeclaration> {
 
+	final static public String REGISTER_OBJECT_CONSTRUCTION_ERROR = "Internal error: registering object construction via factory method"
+	final static public String UNREGISTER_OBJECT_CONSTRUCTION_ERROR = "Internal error: unregistering object construction via factory method"
+	final static public String CHECK_OBJECT_CONSTRUCTION_ERROR = "Internal error: the construction of an object without factory method has been detected"
+
+	/**
+	 * This structure shall store at runtime, if factory method are used for the construction of objects
+	 */
+	static final protected Map<Thread, List<Object>> MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY = new HashMap<Thread, List<Object>>
+
+	/**
+	 * This method must be called by a factory method in order to be allowed to construct
+	 * the next object, which would requires a factory method in order to be constructed.
+	 */
+	static synchronized def boolean registerObjectConstructionViaFactory() {
+
+		val thread = Thread.currentThread
+
+		var List<Object> registeredForThread = MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY.get(thread)
+		if (registeredForThread === null) {
+			registeredForThread = new ArrayList<Object>
+			MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY.put(thread, registeredForThread)
+		}
+
+		// add null to the end (object has not been created, yet)
+		registeredForThread.add(null)
+
+	}
+
+	/**
+	 * This method can be called by constructor in order to check, if it has been called from
+	 * within a factory method.
+	 * 
+	 * The method checks, if any registration has been request before
+	 * via {@link #registerObjectConstructionViaFactory}. This method then requires either a <code>null</code>
+	 * in the list of the current thread or the currently constructed object (which will be put to
+	 * the end of the list in case of <code>null</code>).
+	 * 
+	 * Please note, that a sophisticated check is not possible with the applied schema.
+	 * If there are internal calls of other constructors, the detection will
+	 * trigger an error. However, it might be detected for the outside construction, because all
+	 * construction checks will be performed after calling the regular constructor.
+	 */
+	static synchronized def boolean checkObjectConstructionViaFactory(Object checkObject) {
+
+		val registeredForThread = MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY.get(Thread.currentThread)
+		if (registeredForThread === null)
+			return false
+
+		// current object must override null in list
+		if (registeredForThread.get(registeredForThread.size - 1) === null) {
+
+			registeredForThread.set(registeredForThread.size - 1, checkObject)
+			return true
+
+		}
+
+		// return true if last object within list is current object
+		return registeredForThread.get(registeredForThread.size - 1) === checkObject
+
+	}
+
+	/**
+	 * This method must be called by a factory method after an object has been constructed.
+	 */
+	static synchronized def boolean unregisterObjectConstructionViaFactory() {
+
+		val thread = Thread.currentThread
+
+		val registeredForThread = MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY.get(thread)
+		if (registeredForThread === null)
+			return false
+
+		// remove latest object
+		registeredForThread.remove(registeredForThread.size - 1)
+		if (registeredForThread.size === 0)
+			MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY.remove(thread)
+
+		return true
+
+	}
+
 	/** 
 	 * Helper class for storing information about auto adaption.
 	 */
@@ -309,7 +392,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 
 		// check for ambiguity
 		if (currentClass === rootClass && result.size > 1)
-			errors?.add('''Ambiguous factory method rules have found in supertypes and/or trait classes''')
+			errors?.add('''Ambiguous factory method rules have been found in supertypes and/or trait classes''')
 
 		// return one result
 		if (result.size == 0)

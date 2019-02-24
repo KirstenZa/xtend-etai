@@ -38,6 +38,7 @@ import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.NotNullRuleInfo
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
 
 /**
  * <p>Different strategies for returning a collection/map via getter method.</p>
@@ -1215,7 +1216,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 		extension TypeReferenceProvider context) {
 
 		val methodDeclarationBoolean = (context.primitiveBoolean == methodDeclaration.returnType)
-		val objectTypeString = fieldDeclaration.type.getTypeReferenceAsString(true, false, false, true, context)
+		val objectTypeString = fieldDeclaration.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true, context)
 		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.«interfaceType.simpleName»<«objectTypeString»>() {
 				@Override
 				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«objectTypeString» oldValue, «objectTypeString» newValue) {
@@ -1392,7 +1393,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 							fieldDeclaration.type.actualTypeArguments.get(1).upperBound
 						else
 							fieldDeclaration.type.actualTypeArguments.get(1)
-					}]).getTypeReferenceAsString(true, false, false, false, context) + ")"
+					}]).getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context) + ")"
 
 			}
 
@@ -1402,7 +1403,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 					return "(" +
 						context.newTypeReference(collectionType,
 							fieldDeclaration.type.actualTypeArguments.get(0).upperBound).
-							getTypeReferenceAsString(true, false, false, false, context) + ")"
+							getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context) + ")"
 
 			}
 
@@ -1448,7 +1449,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 	static def String getCollectionTypeArgumentAsString(FieldDeclaration fieldDeclaration, int index,
 		TypeReferenceProvider context) {
 
-		return getCollectionTypeArgument(fieldDeclaration, index, context).getTypeReferenceAsString(true, false, false,
+		return getCollectionTypeArgument(fieldDeclaration, index, context).getTypeReferenceAsString(true, TypeErasureMethod.NONE, false,
 			false, context)
 
 	}

@@ -26,8 +26,10 @@ import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarat
 import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFrom
 import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFromIndexed
 import org.eclipse.xtend.lib.annotation.etai.SetterRuleProcessor.MethodDeclarationFromSetter
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummy
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckApplyRules
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckInit
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckFactoryCall
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
 import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import org.eclipse.xtend.lib.annotation.etai.utils.TypeUtils
@@ -229,12 +231,27 @@ annotation HasExplicitConstructors {
 /**
  * This annotation is put onto constructors within adapted classes,
  * which have been generated for delegation purpose. Thereby, the main purpose
- * of delegation is to include a check procedure.
+ * of delegation is to include a check procedure. In constructors annotated
+ * by this annotation, it is checked, if the {@link ApplyRules} annotation
+ * is used consistently.
  * 
  * @see ApplyRules
  */
 @Target(ElementType.CONSTRUCTOR)
 annotation ApplyRulesCheckerDelegationConstructor {
+}
+
+/**
+ * This annotation is put onto constructors within adapted classes,
+ * which have been generated for delegation purpose. Thereby, the main purpose
+ * of delegation is to include a check procedure. In constructors annotated
+ * by this annotation, it is checked, if the constructor has been called by
+ * an associated factory method.
+ * 
+ * @see ApplyRules
+ */
+@Target(ElementType.CONSTRUCTOR)
+annotation FactoryCallCheckerDelegationConstructor {
 }
 
 /**
@@ -1216,12 +1233,19 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// move documentation
 		if (!isDefaultConstructor) {
 
-			newConstructor.docComment = originalConstructor.docComment
-			originalConstructor.docComment = '''This is the implementation of constructor «newConstructor.getJavaDocLinkTo(context)».'''
+			if (originalConstructor.hasAnnotation(FactoryCallCheckerDelegationConstructor) ||
+				originalConstructor.hasAnnotation(ApplyRulesCheckerDelegationConstructor) ||
+				originalConstructor.hasAnnotation(ExtendedCheckerMethodDelegationConstructor)) {
 
-		} else {
+				newConstructor.docComment = originalConstructor.docComment
+				originalConstructor.docComment = '''This is a wrapper of constructor «newConstructor.getJavaDocLinkTo(context)», which is performing some additional checks.'''
 
-			originalConstructor.docComment = '''This is the implementation of the default constructor.'''
+			} else {
+
+				newConstructor.docComment = originalConstructor.docComment
+				originalConstructor.docComment = '''This is the implementation of constructor «newConstructor.getJavaDocLinkTo(context)».'''
+
+			}
 
 		}
 
@@ -1411,7 +1435,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
 				]) {
 					xtendClass.
-						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(true, false, context).join(", ")»)" cannot be applied to current class, because the method has already been declared.''')
+						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, false, context).join(", ")»)" cannot be applied to current class, because the method has already been declared.''')
 					return
 				}
 
@@ -1525,8 +1549,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 						// generate method body, which is a super call
 						val isVoid = newMethod.returnType === null || newMethod.returnType.isVoid()
-						val returnTypeReferenceString = newMethod.returnType.
-							getTypeReferenceAsString(true, false, false, false, context)
+						val returnTypeReferenceString = newMethod.returnType.getTypeReferenceAsString(true,
+							TypeErasureMethod.NONE, false, false, context)
 						bodySetter.setBody(newMethod, '''«IF !isVoid»return («returnTypeReferenceString») «ENDIF»
 			 			super.«if (newMethod.isTraitMethod) newMethod.getTraitMethodImplName else newMethod.simpleName»(«paramNameList.join(", ")»);''',
 							context)
@@ -2275,7 +2299,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							newParameterList.put(parameter.simpleName,
 								parameter.type.copyTypeReference(usedTypeMap, context))
 							regularParamTypeNameList.add(
-								parameter.type.getTypeReferenceAsString(true, false, true, false, context))
+								parameter.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, true, false,
+									context))
 
 						}
 
@@ -2365,7 +2390,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 								if (traitClassToConstruct == parameter.declaringExecutable.declaringType) {
 									parameterNames.add(parameter.simpleName)
 									parameterTypeNames.add(
-										parameter.type.getTypeReferenceAsString(true, false, true, false, context))
+										parameter.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, true,
+											false, context))
 								}
 
 							}
@@ -2423,12 +2449,16 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					// add body to factory method (if not abstract)
 					if (!newFactoryMethod.abstract) {
 
-						bodySetter.setBody(
-							newFactoryMethod, '''«annotatedClass.qualifiedName»«typeArgumentString» internal$newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
-							«bodyDelegationObjectCreation»
-							«bodyCheckObjectCreation»
-							«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»internal$newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
-							return internal$newObject;''', context)
+						bodySetter.setBody(newFactoryMethod, '''assert org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.registerObjectConstructionViaFactory() : org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.REGISTER_OBJECT_CONSTRUCTION_ERROR;
+							try {
+								«annotatedClass.qualifiedName»«typeArgumentString» internal$newObject = new «annotatedClass.qualifiedName»«typeArgumentString»(«paramNameList.join(", ")»);
+								«bodyDelegationObjectCreation»
+								«bodyCheckObjectCreation»
+								«IF !factoryMethodRuleInfo.initMethod.nullOrEmpty»internal$newObject.«factoryMethodRuleInfo.initMethod»();«ENDIF»
+								return internal$newObject;
+							} finally {
+								assert org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.unregisterObjectConstructionViaFactory() : org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.UNREGISTER_OBJECT_CONSTRUCTION_ERROR;
+							}''', context)
 
 					}
 
@@ -2451,19 +2481,41 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	private def void doTransformConstructorsConsistencyChecks(MutableClassDeclaration annotatedClass, TypeMap typeMap,
 		BodySetter bodySetter, extension TransformationContext context) {
 
-		// nothing to do, if class is not the root within the auto adaption type hierarchy
-		if (!annotatedClass.isApplyRulesRoot)
-			return;
+		// check that factory method is called for object construction
+		if (!annotatedClass.isTraitClass && annotatedClass.getFactoryMethodRuleInfo(null, context) !== null) {
 
-		// process existing constructors (do not extend constructors, which already start with a dummy parameter)
-		for (constructor : annotatedClass.declaredConstructors.filter [
-			it.parameters.size() == 0 || it.parameters.get(0).simpleName !=
-				IConstructorParamDummyCheckInit.DUMMY_VARIABLE_NAME
-		])
-			constructor.addAdditionalBodyToConstructor(
-				'''assert this.getClass().getAnnotation(org.eclipse.xtend.lib.annotation.etai.ApplyRules.class) != null : String.format(org.eclipse.xtend.lib.annotation.etai.ApplyRulesProcessor.AUTO_RULE_ADAPTION_MISSING_ERROR, this.getClass().getCanonicalName());
-			''', ApplyRulesCheckerDelegationConstructor, IConstructorParamDummyCheckApplyRules,
-				IConstructorParamDummyCheckApplyRules.DUMMY_VARIABLE_NAME, bodySetter, typeMap, context)
+			// only need once in root class for factory method rule, so parent must not have factory method rule declared
+			if ((annotatedClass.extendedClass?.type as ClassDeclaration)?.getFactoryMethodRuleInfo(null, context) ===
+				null) {
+
+				// process existing constructors (do not extend constructors, which already start with a dummy parameter)
+				for (constructor : annotatedClass.declaredConstructors.filter [
+					it.parameters.size() == 0 ||
+						!it.parameters.get(0).simpleName.startsWith(IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)
+				])
+					constructor.addAdditionalBodyToConstructor(
+				    	'''assert org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.checkObjectConstructionViaFactory(this) : org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.CHECK_OBJECT_CONSTRUCTION_ERROR;
+					''', FactoryCallCheckerDelegationConstructor, IConstructorParamDummyCheckFactoryCall,
+						IConstructorParamDummyCheckFactoryCall.DUMMY_VARIABLE_NAME, bodySetter, typeMap, context)
+
+			}
+
+		}
+
+		// check that annotation is used consistently (only necessary in root)
+		if (annotatedClass.isApplyRulesRoot) {
+
+			// process existing constructors (do not extend constructors, which already start with a dummy parameter)
+			for (constructor : annotatedClass.declaredConstructors.filter [
+				it.parameters.size() == 0 ||
+					!it.parameters.get(0).simpleName.startsWith(IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)
+			])
+				constructor.addAdditionalBodyToConstructor(
+					'''assert this.getClass().getAnnotation(org.eclipse.xtend.lib.annotation.etai.ApplyRules.class) != null : String.format(org.eclipse.xtend.lib.annotation.etai.ApplyRulesProcessor.AUTO_RULE_ADAPTION_MISSING_ERROR, this.getClass().getCanonicalName());
+				''', ApplyRulesCheckerDelegationConstructor, IConstructorParamDummyCheckApplyRules,
+					IConstructorParamDummyCheckApplyRules.DUMMY_VARIABLE_NAME, bodySetter, typeMap, context)
+
+		}
 
 	}
 

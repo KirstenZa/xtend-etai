@@ -54,7 +54,6 @@
       - [ Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes)
       - [ Usage of *\$extendedThis*](#usage-of-\extendedthis)
     - [ Trait Classes and Inheritance](#trait-classes-and-inheritance)
-      - [ Calling Trait Methods of Parent Class within Trait Classes](#calling-trait-methods-of-parent-class-within-trait-classes)
       - [ Base Trait Classes](#base-trait-classes)
       - [ Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
 
@@ -2113,6 +2112,11 @@ class Cat implements IXWithName {
 
 ![](images/PlantUML_ExtendedBy_Constructor_Method_Out_Java.png)
 
+##### Important
+
+The construction of objects based on trait classes and the classes extended by them is a complex internal process. Therefore, it
+should be avoided to perform complex operations during this process, i.e. within any constructor, because the necessary internal structure is still going to be built. Trait methods cannot be called in a regular way, for example.
+
 #### Automatic Generation of Constructors
 
 In combination with [modification features](#automatic-modification-of-classes) of the ETAI library, there are possibilities to **ease the use of trait classes with construction methods**. The previous section has shown that construction helper methods must be called within constructors of the extended class. Such calls follow a specific pattern very often:
@@ -2230,15 +2234,15 @@ Trait classes can be thought of as extension for the class annotating it. Logica
 
 Of course, if the keyword *this* is used within methods of trait classes, it will technically not reference the object, we logically construct, but the technical instantiation of the trait class. This can lead to several logical problems, e.g. when calling methods. Due to several internal mechanisms some of these logical problems have been solved.
 
-For example, if a **trait method *methodX* within a trait class *A* calls *this.methodY***, whereas *methodY* is a trait method which is also in *A*, it does not necessarily mean that *methodY* of *A* is called. Imagine that *methodY* in *A* is a default method (cp. [Standard Trait Method Processors](#standard-trait-method-processors)), but the class extended by *A* has its own *methodY* implemented. In this case, it would usually be **expected that *methodY* of the extended class is called**, even if the call is within the trait class.
+For example, if a **trait method *methodX* within a trait class *A* calls *this.methodY***, whereas *methodY* is a trait method (but not a constructor method) which is also in *A*, it does not necessarily mean that *methodY* of *A* is called. Imagine that *methodY* in *A* is a default method (cp. [Standard Trait Method Processors](#standard-trait-method-processors)), but the class extended by *A* has its own *methodY* implemented. In this case, it would usually be **expected that *methodY* of the extended class is called** and not the method in *A*, even if the call is within the trait class.
 
 **The ETAI library can ensure this**. Technically, this is possible by renaming methods and adding helper methods within trait classes during Java code generation.
 
-However, there is a **possibility to call the original method within the trait class explicitly**. This is even necessary in some use cases. For example, if the implementation of a method in the parent class shall be (re-)used. If trait method *methodX* wants to use the implementation of *methodX* in *B*, which is a parent class of *A*, it must call ***super.methodX\$impl*** instead of *super.methodX*. Using the latter usually even ends in an endless recursion. So, only **by adding *\$impl* the real implementation of a trait method can be called** from within a trait class.
+However, there is a **possibility to call the original method within the trait class explicitly**. By adding *\$impl* the real implementation of a trait method can be called from within a trait class. If a method is called via *super*, the real method (within the super class) is called as well.
 
 The following showcase exemplifies this. Method *attack* within trait class *XPredator* calls *sound*. However, the method *sound* within *XPredator* is not called directly. In case of a *Tiger* object, it actually is called in the end, because *Tiger* does not specify any method. In context of a *Wolf* object, however, the *sound* method of the *Wolf* class is called.
 
-The example also shows that method *sound* in *XPredator* wants to call the base functionality in *XAnimal*. For this it is using *super.attack\$impl*.
+The example also shows that method *sound* in *XPredator* wants to call the base functionality in *XAnimal*. For this it is using *super.attack*, which actually works as expected and does not call method *attack* in the extended class.
 
 ##### Input (Code)
 
@@ -2273,7 +2277,7 @@ abstract class XPredator extends XAnimal {
 
 	@ExclusiveMethod
 	override void attack() {
-		super.attack$impl
+		super.attack
 		sound()
 	}
 
@@ -2326,14 +2330,6 @@ It is also important to know that **a trait class cannot be applied twice in the
 
 The following sub sections show some more specifics regarding trait classes and inheritance.
 
-#### Calling Trait Methods of Parent Class within Trait Classes
-
-There is an important rule for calling trait methods in trait parent classes:
-
-- If you want to call *super.method()* within a trait class, use **super.method\$impl** instead. This will apply, **if *method* is a trait method, but not a constructor method**.
-
-The background and more details are explained in [Calling Methods inside of Trait Classes](#calling-methods-inside-of-trait-classes).
-
 #### Base Trait Classes
 
 If a class is declared *abstract* it is not possible to construct corresponding objects. However, writing such classes is still meaningful as some base functionality for derived classes can be implemented there.
@@ -2346,7 +2342,7 @@ Therefore, it is possible to set flag *baseClass* in annotation *@TraitClass*. I
 
 Trait classes can extend regular classes but not other trait classes via *@ExtendedByAuto*. However, there is a concept which solves this issue for the most part.
 
-The ETAI library allows to declare that a **trait class *A* uses another trait class *B***. This way, methods in *B* can be called in context of methods of trait class *A*. This is possible, because it will be ensured that a class, which is extended by trait class *A*, is also extended by *B*. As soon as a class is extended by *A*, there is a check, if the class (or any parent class) has also been extended by *B*. If not, the extension by *B* will automatically be applied. In the end, the logically constructed object contains all required methods, which is why all calls are successful and work as expected. Internally, delegation and redirection of calls are used again. 
+The ETAI library allows to declare that a **trait class *A* uses another trait class *B***. This way, methods in *B* can be called in context of methods of trait class *A*. This is possible, because it will be ensured that a class, which is extended by trait class *A*, is also extended by *B*. As soon as a class is extended by *A*, there is a check, if the class (or any parent class) has also been extended by *B*. If not, the extension by *B* will automatically be applied (after *A*). In the end, the logically constructed object contains all required methods, which is why all calls are successful and work as expected. Internally, delegation and redirection of calls are used again. 
 
 In order to specify that a trait class *A* is using trait class *B*, it is necessary for *A* to implement the mirror interfaces of *B* (*implements*), which follows the pattern of extending a regular class by a trait class. Instead of annotating a trait class by *@TraitClass*, it must be annotated by ***@TraitClassAutoUsing***. Of course, using multiple trait classes is supported.
 

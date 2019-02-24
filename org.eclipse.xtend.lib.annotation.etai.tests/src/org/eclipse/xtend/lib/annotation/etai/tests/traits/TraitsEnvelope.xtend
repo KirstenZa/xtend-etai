@@ -91,18 +91,18 @@ abstract class TraitClassEnvelopeDerived extends TraitClassEnvelopeBase {
 	@EnvelopeMethod(setFinal=false)
 	override void method1() {
 		TraitTestsBase.TEST_BUFFER += "9"
-		super.method1$impl
+		super.method1
 	}
 
 	@EnvelopeMethod(required=false, defaultValueProvider=SimpleDefaultValueProvider40)
 	override int method4(String x) {
 		TraitTestsBase.TEST_BUFFER += "9"
-		return super.method4$impl(x)
+		return super.method4(x)
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method5(int ... args) {
-		super.method5$impl(args)
+		super.method5(args)
 		TraitTestsBase.TEST_BUFFER += "Z"
 	}
 

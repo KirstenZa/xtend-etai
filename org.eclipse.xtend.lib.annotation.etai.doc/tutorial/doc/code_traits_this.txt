@@ -28,7 +28,7 @@ abstract class XPredator extends XAnimal {
 
 	@ExclusiveMethod
 	override void attack() {
-		super.attack$impl
+		super.attack
 		sound()
 	}
 

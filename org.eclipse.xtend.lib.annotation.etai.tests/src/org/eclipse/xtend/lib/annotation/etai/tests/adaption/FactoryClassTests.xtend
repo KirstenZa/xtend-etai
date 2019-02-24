@@ -3,12 +3,14 @@ package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 import java.lang.reflect.Modifier
 import java.util.ArrayList
 import java.util.List
+import java.util.Map
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
+import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
 import org.eclipse.xtend.lib.annotation.etai.SetAdaptionVariable
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
@@ -25,6 +27,7 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.ITraitClassSpec
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeA
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeB
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.TypeC
+import org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -359,6 +362,19 @@ class ClassWithFactoryClassReturnTypeAdaptionDerived extends ClassWithFactoryCla
 
 }
 
+@ApplyRules
+@FactoryMethodRule(factoryMethod="create", factoryInstance="FACTORY_INSTANCE")
+class ClassWithFactoryClassConstructorCallingConstructor {
+
+	new(int h) {
+
+		if (h == 0)
+			new ClassWithFactoryClassConstructorCallingConstructor(1)
+
+	}
+
+}
+
 class FactoryClassTests {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
@@ -434,16 +450,16 @@ class FactoryClassTests {
 		assertEquals("myStr", newDerived41.str)
 		assertEquals("myStr", newDerived42.str)
 
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.Factory.declaredMethods.filter[
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.Factory.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.Factory.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.Factory.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.Factory.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.Factory.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived4.Factory.declaredMethods.filter[
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived4.Factory.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
 
@@ -452,16 +468,16 @@ class FactoryClassTests {
 		assertEquals(0, ClassWithFactoryClassWithParametersDerived3.constructors.size())
 		assertEquals(0, ClassWithFactoryClassWithParametersDerived4.constructors.size())
 
-		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.declaredConstructors.filter[
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.declaredConstructors.filter[
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived2.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.declaredConstructors.filter[
+		assertEquals(1, ClassWithFactoryClassWithParametersDerived3.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(3, ClassWithFactoryClassWithParametersDerived4.declaredConstructors.filter[
+		assertEquals(3, ClassWithFactoryClassWithParametersDerived4.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
 
@@ -488,6 +504,65 @@ class FactoryClassTests {
 		assertEquals(10, value3)
 		assertEquals(50.0, fValue3, 0.001)
 		ClassWithFactoryClassTypeArgs::callingMustWork(obj3)
+
+	}
+
+	@Test
+	def void testFactoryClassProtection() {
+
+		var boolean exceptionThrown
+
+		// ensure that creation without factory does not work
+		assertEquals(2, ClassWithFactoryClassWithParametersDerived1.declaredConstructors.filter [
+			Modifier.isProtected(it.modifiers)
+		].size())
+
+		exceptionThrown = false
+		try {
+			new ClassWithFactoryClassWithParametersDerived1(0)
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			new ClassWithFactoryClassWithParametersDerived1(0, null)
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			new ClassWithFactoryClassWithParametersDerived3(0, 5, "test")
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		exceptionThrown = false
+		try {
+			new ExtendedClassNotSpecifyingFactoryMethodRule()
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		// check trick (calling constructor within constructor)
+		exceptionThrown = false
+		try {
+			ClassWithFactoryClassConstructorCallingConstructor::FACTORY_INSTANCE.create(0)
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		// check internals: no open registration for object creation
+		val obj = ReflectUtils::getPrivateFieldValue(null,
+			ReflectUtils::getPrivateField(FactoryMethodRuleProcessor,
+				"MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY")) as Map<?, ?>
+		assertEquals(0, obj.size)
 
 	}
 
@@ -659,25 +734,25 @@ class UsingFactoryClassInterface {
 
 		// check factory and its methods
 		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IControllerAttributeStringConcrete1 && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === TypeC && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IComponentFeature && synthetic == false
 		].size)
 
 		// check also if declared in another file		
 		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcreteOtherFile.FACTORY.class.declaredMethods.size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IControllerAttributeStringConcrete1 && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === TypeC && synthetic == false
 		].size)
-		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IComponentFeature && synthetic == false
 		].size)
 
@@ -686,7 +761,7 @@ class UsingFactoryClassInterface {
 	@Test
 	def void testFactoryClassNoDerivation() {
 
-		assertTrue(Modifier.isPrivate(ClassWithFactoryClassWithoutConstructorDerived2.declaredClasses.findFirst[
+		assertTrue(Modifier.isPrivate(ClassWithFactoryClassWithoutConstructorDerived2.declaredClasses.findFirst [
 			simpleName == "Factory"
 		].modifiers))
 

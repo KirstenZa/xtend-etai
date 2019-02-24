@@ -12,6 +12,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils
 import java.util.List
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
 
 /**
  * <p>Helper class for retrieving and setting bodies for executables
@@ -150,7 +151,7 @@ class BodySetter {
 						val requiredParamterType = newMethodParameter.getAnnotation(AssertParameterType).
 							getClassValue("value")
 						typeAssertionBody +=
-							'''assert «newMethodParameter.simpleName» == null || «newMethodParameter.simpleName» instanceof «requiredParamterType.getTypeReferenceAsString(true, true, false, false, bodyInfo.value.context)» : String.format(org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.TYPE_ADAPTION_PARAMETER_TYPE_ERROR, "«bodyInfo.key.simpleName»", "«newMethodParameter.simpleName»", "«requiredParamterType.getTypeReferenceAsString(true, false, false, false, bodyInfo.value.context)»");
+							'''assert «newMethodParameter.simpleName» == null || «newMethodParameter.simpleName» instanceof «requiredParamterType.getTypeReferenceAsString(true, TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, false, false, bodyInfo.value.context)» : String.format(org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRuleProcessor.TYPE_ADAPTION_PARAMETER_TYPE_ERROR, "«bodyInfo.key.simpleName»", "«newMethodParameter.simpleName»", "«requiredParamterType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, bodyInfo.value.context)»");
 							'''
 						typeAssertionBody += "\n";
 					}

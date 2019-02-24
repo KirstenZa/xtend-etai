@@ -27,3 +27,16 @@ build
 
 # Xtend
 xtend-gen
+
+# Eclipse
+.project
+.classpath
+.prefs
+.settings
+.externalToolBuilders
+temp
+bin
+output
+META-INF
+launch
+build.properties

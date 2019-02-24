@@ -105,24 +105,24 @@ abstract class TraitClassTypeB extends TraitClassTypeA {
 	@ProcessedMethod(processor=TypeCombinator)
 	override TypeB method1() {
 		objA.calc(100)
-		return super.method1$impl() as TypeB
+		return super.method1 as TypeB
 	}
 
 	@ProcessedMethod(processor=TypeCombinator)
 	override TypeB[] method2() {
 		objA.calc(100)
-		val baseArray = super.method2$impl()
+		val baseArray = super.method2
 		return Arrays.copyOf(baseArray, baseArray.length, typeof(TypeB[]))
 	}
 
 	@ProcessedMethod(processor=TypeCombinator)
 	override TypeB method3() {
-		return super.method3$impl() as TypeB
+		return super.method3 as TypeB
 	}
 
 	@ProcessedMethod(processor=TypeCombinator)
 	override TypeB[] method4() {
-		val baseArray = super.method2$impl()
+		val baseArray = super.method2
 		return Arrays.copyOf(baseArray, baseArray.length, typeof(TypeB[]))
 	}
 

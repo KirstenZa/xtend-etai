@@ -1,8 +1,13 @@
 package org.eclipse.xtend.lib.annotation.etai.utils;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.xtend.lib.annotation.etai.DefaultValueProvider;
 
@@ -180,6 +185,75 @@ public class ReflectUtils {
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		return callPrivateMethod(obj, getPrivateMethodCompatibleMatch(obj.getClass(), methodName, null), null);
+
+	}
+
+	/**
+	 * TODO: here 
+	 * 
+	 * TODO: description
+	 * 
+	 * TODO: this does not work, because target is not accessible
+	 * 
+	 * @throws Throwable
+	 */
+	public static Object callPrivateMethodSpecial(Class<?> clazz, Object obj, String methodName, Class<?>[] types,
+			Object[] arguments) throws Throwable {
+
+		MethodHandle methodHandle;
+
+		// search method in given clazz (exact class, exact parameter match)
+		if (types.length > 1) {
+
+			List<Class<?>> parameters = new ArrayList<Class<?>>();
+			for (int i = 1; i < types.length; i++)
+				parameters.add(types[i]);
+
+			methodHandle = MethodHandles.lookup().findSpecial(clazz, methodName,
+					MethodType.methodType(types[0], parameters), clazz);
+
+		} else {
+
+			methodHandle = MethodHandles.lookup().findSpecial(clazz, methodName, MethodType.methodType(types[0]),
+					clazz);
+
+		}
+
+		// invoke found method and return result
+		return methodHandle.invoke(obj, arguments);
+
+	}
+	
+	/**
+	 * TODO: here 
+	 * 
+	 * TODO: description
+	 * 
+	 * TODO: this does not work, because target is not accessible
+	 * 
+	 * @throws Throwable
+	 */
+	public static Object callPrivateMethodSpecial2(Class<?> clazz, Object obj, String methodName, Class<?>[] parameterTypes,
+			Object[] arguments) throws Throwable {
+
+		Method method = getPrivateMethodExactMatch(clazz, methodName, parameterTypes);
+		
+		boolean previousAccessible = method.isAccessible();
+		method.setAccessible(true);
+		try {
+
+			MethodHandle methodHandle = MethodHandles.lookup().unreflectSpecial(method, clazz);
+
+			// invoke found method and return result
+			return methodHandle.invoke(obj, arguments);
+
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} finally {
+			method.setAccessible(previousAccessible);
+		}
+
+			
 
 	}
 

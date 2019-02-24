@@ -1,25 +1,32 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
+import java.lang.reflect.Modifier
+import java.util.List
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.EPVoidPost
 import org.eclipse.xtend.lib.annotation.etai.EPVoidPre
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
-import org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IExtendedClassNonPublic
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublic
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicImplementRequired
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicImplementRequiredNonBase
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNonPublicUsingImplementRequired
-import java.lang.reflect.Modifier
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithProtectedMethodAndGenericParameter
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithProtectedMethodAndGenericParameterObjectFromClass
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithProtectedMethodAndGenericParameterStringFromClass
 
 @TraitClassAutoUsing
 abstract class TraitClassNonPublic {
@@ -172,6 +179,70 @@ class ExtendedClassNonPublicUsingImplementRequired implements ITraitClassNonPubl
 class ExtendedClassNonPublicImplementRequiredCheckBaseNonBase implements ITraitClassNonPublicImplementRequiredNonBase {
 }
 
+@TraitClass
+abstract class TraitClassWithProtectedMethodAndGenericParameter {
+
+	@ProcessedMethod(processor=EPVoidPost)
+	protected def void myMethod(List<?> objs) {
+		TraitTestsBase.TEST_BUFFER += objs.get(1)
+	}
+
+	@ExclusiveMethod
+	override void start(List<?> objs) {
+		myMethod(objs)
+	}
+
+	@EnvelopeMethod
+	protected def void myMethodEnv(List<?> objs) {
+		TraitTestsBase.TEST_BUFFER += "a"
+		myMethodEnv$extended(objs)
+		TraitTestsBase.TEST_BUFFER += "b"
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedByWithProtectedMethodAndGenericParameter implements ITraitClassWithProtectedMethodAndGenericParameter {
+
+	protected def void myMethod(List<?> objs) {
+		TraitTestsBase.TEST_BUFFER += objs.get(0)
+		TraitTestsBase.TEST_BUFFER += objs.get(2)
+	}
+
+	protected def void myMethodEnv(List<?> objs) {
+		TraitTestsBase.TEST_BUFFER += objs.get(3)
+	}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassWithProtectedMethodAndGenericParameterObjectFromClass<T> {
+
+	@ExclusiveMethod
+	protected def T transform(T value) {
+		return value
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedByProtectedMethodAndGenericParameterObjectFromClass<T> implements ITraitClassWithProtectedMethodAndGenericParameterObjectFromClass<T> {
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassWithProtectedMethodAndGenericParameterStringFromClass<T extends String> {
+
+	@ExclusiveMethod
+	protected def T transform(T value) {
+		return (value + "transformed") as T
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedByProtectedMethodAndGenericParameterStringFromClass<T extends String> implements ITraitClassWithProtectedMethodAndGenericParameterStringFromClass<T> {
+}
+
 class TraitsNonPublicTests extends TraitTestsBase {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
@@ -189,8 +260,8 @@ class TraitsNonPublicTests extends TraitTestsBase {
 
 		assertTrue(
 			Modifier.isPublic(
-				TraitClassNonPublic.getDeclaredMethod("method1" +
-					TraitClassProcessor.TRAIT_METHOD_IMPL_NAME_SUFFIX).modifiers))
+				TraitClassNonPublic.getDeclaredMethod("method1" + TraitClassProcessor.TRAIT_METHOD_IMPL_NAME_SUFFIX).
+					modifiers))
 
 	}
 
@@ -278,6 +349,36 @@ class TraitsNonPublicTests extends TraitTestsBase {
 			exceptionThrown = true
 		}
 		assertFalse(exceptionThrown)
+
+	}
+
+	@Test
+	def void testProtectedMethodAndGenericParameter() {
+
+		val obj = new ExtendedByWithProtectedMethodAndGenericParameter
+
+		TraitTestsBase.TEST_BUFFER = ""
+		obj.start(#[5, 6, 7])
+		assertEquals("576", TraitTestsBase.TEST_BUFFER)
+
+		TraitTestsBase.TEST_BUFFER = ""
+		obj.myMethodEnv(#[11, 12, 13, 14])
+		assertEquals("a14b", TraitTestsBase.TEST_BUFFER)
+
+	}
+
+	@Test
+	def void testProtectedMethodAndGenericParameterFromClass() {
+
+		{
+			val obj = new ExtendedByProtectedMethodAndGenericParameterObjectFromClass
+			assertEquals(6, obj.transform(Long.valueOf(6)))
+		}
+
+		{
+			val obj = new ExtendedByProtectedMethodAndGenericParameterStringFromClass
+			assertEquals("Xtransformed", obj.transform("X"))
+		}
 
 	}
 

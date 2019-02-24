@@ -97,30 +97,30 @@ abstract class TraitClassTypeAdaptionDerivedA2 extends TraitClassTypeAdaptionDer
 
 	@ExclusiveMethod
 	override ControllerAttribute method1() {
-		return super.method1$impl as ControllerAttribute
+		return super.method1 as ControllerAttribute
 	}
 
 	@AdaptedMethod
 	@ExclusiveMethod
 	override ControllerBase method2() {
-		return super.method1$impl
+		return super.method1
 	}
 
 	@AdaptedMethod
 	@ExclusiveMethod
 	override ControllerBase method3() {
-		return super.method1$impl
+		return super.method1
 	}
 
 	@ProcessedMethod(processor=EPOverride)
 	override ControllerBase method6() {
-		return super.method1$impl
+		return super.method1
 	}
 
 	@AdaptedMethod
 	@ProcessedMethod(processor=EPOverride)
 	override ControllerBase method7() {
-		return super.method1$impl
+		return super.method1
 	}
 
 }

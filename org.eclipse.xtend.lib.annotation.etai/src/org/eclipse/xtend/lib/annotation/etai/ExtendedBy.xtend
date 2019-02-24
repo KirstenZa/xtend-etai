@@ -9,6 +9,7 @@ import java.util.List
 import java.util.Set
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckInit
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
 import org.eclipse.xtend.lib.annotation.etai.utils.StringUtils
 import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
@@ -140,7 +141,9 @@ annotation ExtendedConstructionHelperMethod {
 /**
  * This annotation is put onto constructors within extended classes,
  * which have been generated for delegation purpose. Thereby, the main purpose
- * of delegation is to include a check procedure.
+ * of delegation is to include a check procedure. In constructors annotated
+ * by this annotation, it is checked, if all delegation objects have been
+ * constructed.
  */
 @Target(ElementType.CONSTRUCTOR)
 annotation ExtendedCheckerMethodDelegationConstructor {
@@ -304,6 +307,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		List<String> specifiedTraitClassesNames, extension T context) {
 
 		try {
+
 			// add type references based on used interfaces
 			for (implementedInterface : annotatedClass.implementedInterfaces) {
 
@@ -796,11 +800,14 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				])
 
 				if (traitClass.hasNonEmptyConstructorMethod(context)) {
-					initializer = '''null'''
-				} else {
-					initializer = '''new «traitClass.qualifiedName»(this«IF !traitClass.hasConstructorMethod(context)», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null«ENDIF»)'''
 
+					initializer = '''null'''
+
+				} else {
+
+					initializer = '''new «traitClass.qualifiedName»(this«IF !traitClass.hasConstructorMethod(context)», (org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummySetExtendedThis) null«ENDIF»)'''
 					final = true
+
 				}
 
 				docComment = '''This is the delegation object for the functionality of trait class «traitClass.getJavaDocLinkTo(context)»'''
@@ -815,7 +822,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				false, typeMap, context)
 
 			// do specific transformations for each relevant trait method
-			val traitClassMethods = traitClass.getTraitMethodsToApply(typeMap, context)
+			val traitClassMethods = traitClass.getTraitMethodClosure(typeMap, context)
 			for (traitClassMethod : traitClassMethods)
 				doTransformForTraitClassMethod(annotatedClass, traitClass, traitClassMethod, methodClosureCache,
 					typeMap, bodySetter, context)
@@ -1077,8 +1084,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// create parameter name list
 		val paramNameList = executableDeclarationWithParameterInfo.parametersNames
-		val paramTypeNameListJavadoc = executableDeclarationWithParameterInfo.getParametersTypeNames(true, true,
-			context)
+		val paramTypeNameListJavadoc = executableDeclarationWithParameterInfo.getParametersTypeNames(
+			TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, true, context)
 
 		if (!methodRedirected) {
 
@@ -1294,7 +1301,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// set body (simply call trait class functionality)
 			val delegationMethodFinal = delegationMethod
 			bodySetter.setBody(
-				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, false, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''',
+				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''',
 				context)
 
 			return;
@@ -1322,7 +1329,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		var paramCounter = 0
 		for (paramNameDelegationMethod : paramNameListDelegationMethod) {
 			paramCallList.
-				add('''(«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, false, false, false,context)») getArgument(«paramCounter++»)''')
+				add('''(«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,context)») getArgument(«paramCounter++»)''')
 		}
 
 		// lazy evaluation of functionality in trait class
@@ -1387,18 +1394,18 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		// add return to method body
 		if (returnArrayConversionRequired) {
 
-			val traitClassMethodReturnType = traitClassMethod.returnType.getTypeReferenceAsString(true, false, false,
-				false, context)
+			val traitClassMethodReturnType = traitClassMethod.returnType.getTypeReferenceAsString(true,
+				TypeErasureMethod.NONE, false, false, context)
 
 			// specific handling of array types (cannot be simply casted in case of covariance)
 			methodBody += "\n" +
 				'''«traitClassMethodReturnType» internal$resultArray = («traitClassMethodReturnType») «processorCall»;'''
 			methodBody += "\n" +
-				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)».class);'''
+				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,context)».class);'''
 
 		} else {
 			methodBody += "\n" +
-				'''«IF !isVoid»return («delegationMethod.returnType.getTypeReferenceAsString(true, false, false, false,context)») «ENDIF»«processorCall»;'''
+				'''«IF !isVoid»return («delegationMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,context)») «ENDIF»«processorCall»;'''
 
 		}
 

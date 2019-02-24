@@ -215,6 +215,19 @@ class ClassWithFactoryMethodReturnInterfaceDerived extends ClassWithFactoryMetho
 class ClassWithFactoryMethodReturnInterfaceDerivedNoInterface extends ClassWithFactoryMethodReturnInterface {
 }
 
+@ApplyRules
+@FactoryMethodRule(factoryMethod="construct")
+class ClassWithFactoryMethodConstructorCallingConstructor {
+
+	new(int h) {
+
+		if (h == 0)
+			new ClassWithFactoryMethodConstructorCallingConstructor(1)
+
+	}
+
+}
+
 class FactoryMethodTests {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
@@ -298,16 +311,16 @@ class FactoryMethodTests {
 		assertEquals("myStr", newDerived41.str)
 		assertEquals("myStr", newDerived42.str)
 
-		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredMethods.filter[
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredMethods.filter[
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
-		assertEquals(2, ClassWithFactoryMethodWithParametersDerived4.declaredMethods.filter[
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived4.declaredMethods.filter [
 			name.startsWith("create") && synthetic == false
 		].size())
 
@@ -316,18 +329,47 @@ class FactoryMethodTests {
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived3.constructors.size())
 		assertEquals(0, ClassWithFactoryMethodWithParametersDerived4.constructors.size())
 
-		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredConstructors.filter[
+		assertEquals(2, ClassWithFactoryMethodWithParametersDerived1.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredConstructors.filter[
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived2.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredConstructors.filter[
+		assertEquals(1, ClassWithFactoryMethodWithParametersDerived3.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
-		assertEquals(3, ClassWithFactoryMethodWithParametersDerived4.declaredConstructors.filter[
+		assertEquals(3, ClassWithFactoryMethodWithParametersDerived4.declaredConstructors.filter [
 			Modifier.isProtected(it.modifiers)
 		].size())
+
+	}
+
+	@Test
+	def void testFactoryMethodProtection() {
+
+		var boolean exceptionThrown
+
+		// ensure that creation without factory method does not work
+		assertEquals(1, ClassWithFactoryMethodWithoutConstructorDerived1.declaredConstructors.filter [
+			Modifier.isProtected(it.modifiers)
+		].size())
+
+		exceptionThrown = false
+		try {
+			new ClassWithFactoryMethodWithoutConstructorDerived1
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+		// check trick (calling constructor within constructor)
+		exceptionThrown = false
+		try {
+			ClassWithFactoryMethodConstructorCallingConstructor::construct(0)
+		} catch (AssertionError assertionError) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
 
 	}
 
@@ -376,7 +418,7 @@ class FactoryMethodTests {
 	}
 
 	@Test
-	def void testinitMethods() {
+	def void testInitMethods() {
 
 		val newConcrete1 = ClassWithInitMethodConcrete1.create
 		val newConcrete21 = ClassWithInitMethodConcrete2::create(6)

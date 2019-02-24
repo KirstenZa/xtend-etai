@@ -72,8 +72,8 @@ public class LogUtils {
 	}
 
 	/**
-	 * Appends the given log message to the given file, which is specified by
-	 * the fully qualified name.
+	 * Appends the given log message to the given file, which is specified by the
+	 * fully qualified name.
 	 */
 	public static void logToFile(String filename, Severity logLevel, String message) {
 
@@ -181,8 +181,8 @@ public class LogUtils {
 	}
 
 	/**
-	 * Appends the given log message to the standard log file. This method will
-	 * do not log anything, if no standard file has been configured.
+	 * Appends the given log message to the standard log file. This method will do
+	 * not log anything, if no standard file has been configured.
 	 */
 	public static void log(Severity logLevel, String message) {
 		if (STANDARD_LOG_FILE != null && !STANDARD_LOG_FILE.isEmpty())

@@ -64,6 +64,10 @@ class ProcessUtils {
 		final static public String DUMMY_VARIABLE_NAME_PREFIX = "$dummy"
 	}
 
+	static interface IConstructorParamDummyCheckFactoryCall extends IConstructorParamDummy {
+		final static public String DUMMY_VARIABLE_NAME = DUMMY_VARIABLE_NAME_PREFIX + "$checkFactoryCall"
+	}
+
 	static interface IConstructorParamDummyCheckApplyRules extends IConstructorParamDummy {
 		final static public String DUMMY_VARIABLE_NAME = DUMMY_VARIABLE_NAME_PREFIX + "$checkApplyRules"
 	}
@@ -88,6 +92,17 @@ class ProcessUtils {
 		MATCH_INHERITANCE,
 		MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
 		MATCH_ALL
+	}
+
+	/**
+	 * Different settings for type erasure.
+	 */
+	static enum TypeErasureMethod {
+
+		NONE,
+		REMOVE_GENERICS,
+		REMOVE_CONCRETE_TYPE_PARAMTERS
+
 	}
 
 	/**
@@ -1275,8 +1290,9 @@ class ProcessUtils {
 				return parameterCountCompare
 
 			// compare return type
-			val returnTypeCompare = $0.returnType.getTypeReferenceAsString(true, false, false, false, context).
-				compareTo($1.returnType.getTypeReferenceAsString(true, false, false, false, context))
+			val returnTypeCompare = $0.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,
+				context).compareTo(
+				$1.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context))
 			if (returnTypeCompare != 0)
 				return returnTypeCompare
 
@@ -1291,8 +1307,9 @@ class ProcessUtils {
 				if (paramCompare != 0)
 					return paramCompare
 
-				val paramTypeCompare = param0.type.getTypeReferenceAsString(true, false, false, false, context).
-					compareTo(param1.type.getTypeReferenceAsString(true, false, false, false, context))
+				val paramTypeCompare = param0.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,
+					context).compareTo(
+					param1.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context))
 				if (paramTypeCompare != 0)
 					return paramTypeCompare
 
@@ -1527,11 +1544,11 @@ class ProcessUtils {
 	/**
 	 * Returns the (qualified) type names of all parameters as a list
 	 */
-	static def getParametersTypeNames(ExecutableDeclaration executable, boolean typeErasure, boolean javadocHtml,
-		extension TypeReferenceProvider context) {
+	static def getParametersTypeNames(ExecutableDeclaration executable, TypeErasureMethod typeErasureMethod,
+		boolean javadocHtml, extension TypeReferenceProvider context) {
 
 		executable.parameters.map [
-			type.getTypeReferenceAsString(true, typeErasure, javadocHtml, false, context)
+			type.getTypeReferenceAsString(true, typeErasureMethod, javadocHtml, false, context)
 		].toList
 
 	}
@@ -1544,10 +1561,10 @@ class ProcessUtils {
 	static def String getMethodAsString(MethodDeclaration methodDeclaration, boolean qualified,
 		extension TypeReferenceProvider context) {
 
-		return methodDeclaration.returnType.getTypeReferenceAsString(qualified, false, false, false, context) + " " +
-			methodDeclaration.simpleName + "(" + methodDeclaration.parameters.map [
-				type.getTypeReferenceAsString(qualified, false, false, false, context)
-			].join(", ") + ")"
+		return methodDeclaration.returnType.getTypeReferenceAsString(qualified, TypeErasureMethod.NONE, false, false,
+			context) + " " + methodDeclaration.simpleName + "(" + methodDeclaration.parameters.map [
+			type.getTypeReferenceAsString(qualified, TypeErasureMethod.NONE, false, false, context)
+		].join(", ") + ")"
 
 	}
 
@@ -1591,15 +1608,16 @@ class ProcessUtils {
 	 * Flags can control the generation of the output, e.g. if the qualified name shall be used, the output format
 	 * shall be HTML, type erasure shall be applied or primitive types shall be replaced by their wrapper classes.
 	 */
-	static def String getTypeReferenceAsString(TypeReference typeReference, boolean qualified, boolean typeErasure,
-		boolean javadocHtml, boolean useWrapperClasses, extension TypeReferenceProvider context) {
+	static def String getTypeReferenceAsString(TypeReference typeReference, boolean qualified,
+		TypeErasureMethod typeErasureMethod, boolean javadocHtml, boolean useWrapperClasses,
+		extension TypeReferenceProvider context) {
 
 		var String result
 
 		if (typeReference.isArray) {
 
-			result = ProcessUtils.getTypeReferenceAsString(typeReference.arrayComponentType, qualified, typeErasure,
-				javadocHtml, useWrapperClasses, context) + '[]'
+			result = ProcessUtils.getTypeReferenceAsString(typeReference.arrayComponentType, qualified,
+				typeErasureMethod, javadocHtml, useWrapperClasses, context) + '[]'
 
 		} else if (typeReference.isWildCard) {
 
@@ -1608,13 +1626,13 @@ class ProcessUtils {
 			if (typeReference.upperBound !== null && typeReference.upperBound.type.qualifiedName !=
 				Object.canonicalName) {
 
-				val additionalBounds = typeReference.upperBound.getTypeReferenceAsString(qualified, typeErasure,
+				val additionalBounds = typeReference.upperBound.getTypeReferenceAsString(qualified, typeErasureMethod,
 					javadocHtml, useWrapperClasses, context)
 				result = result + ' extends ' + additionalBounds
 
 			} else if (typeReference.lowerBound !== null && typeReference.lowerBound.type !== null) {
 
-				val additionalBounds = typeReference.lowerBound.getTypeReferenceAsString(qualified, typeErasure,
+				val additionalBounds = typeReference.lowerBound.getTypeReferenceAsString(qualified, typeErasureMethod,
 					javadocHtml, useWrapperClasses, context)
 				result = result + ' super ' + additionalBounds
 
@@ -1622,11 +1640,11 @@ class ProcessUtils {
 
 		} else {
 
-			if (typeErasure === true && typeReference.type instanceof TypeParameterDeclaration) {
+			if (typeErasureMethod != TypeErasureMethod.NONE && typeReference.type instanceof TypeParameterDeclaration) {
 
 				if ((typeReference.type as TypeParameterDeclaration).upperBounds.size == 1)
 					result = (typeReference.type as TypeParameterDeclaration).upperBounds.get(0).
-						getTypeReferenceAsString(qualified, typeErasure, javadocHtml, useWrapperClasses, context)
+						getTypeReferenceAsString(qualified, typeErasureMethod, javadocHtml, useWrapperClasses, context)
 				else {
 
 					if (qualified)
@@ -1672,16 +1690,17 @@ class ProcessUtils {
 
 			}
 
-			if (typeReference.actualTypeArguments !== null && typeReference.actualTypeArguments.size > 0) {
+			if (typeErasureMethod != TypeErasureMethod.REMOVE_GENERICS && typeReference.actualTypeArguments !== null &&
+				typeReference.actualTypeArguments.size > 0) {
 
 				val typeArgList = new ArrayList<String>
 				for (typeArg : typeReference.actualTypeArguments) {
-					if (typeErasure)
+					if (typeErasureMethod == TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS)
 						typeArgList.add("?")
 					else
 						typeArgList.add(
-							typeArg.getTypeReferenceAsString(qualified, typeErasure, javadocHtml, useWrapperClasses,
-								context))
+							typeArg.getTypeReferenceAsString(qualified, typeErasureMethod, javadocHtml,
+								useWrapperClasses, context))
 				}
 
 				// in javadoc HTML this is not even needed as parameterized types are NOT part of the method's signature
@@ -1710,7 +1729,7 @@ class ProcessUtils {
 			""
 		else {
 			'''<«typeParameterDeclarator.getActualTypeArgumentsUsingTypeMap(typeMap, context).map [
-							it.getTypeReferenceAsString(qualified, false, false, true, context)
+							it.getTypeReferenceAsString(qualified, TypeErasureMethod.NONE, false, true, context)
 						].join(
 							", ")»>'''
 
@@ -2018,7 +2037,7 @@ class ProcessUtils {
 
 		// resolve parameter type names
 		val paramTypeNameList = if (element instanceof ExecutableDeclaration)
-				getParametersTypeNames(element, false, true, context)
+				getParametersTypeNames(element, TypeErasureMethod.NONE, true, context)
 			else
 				null
 
