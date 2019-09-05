@@ -19,8 +19,8 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * <p>Constructors within trait classes must be annotated by this annotation.</p>
  * 
  * <p>Only protected, non-static, void methods can be
- * annotated by this annotation. Then, real constructors, which will call the annotated
- * method, will be generated for the trait class. The
+ * annotated by this annotation. Then, real constructors that will call the annotated
+ * method will be generated for the trait class. The
  * whole construction process will be forwarded to the annotated method (also called
  * trait class constructor).</p>
  * 
@@ -28,11 +28,11 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * which must trigger the construction within its constructors (if there is no
  * default constructor for the trait class and auto adaption with construction
  * injection is not activated). In order to trigger the construction,
- * a generated method, which follows a specific name pattern, must be called.</p>
+ * a generated method that follows a specific name pattern must be called.</p>
  * 
  * <p>For example, if a class <code>X</code> is extended by a trait class
- * <code>A</code>, which has a trait class constructor with one integral parameter,
- * within the constructors of <code>X</code> there must be a call like
+ * <code>A</code> that has a trait class constructor with one integral parameter
+ * within the constructors of <code>X</code>, there must be a call like
  * <code>new$A(intParam)</code>.</p>
  * 
  * <p>Calling trait class constructors of a parent must be handled by the 
@@ -47,7 +47,7 @@ annotation ConstructorMethod {
 }
 
 /**
- * Active Annotation Processor for {@link ConstructorMethod}
+ * <p>Active Annotation Processor for {@link ConstructorMethod}.</p>
  * 
  * @see ConstructorMethod
  */
@@ -58,15 +58,15 @@ class ConstructorMethodProcessor extends AbstractMethodProcessor {
 	}
 
 	/**
-	 * Check if method is a trait class constructor
+	 * <p>Checks if method is a trait class constructor.</p>
 	 */
 	static def isConstructorMethod(MethodDeclaration annotatedMethod) {
 		annotatedMethod.hasAnnotation(ConstructorMethod)
 	}
 
 	/**
-	 * Copies the annotation (compatible to this processor) from the given source including
-	 * all attributes and returns a new annotation reference
+	 * <p>Copies the annotation (compatible to this processor) from the given source including
+	 * all attributes and returns a new annotation reference.</p>
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
 		extension TransformationContext context) {
@@ -89,7 +89,7 @@ class ConstructorMethodProcessor extends AbstractMethodProcessor {
 		}
 
 		// check if trait methods has valid properties
-		if (xtendMethod.visibility != Visibility.PROTECTED)
+		if (xtendMethod.visibility != Visibility::PROTECTED)
 			xtendMethod.addError("Trait class constructors must be declared protected")
 		if (xtendMethod.static == true)
 			xtendMethod.addError("Trait class constructors must not be declared static")

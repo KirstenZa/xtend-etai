@@ -1537,7 +1537,7 @@ class UsingBidirectionalCounter {
 			// do assertions
 			assertEquals(1, problemsNoGetterSetterAdder.size)
 			assertEquals(Severity.ERROR, problemsNoGetterSetterAdder.get(0).severity)
-			assertTrue(problemsNoGetterSetterAdder.get(0).message.contains("only be used, if also @SetterRule"))
+			assertTrue(problemsNoGetterSetterAdder.get(0).message.contains("only be used if also @SetterRule"))
 
 			assertEquals(1, problemsNoBidirectionalName.size)
 			assertEquals(Severity.ERROR, problemsNoBidirectionalName.get(0).severity)

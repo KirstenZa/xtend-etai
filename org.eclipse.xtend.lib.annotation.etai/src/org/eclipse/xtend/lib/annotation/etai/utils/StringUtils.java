@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class providing string utilities.
+ * <p>Utility class providing string utilities.</p>
  */
 public class StringUtils {
 
 	/**
 	 * <p>
-	 * Splits strings by delimiter, which does not consider text in parenthesis
+	 * Splits strings by delimiters. It does not consider text in parenthesis
 	 * (determined by start and stop character).
 	 * </p>
 	 * 
@@ -49,7 +49,7 @@ public class StringUtils {
 					// must be inside parenthesis
 					if (inside == 0)
 						throw new IllegalArgumentException(
-								"Cannot parse string, because parenthesis closed but not opened");
+								"Cannot parse string because parenthesis closed but not opened");
 
 					inside = inside > 0 ? inside - 1 : 0;
 				}
@@ -60,14 +60,14 @@ public class StringUtils {
 
 		// must not be inside quotes at the end
 		if (inside != 0)
-			throw new IllegalArgumentException("Cannot parse string, because opened parenthesis have not been closed");
+			throw new IllegalArgumentException("Cannot parse string because opened parenthesis have not been closed");
 
 		return result;
 
 	}
 
 	/**
-	 * Retrieves stack trace from throwable / exception.
+	 * <p>Retrieves stack trace from throwable/exception.</p>
 	 */
 	public static String getStackTrace(Throwable throwable) {
 

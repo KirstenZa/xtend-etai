@@ -1,0 +1,51 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+interface IXMethodLogged <<Interface>> {
+	+getString():String
+} 
+
+interface IXMethodCached <<Interface>> {
+	+getString():String
+}
+
+class MethodImplementation {
+    +getString():String
+}
+
+class MethodImplementationCached {
+    -getStringResult:String &#009; &#009; &#123;no access&#125;
+    +getString():String
+}
+
+note right of MethodImplementation::getString()
+  <u>Output (for object of type MethodImplementation):</u>
+    "getString" called
+    inside "MethodImplementation::getString"
+    "getString" finished
+end note
+
+note right of MethodImplementationCached::getString()
+  <u>Output (for object of type MethodImplementationCached):</u>
+    "getString" called
+    "getString" is going to be cached
+    inside "MethodImplementationCached::getString"
+    inside "MethodImplementation::getString"
+    "getString" cached, value: "derived"
+    "getString" finished
+end note
+
+MethodImplementation .up-|> IXMethodLogged
+MethodImplementationCached .up-|> IXMethodCached
+
+IXMethodLogged -left[hidden]-> IXMethodCached
+MethodImplementationCached -up-|> MethodImplementation
+
+@enduml

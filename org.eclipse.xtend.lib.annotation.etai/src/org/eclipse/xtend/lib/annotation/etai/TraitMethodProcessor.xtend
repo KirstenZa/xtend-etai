@@ -6,48 +6,48 @@ import java.util.List
 import java.util.Collection
 
 /**
- * Interface for objects which store method calls. The stored call shall then
- * be processed by invoking the <code>eval()</code> method.
+ * <p>Interface for objects which store method calls. The stored call shall then
+ * be processed by invoking the <code>eval()</code> method.</p>
  */
 interface LazyEvaluation {
 
 	/**
-	 * Returns the number of arguments in the stored method.
+	 * <p>Returns the number of arguments in the stored method.</p>
 	 */
 	def int getNumberOfArguments()
 
 	/**
-	 * Returns the argument in the stored method with the given index.
+	 * <p>Returns the argument in the stored method with the given index.</p>
 	 */
 	def Object getArgument(int index)
 
 	/**
-	 * Changes the argument in the stored method with the given index.
+	 * <p>Changes the argument in the stored method with the given index.</p>
 	 */
 	def void setArgument(int index, Object value)
 
 	/**
-	 * Returns the object executing the stored method.
+	 * <p>Returns the object executing the stored method.</p>
 	 */
 	def Object getExecutingObject()
 
 	/**
-	 * Returns the stored method.
+	 * <p>Returns the stored method.</p>
 	 */
 	def Method getMethod()
 
 	/**
-	 * Evaluate the stored method call and returns the result.
+	 * <p>Evaluate the stored method call and returns the result.</p>
 	 */
 	def Object eval()
 
 }
 
 /**
- * This is a standard implementation of the interface for storing method calls. 
+ * <p>This is a standard implementation of the interface for storing method calls.</p> 
  * 
- * Note that this class should only be used, if implemented by an anonymous inner class inside
- * a method.
+ * <p>Note that this class should only be used if implemented by an anonymous inner class inside
+ * a method.</p>
  */
 abstract class LazyEvaluationAbstract implements LazyEvaluation {
 
@@ -115,7 +115,7 @@ interface TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>If the trait method exists in the extended class, it will override the functionality in the
- * trait class, i.e. the functionality in the trait class represents the default behavior.</p>
+ * trait class, i.e., the functionality in the trait class represents the default behavior.</p>
  */
 class EPDefault implements TraitMethodProcessor {
 
@@ -205,7 +205,7 @@ class EPVoidFinally implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>The trait method (return type: boolean) is executed before a potential method within the extended class.
- * If such a method exists in the extended class, it is also executed, if the result of the trait method
+ * If such a method exists in the extended class, it is also executed if the result of the trait method
  * is true (short-circuit evaluation) and both results are combined via AND operation.</p>
  */
 class EPBooleanPreAnd implements TraitMethodProcessor {
@@ -249,7 +249,7 @@ class EPBooleanPostAnd implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>The trait method (return type: boolean) is executed before a potential method within the extended class.
- * If such a method exists in the extended class, it is also executed, if the result of the trait method
+ * If such a method exists in the extended class, it is also executed if the result of the trait method
  * is false (short-circuit evaluation) and both results are combined via OR operation.</p>
  */
 class EPBooleanPreOr implements TraitMethodProcessor {
@@ -293,9 +293,9 @@ class EPBooleanPostOr implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>This trait method processor will process the functionality of the trait class first.
- * If there is a result, which is not <code>null</code>, this result will be returned
+ * If there is a result that is not <code>null</code>, this result will be returned
  * immediately. If the result is <code>null</code>, the functionality of the extended class
- * will be processed afterwards and the latter result will be returned, if the according
+ * will be processed afterwards and the latter result will be returned if the corresponding
  * functionality exists.</p>
  */
 class EPFirstNotNullPre implements TraitMethodProcessor {
@@ -317,8 +317,8 @@ class EPFirstNotNullPre implements TraitMethodProcessor {
 /**
  * <p>Standard trait method processor:</p>
  * 
- * <p>This trait method processor will process the functionality of the extended class first, if this
- * functionality exists. If there is a result, which is not <code>null</code>, this result will be
+ * <p>This trait method processor will process the functionality of the extended class first if this
+ * functionality exists. If there is a result that is not <code>null</code>, this result will be
  * returned immediately. If the result is <code>null</code>, the functionality of the trait class
  * will be processed afterwards and the latter result will be returned.</p>
  */
@@ -344,9 +344,9 @@ class EPFirstNotNullPost implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>This trait method processor will process the functionality of the trait class first, and
- * process the functionality of the extended class afterwards, if this functionality exists.</p>
+ * process the functionality of the extended class afterwards if this functionality exists.</p>
  * 
- * <p>The returned result will be the result from the functionality of the extended class, if this functionality
+ * <p>The returned result will be the result from the functionality of the extended class if this functionality
  * exists. Otherwise, the result from the functionality of the trait class will be used.</p>
  */
 class EPExtendedResultPre implements TraitMethodProcessor {
@@ -370,7 +370,7 @@ class EPExtendedResultPre implements TraitMethodProcessor {
  * <p>This trait method processor will process the functionality of the extended class first,
  * if this functionality exists, and process the functionality of the trait class afterwards.</p>
  * 
- * <p>The returned result will be the result from the functionality of the extended class, if this functionality
+ * <p>The returned result will be the result from the functionality of the extended class if this functionality
  * exists. Otherwise, the result from the functionality of the trait class will be used.</p>
  */
 class EPExtendedResultPost implements TraitMethodProcessor {
@@ -393,7 +393,7 @@ class EPExtendedResultPost implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>This trait method processor will process the functionality of the trait class first, and
- * process the functionality of the extended class afterwards, if this functionality exists.</p>
+ * process the functionality of the extended class afterwards if this functionality exists.</p>
  * 
  * <p>The returned result will be the result from the functionality of the trait class.
  * The result from the functionality of the extended class will be ignored.</p>
@@ -415,7 +415,7 @@ class EPTraitClassResultPre implements TraitMethodProcessor {
  * <p>Standard trait method processor:</p>
  * 
  * <p>This trait method processor will process the functionality of the trait class first, and
- * process the functionality of the extended class afterwards, if this functionality exists.</p>
+ * process the functionality of the extended class afterwards if this functionality exists.</p>
  * 
  * <p>The returned result will be the result from the functionality of the trait class.
  * The result from the functionality of the extended class will be ignored.</p>

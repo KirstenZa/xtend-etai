@@ -1,5 +1,5 @@
 /**
- * Test passes, if this file compiles without problem.
+ * Test passes if this file compiles without problem.
  */
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
@@ -35,7 +35,7 @@ abstract class TraitClassAmbiguous1 {
 	 */
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "B1"
+		TraitTestsBase::TEST_BUFFER += "B1"
 	}
 
 	/**
@@ -44,7 +44,7 @@ abstract class TraitClassAmbiguous1 {
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method3() {
 
-		TraitTestsBase.TEST_BUFFER += "C1"
+		TraitTestsBase::TEST_BUFFER += "C1"
 
 	}
 
@@ -54,7 +54,7 @@ abstract class TraitClassAmbiguous1 {
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method4() {
 
-		TraitTestsBase.TEST_BUFFER += "D1"
+		TraitTestsBase::TEST_BUFFER += "D1"
 
 	}
 
@@ -64,9 +64,9 @@ abstract class TraitClassAmbiguous1 {
 	@EnvelopeMethod(setFinal=false, required=false)
 	override void method5() {
 
-		TraitTestsBase.TEST_BUFFER += "E1"
+		TraitTestsBase::TEST_BUFFER += "E1"
 		method5$extended
-		TraitTestsBase.TEST_BUFFER += "E1"
+		TraitTestsBase::TEST_BUFFER += "E1"
 
 	}
 
@@ -80,7 +80,7 @@ abstract class TraitClassAmbiguous2 {
 	 */
 	@ExclusiveMethod
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "A1"
+		TraitTestsBase::TEST_BUFFER += "A1"
 	}
 
 	/**
@@ -88,7 +88,7 @@ abstract class TraitClassAmbiguous2 {
 	 */
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "B2"
+		TraitTestsBase::TEST_BUFFER += "B2"
 	}
 
 	/**
@@ -96,7 +96,7 @@ abstract class TraitClassAmbiguous2 {
 	 */
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "C2"
+		TraitTestsBase::TEST_BUFFER += "C2"
 	}
 
 	/**
@@ -104,7 +104,7 @@ abstract class TraitClassAmbiguous2 {
 	 */
 	@ProcessedMethod(processor=EPVoidPost)
 	override void method4() {
-		TraitTestsBase.TEST_BUFFER += "D2"
+		TraitTestsBase::TEST_BUFFER += "D2"
 	}
 
 	/**
@@ -112,7 +112,7 @@ abstract class TraitClassAmbiguous2 {
 	 */
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method5() {
-		TraitTestsBase.TEST_BUFFER += "E2"
+		TraitTestsBase::TEST_BUFFER += "E2"
 	}
 
 }
@@ -129,7 +129,7 @@ class ExtendedClassAmbiguousOnePerClass extends ExtendedClassAmbiguousBase imple
 	 * method3 in class ExtendedClassAmbiguousOnePerClass
 	 */
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "C3"
+		TraitTestsBase::TEST_BUFFER += "C3"
 		super.method3
 	}
 
@@ -137,7 +137,7 @@ class ExtendedClassAmbiguousOnePerClass extends ExtendedClassAmbiguousBase imple
 	 * method4 in class ExtendedClassAmbiguousOnePerClass
 	 */
 	override void method4() {
-		TraitTestsBase.TEST_BUFFER += "D3"
+		TraitTestsBase::TEST_BUFFER += "D3"
 		super.method4
 	}
 
@@ -145,7 +145,7 @@ class ExtendedClassAmbiguousOnePerClass extends ExtendedClassAmbiguousBase imple
 	 * method5 in class ExtendedClassAmbiguousOnePerClass
 	 */
 	override void method5() {
-		TraitTestsBase.TEST_BUFFER += "E3"
+		TraitTestsBase::TEST_BUFFER += "E3"
 		super.method5
 	}
 
@@ -159,21 +159,21 @@ class ExtendedClassAmbiguousMultiplePerClass implements ITraitClassAmbiguous2, I
 	 * method3 in class ExtendedClassAmbiguousMultiplePerClass
 	 */
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "C3"
+		TraitTestsBase::TEST_BUFFER += "C3"
 	}
 
 	/**
 	 * method4 in class ExtendedClassAmbiguousMultiplePerClass
 	 */
 	override void method4() {
-		TraitTestsBase.TEST_BUFFER += "D3"
+		TraitTestsBase::TEST_BUFFER += "D3"
 	}
 
 	/**
 	 * method5 in class ExtendedClassAmbiguousMultiplePerClass
 	 */
 	override void method5() {
-		TraitTestsBase.TEST_BUFFER += "E3"
+		TraitTestsBase::TEST_BUFFER += "E3"
 	}
 
 }
@@ -185,21 +185,21 @@ class ExtendedClassAmbiguousMultiplePerClassBase {
 	 * method3 in class ExtendedClassAmbiguousMultiplePerClassBase
 	 */
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "C3"
+		TraitTestsBase::TEST_BUFFER += "C3"
 	}
 
 	/**
 	 * method4 in class ExtendedClassAmbiguousMultiplePerClassBase
 	 */
 	override void method4() {
-		TraitTestsBase.TEST_BUFFER += "D3"
+		TraitTestsBase::TEST_BUFFER += "D3"
 	}
 
 	/**
 	 * method5 in class ExtendedClassAmbiguousMultiplePerClassBase
 	 */
 	override void method5() {
-		TraitTestsBase.TEST_BUFFER += "E3"
+		TraitTestsBase::TEST_BUFFER += "E3"
 	}
 
 }

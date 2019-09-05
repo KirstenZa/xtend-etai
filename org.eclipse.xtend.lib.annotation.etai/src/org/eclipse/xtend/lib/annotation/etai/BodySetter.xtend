@@ -1,18 +1,21 @@
 package org.eclipse.xtend.lib.annotation.etai
 
+import java.util.ArrayList
 import java.util.HashMap
-
+import java.util.List
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
+import org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils
 import org.eclipse.xtend.lib.macro.declaration.ExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclaration
+import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.expression.Expression
+import org.eclipse.xtend.lib.macro.services.AnnotationReferenceProvider
+import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
-import org.eclipse.xtend.lib.annotation.etai.utils.ReflectUtils
-import java.util.List
-import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
-import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeErasureMethod
 
 /**
  * <p>Helper class for retrieving and setting bodies for executables
@@ -44,7 +47,7 @@ class BodySetter {
 	val cachedBodies = new HashMap<MutableExecutableDeclaration, BodyInfo>
 
 	/**
-	 * Returns the body of the given executable.
+	 * <p>Returns the body of the given executable.</p>
 	 */
 	def String getBody(ExecutableDeclaration executable) {
 		if (cachedBodies.containsKey(executable))
@@ -53,7 +56,7 @@ class BodySetter {
 	}
 
 	/**
-	 * Returns if a body has been set for given executable .
+	 * <p>Returns if a body has been set for the given executable.</p>
 	 */
 	def boolean hasBody(MutableExecutableDeclaration executable) {
 
@@ -64,8 +67,8 @@ class BodySetter {
 	}
 
 	/**
-	 * Sets method body via string by using the internal cache. Also
-	 * null as body string is allowed.
+	 * <p>Sets method body via string by using the internal cache.
+	 * Also, <code>null</code> as body string is allowed.</p>
 	 */
 	def setBody(MutableExecutableDeclaration executable, String bodyString, TypeReferenceProvider context) {
 
@@ -75,8 +78,8 @@ class BodySetter {
 	}
 
 	/**
-	 * Move body of specified source method to given destination method considering
-	 * the internal cache.
+	 * <p>Move body of specified source method to given destination method considering
+	 * the internal cache.</p>
 	 */
 	def moveBody(MutableExecutableDeclaration dest, MethodDeclaration src, TypeReferenceProvider context) {
 
@@ -104,8 +107,14 @@ class BodySetter {
 					val delegateDest = ReflectUtils.getPrivateFieldValue(dest, "delegate")
 
 					// ensure that required lists have been created
-					ReflectUtils.callExtendedMethod(delegateSrc, "getLocalClasses", null, false, null, null)
-					ReflectUtils.callExtendedMethod(delegateDest, "getLocalClasses", null, false, null, null)
+					val delegateSrcMethod = ReflectUtils.getPrivateMethodCovariantMatch(delegateSrc.class,
+						"getLocalClasses", null)
+					val delegateDestMethod = ReflectUtils.getPrivateMethodCovariantMatch(delegateDest.class,
+						"getLocalClasses", null)
+					if (delegateSrcMethod !== null)
+						ReflectUtils.callPrivateMethod(delegateSrc, delegateSrcMethod, null)
+					if (delegateDestMethod !== null)
+						ReflectUtils.callPrivateMethod(delegateDest, delegateDestMethod, null)
 
 					// access lists
 					val List<Object> localClassesSrc = ReflectUtils.getPrivateFieldValue(delegateSrc,
@@ -136,10 +145,97 @@ class BodySetter {
 
 	}
 
-	/**
-	 * Write all cached method bodies to methods.
+	/** 
+	 * <p>
+	 * When copying methods the type parameters of the clone will still point to the original method.
+	 * This method fixes this issue, i.e., the type references will be updated.
+	 * </p> 
 	 */
-	def void flush() {
+	private static def <T extends AnnotationReferenceProvider & TypeReferenceProvider> void fixTypeParameters(
+		MutableExecutableDeclaration executable, extension T context) {
+
+		if (executable instanceof MutableMethodDeclaration) {
+			val newReturnType = getFixedTypeParameter(executable, executable.returnType, context)
+
+			if (newReturnType !== null)
+				executable.returnType = newReturnType
+
+		}
+
+		val newTypes = new ArrayList<TypeReference>
+		for (parameter : executable.parameters)
+			newTypes.add(getFixedTypeParameter(executable, parameter.type, context))
+
+		for (index : 0 ..< executable.parameters.size) {
+
+			if (newTypes.get(index) !== null)
+				retypeParameter(executable, index, newTypes.get(index), context)
+
+		}
+
+	}
+
+	/**
+	 * <p>Returns a fixed type parameter.</p>
+	 * 
+	 * @see #fixTypeParameters
+	 */
+	static private def <T extends TypeReferenceProvider> TypeReference getFixedTypeParameter(
+		MutableExecutableDeclaration executable, TypeReference typeReference, T context) {
+
+		val type = typeReference.type
+
+		if (type instanceof TypeParameterDeclaration) {
+
+			val typeParameterDeclarator = type.typeParameterDeclarator
+
+			if (typeParameterDeclarator instanceof ExecutableDeclaration) {
+
+				if (typeParameterDeclarator !== executable) {
+
+					// determine position of type declaration
+					val pos = typeParameterDeclarator.typeParameters.indexed.findFirst[it.value === type].key
+
+					// return type based on provided executable
+					return context.newTypeReference(executable.typeParameters.get(pos))
+
+				}
+
+			}
+
+		}
+
+		var boolean change = false
+
+		// go through type arguments as well
+		val newActualTypeArguments = new ArrayList<TypeReference>
+
+		for (actualTypeArgument : typeReference.actualTypeArguments) {
+
+			val newTypeArgument = getFixedTypeParameter(executable, actualTypeArgument, context)
+
+			if (newTypeArgument !== null) {
+				newActualTypeArguments.add(newTypeArgument)
+				change = true
+			} else {
+				newActualTypeArguments.add(actualTypeArgument)
+			}
+
+		}
+
+		// just create a new type reference if there is any change...
+		if (change)
+			return context.newTypeReference(typeReference.type, newActualTypeArguments)
+
+		// ... otherwise return null
+		return null
+
+	}
+
+	/**
+	 * <p>Write all cached method bodies to methods.</p>
+	 */
+	def <T extends AnnotationReferenceProvider & TypeReferenceProvider> void flush(T context) {
 
 		for (bodyInfo : cachedBodies.entrySet) {
 
@@ -163,6 +259,9 @@ class BodySetter {
 					bodyInfo.key.body = '''«typeAssertionBodyFinal + bodyInfo.value.methodBody»'''
 
 				]
+
+				// fix type parameters of methods (can still be incorrectly connected after cloning methods)
+				fixTypeParameters(bodyInfo.key, context)
 
 			}
 

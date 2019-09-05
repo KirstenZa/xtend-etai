@@ -48,8 +48,6 @@ import org.junit.Test
 
 import static org.junit.Assert.*
 
-import static extension org.eclipse.xtend.lib.macro.declaration.Visibility.*
-
 @ApplyRules
 class ClassWithSetterGetter {
 	
@@ -135,13 +133,13 @@ class ClassWithSetterGetterWithExtractInterface {
 @ExtractInterface
 class ClassWithSetterGetterProtectedWithExtractInterface {
 
-	@GetterRule(visibility=Visibility.PROTECTED)
+	@GetterRule(visibility=Visibility::PROTECTED)
 	int dataWithGetter = 11
 
-	@SetterRule(visibility=Visibility.PROTECTED)
+	@SetterRule(visibility=Visibility::PROTECTED)
 	double dataWithSetter = 12.1
 
-	@GetterRule(visibility=Visibility.PROTECTED)
+	@GetterRule(visibility=Visibility::PROTECTED)
 	@SetterRule
 	String dataWithSetterAndGetter = "13"
 
@@ -329,15 +327,15 @@ class ClassWithSetterGetterViaTrait implements ITraitWithSetterGetter {
 @TraitClass
 abstract class TraitWithSetterGetterProtected {
 
-	@GetterRule(visibility=Visibility.PROTECTED)
+	@GetterRule(visibility=Visibility::PROTECTED)
 	@ExclusiveMethod
 	int dataWithGetter = 11
 
-	@SetterRule(visibility=Visibility.PROTECTED)
+	@SetterRule(visibility=Visibility::PROTECTED)
 	@ExclusiveMethod
 	double dataWithSetter = 12.1
 
-	@GetterRule(visibility=Visibility.PROTECTED)
+	@GetterRule(visibility=Visibility::PROTECTED)
 	@SetterRule
 	@ProcessedMethod(processor=CombinedStringsIfGet)
 	String dataWithSetterAndGetter = "13"
@@ -1220,10 +1218,10 @@ class ClassWithSetterGetter {
 	@GetterRule
 	public int dataGetterPublic
 
-	@SetterRule(visibility=Visibility.PRIVATE)
+	@SetterRule(visibility=Visibility::PRIVATE)
 	int dataSetterGeneratePrivate
 
-	@GetterRule(visibility=Visibility.PRIVATE)
+	@GetterRule(visibility=Visibility::PRIVATE)
 	int dataGetterGeneratePrivate
 
 	@GetterRule

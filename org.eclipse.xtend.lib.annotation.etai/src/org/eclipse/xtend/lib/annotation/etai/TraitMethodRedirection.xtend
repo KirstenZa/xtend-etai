@@ -2,7 +2,6 @@ package org.eclipse.xtend.lib.annotation.etai
 
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
-import org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.MethodDeclarationRenamed
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.TypeMatchingStrategy
 import org.eclipse.xtend.lib.annotation.etai.utils.TypeMap
 import org.eclipse.xtend.lib.macro.Active
@@ -28,9 +27,15 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * class with trait method <code>foo</code> will extend <code>fooInternal</code>
  * instead of <code>foo</code>.</p>
  * 
- * <p>The typical use case is, that the annotated method <code>foo</code> will become a
+ * <p>The redirection directive will be valid for the class in which it actually is
+ * set and for derived classes. However, as soon as the annotated method is overridden,
+ * the directive can be changed. Either the redirection is deactivated if there is
+ * no <code>TraitMethodRedirection</code> any more, or the values of the new annotation
+ * are used.</p>
+ * 
+ * <p>The typical use case is that the annotated method <code>foo</code> will become a
  * surrounding method (envelope method) and would call the method <code>fooInternal</code>,
- * which is why <code>fooInternal</code> is called the subsidiary method.
+ * which is why <code>fooInternal</code> is called the subsidiary method.</p>
  * 
  * @see ExclusiveMethod
  * @see EnvelopeMethod
@@ -49,28 +54,28 @@ annotation TraitMethodRedirection {
 	String value
 
 	/**
-	 * If a trait method is redirected, its declared visibility in the trait
+	 * <p>If a trait method is redirected, its declared visibility in the trait
 	 * class will not be used. Instead, the visibility set for the redirection will
-	 * be used.
+	 * be used.</p>
 	 */
-	Visibility visibility = Visibility.PROTECTED
+	Visibility visibility = Visibility::PROTECTED
 
 }
 
 /**
- * Active Annotation Processor for {@link TraitMethodRedirection}
+ * <p>Active Annotation Processor for {@link TraitMethodRedirection}.</p>
  * 
  * @see TraitMethodRedirection
  */
 class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements QueuedTransformationParticipant<MutableMethodDeclaration> {
 
 	/** 
-	 * Helper class for storing information about trait method redirection.
+	 * <p>Helper class for storing information about trait method redirection.</p>
 	 */
 	static class TraitMethodRedirectionInfo {
 
 		public String redirectedMethodName = null
-		public Visibility redirectedVisibility = Visibility.PROTECTED
+		public Visibility redirectedVisibility = Visibility::PROTECTED
 
 	}
 
@@ -79,7 +84,7 @@ class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements
 	}
 
 	/**
-	 * Retrieves information from annotation (@TraitMethodRedirection).
+	 * <p>Retrieves information from annotation (@TraitMethodRedirection).</p>
 	 */
 	static def getTraitMethodRedirectionInfo(MethodDeclaration annotatedMethod, extension TypeLookup context) {
 
@@ -141,12 +146,12 @@ class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements
 		val typeMap = new TypeMap
 		fillTypeMapFromTypeHierarchy(classWithAnnotatedMethod, typeMap, context)
 
-		// create a new method to which the annotated method is redirecting to (abstract), if not already declared
+		// create a new method to which the annotated method is redirecting to (abstract) if not already declared
 		val annotatedMethodRedirected = new MethodDeclarationRenamed(annotatedMethod,
 			extensionRedirectionInfo.redirectedMethodName, extensionRedirectionInfo.redirectedVisibility)
-		if (classWithAnnotatedMethod.getMethodClosure(null, null, true, false, false, true, context).getMatchingMethod(
-			annotatedMethodRedirected, TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_INVARIANT,
-			false, typeMap, context) === null) {
+		if (classWithAnnotatedMethod.getMethodClosure(null, null, true, false, false, true, false, context).
+			getMatchingMethod(annotatedMethodRedirected, TypeMatchingStrategy.MATCH_INVARIANT,
+				TypeMatchingStrategy.MATCH_INVARIANT, false, typeMap, context) === null) {
 			val methodRedirectedTo = classWithAnnotatedMethod.copyMethod(annotatedMethod, true, false, false, false,
 				false, false, typeMap, context)
 			methodRedirectedTo.simpleName = extensionRedirectionInfo.redirectedMethodName
@@ -174,7 +179,7 @@ class TraitMethodRedirectionProcessor extends AbstractMethodProcessor implements
 		val extensionRedirectionInfo = annotatedMethod.getTraitMethodRedirectionInfo(context)
 		if (extensionRedirectionInfo.redirectedMethodName.nullOrEmpty)
 			xtendMethod.addError('''Specified method name must not be null''')
-		if (extensionRedirectionInfo.redirectedVisibility == Visibility.PRIVATE)
+		if (extensionRedirectionInfo.redirectedVisibility == Visibility::PRIVATE)
 			xtendMethod.addError('''Specified visibility must not be private''')
 
 		// must not be used for trait classes

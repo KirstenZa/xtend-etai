@@ -1,7 +1,7 @@
 package org.eclipse.xtend.lib.annotation.etai.utils;
 
 /**
- * Utility class for handling types and type strings.
+ * <p>Utility class for handling types and type strings.</p>
  */
 public class TypeUtils {
 

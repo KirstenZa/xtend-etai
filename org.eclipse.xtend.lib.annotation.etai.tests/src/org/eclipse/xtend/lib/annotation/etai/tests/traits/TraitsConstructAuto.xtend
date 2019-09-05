@@ -84,7 +84,9 @@ class ExtendedConstructRuleAuto implements ITraitClassAutoConstructUsing, ITrait
 abstract class TraitClassConstructRuleAutoNoConstructor {
 }
 
-// Must compile without error, because "ConstructRuleAuto" shall be silently accept, if there is nothing to be constructed automatically 
+/**
+ * Must compile without error because "ConstructRuleAuto" shall be silently accept if there is nothing to be constructed automatically.
+ */ 
 @ExtendedByAuto
 @FactoryMethodRule(factoryMethod="create")
 @ConstructRuleAuto
@@ -154,6 +156,8 @@ class ExtendedClassSimple implements ITraitClassSimple {
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("apply both"))
+
+			assertEquals(1, allProblems.size)
 
 		]
 

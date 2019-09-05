@@ -2,7 +2,7 @@ plugins {
   id 'base'
   id 'java'
   id 'eclipse'
-  id 'org.xtext.xtend' version "2.0.2"
+  id 'org.xtext.xtend' version "2.0.4"
 }
 
 group = 'org.eclipse.xtend.lib.annotation.etai'

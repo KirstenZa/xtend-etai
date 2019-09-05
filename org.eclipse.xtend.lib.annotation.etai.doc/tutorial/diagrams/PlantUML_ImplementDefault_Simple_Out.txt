@@ -27,13 +27,13 @@ class Elephant {
 Elephant -up-|> AnimalBase
 Elephant .up.|> IElephant
 
-note right of Elephant::trumpet
+note right of Elephant::trumpet()
   does nothing
 end note
-note right of Elephant::getWeight
+note right of Elephant::getWeight()
   returns the value **0.0f**
 end note
-note right of Elephant::getName
+note right of Elephant::getName()
   returns the value **null**
 end note
 

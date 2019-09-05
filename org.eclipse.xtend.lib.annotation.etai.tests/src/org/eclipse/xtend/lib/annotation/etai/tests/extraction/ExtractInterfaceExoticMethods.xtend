@@ -10,7 +10,7 @@ import static org.junit.Assert.*
 @ExtractInterface
 class ExtractInterfaceExoticMethods {
 	
-	// this method is using inferred types, which must only be used, if not extracted
+	// this method is using inferred types that must only be used if not extracted
 	protected def methodWithInferredType() {
 		return 1
 	} 

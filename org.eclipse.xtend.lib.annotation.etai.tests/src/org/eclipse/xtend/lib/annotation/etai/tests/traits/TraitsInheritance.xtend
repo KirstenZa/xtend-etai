@@ -9,6 +9,7 @@ import org.eclipse.xtend.lib.annotation.etai.TraitClass
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithInheritanceDerived
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithInheritanceSuperCallTestDerived
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithInheritanceSuperCallTestWithGenericsDerived
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassWithInheritanceWrapCallTestDerived
 import org.junit.Test
 
@@ -19,7 +20,7 @@ abstract class TraitClassWithInheritanceBase {
 
 	@ExclusiveMethod
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 	}
 
 	@ExclusiveMethod
@@ -39,7 +40,7 @@ abstract class TraitClassWithInheritanceDerived extends TraitClassWithInheritanc
 
 	@ExclusiveMethod
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 	@ExclusiveMethod
@@ -59,7 +60,7 @@ abstract class TraitClassWithInheritanceDerivedFurther extends TraitClassWithInh
 
 	@ExclusiveMethod
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 }
@@ -73,31 +74,41 @@ abstract class TraitClassWithInheritanceSuperCallTestBase {
 
 	@ProcessedMethod(processor=EPFirstNotNullPost)
 	def protected Integer methodParamProtected(int x, Integer y) {
-		TraitTestsBase.TEST_BUFFER += "S" + x + y
+		TraitTestsBase::TEST_BUFFER += "S" + x + y
 		return 1
 	}
 
 	@ProcessedMethod(processor=EPFirstNotNullPost)
 	override Integer methodParamPublic(int x, Integer y) {
-		TraitTestsBase.TEST_BUFFER += "T" + x + y
+		TraitTestsBase::TEST_BUFFER += "T" + x + y
 		return 10
 	}
 
 	@ProcessedMethod(processor=EPVoidPost)
 	def protected void methodProtected() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=EPVoidPost)
 	override void methodPublic() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	@ExclusiveMethod
 	def protected void methodProtectedVarArgs(int h, Object ... args) {
-		TraitTestsBase.TEST_BUFFER += h + "PRO"
+		TraitTestsBase::TEST_BUFFER += h + "PRO"
 		for (arg : args)
-			TraitTestsBase.TEST_BUFFER += arg
+			TraitTestsBase::TEST_BUFFER += arg
+	}
+
+	@ProcessedMethod(processor=EPVoidPost)
+	override void methodWillNotBeOverridden() {
+		TraitTestsBase::TEST_BUFFER += "L"
+	}
+
+	@ProcessedMethod(processor=EPVoidPost)
+	final override void methodWillNotBeOverriddenFinal() {
+		TraitTestsBase::TEST_BUFFER += "XL"
 	}
 
 }
@@ -107,21 +118,33 @@ abstract class TraitClassWithInheritanceSuperCallTestBetween extends TraitClassW
 
 	@ProcessedMethod(processor=EPFirstNotNullPost)
 	def protected Integer methodParamProtectedBetween(int x) {
-		TraitTestsBase.TEST_BUFFER += "M" + x
+		TraitTestsBase::TEST_BUFFER += "M" + x
 		return 2
 	}
 
 	@ProcessedMethod(processor=EPFirstNotNullPost)
 	override Integer methodParamPublicBetween(int x) {
-		TraitTestsBase.TEST_BUFFER += "N" + x
+		TraitTestsBase::TEST_BUFFER += "N" + x
 		return 12
 	}
 
 	@ExclusiveMethod
 	override void methodPublicVarArgs(int h, Object ... args) {
-		TraitTestsBase.TEST_BUFFER += h + "PUB"
+		TraitTestsBase::TEST_BUFFER += h + "PUB"
 		for (arg : args)
-			TraitTestsBase.TEST_BUFFER += arg
+			TraitTestsBase::TEST_BUFFER += arg
+	}
+
+	@ExclusiveMethod
+	override void methodCallNonOverridden1() {
+		methodWillNotBeOverridden
+		TraitTestsBase::TEST_BUFFER += "M1"
+	}
+
+	@ExclusiveMethod
+	override void methodCallNonOverridden3() {
+		methodWillNotBeOverriddenFinal
+		TraitTestsBase::TEST_BUFFER += "XM1"
 	}
 
 }
@@ -142,12 +165,12 @@ abstract class TraitClassWithInheritanceSuperCallTestDerived extends TraitClassW
 	@ProcessedMethod(processor=EPVoidPost)
 	override protected void methodProtected() {
 		super.methodProtected()
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 	}
 
 	@ProcessedMethod(processor=EPVoidPost)
 	override void methodPublic() {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 		super.methodPublic()
 	}
 
@@ -181,27 +204,41 @@ abstract class TraitClassWithInheritanceSuperCallTestDerived extends TraitClassW
 		super.methodPublicVarArgs(h, args)
 	}
 
+	@ExclusiveMethod
+	override void methodCallNonOverridden2() {
+		methodWillNotBeOverridden
+		TraitTestsBase::TEST_BUFFER += "M2"
+	}
+
 }
 
 @ExtendedByAuto
 class ExtendedClassWithInheritanceSuperCallTest implements ITraitClassWithInheritanceSuperCallTestDerived {
 
 	def Integer methodParamProtected(int x, Integer y) {
-		TraitTestsBase.TEST_BUFFER += "X" + x + y
+		TraitTestsBase::TEST_BUFFER += "X" + x + y
 		return null
 	}
 
 	override Integer methodParamPublic(int x, Integer y) {
-		TraitTestsBase.TEST_BUFFER += "Y" + x + y
+		TraitTestsBase::TEST_BUFFER += "Y" + x + y
 		return null
 	}
 
 	def void methodProtected() {
-		TraitTestsBase.TEST_BUFFER += "E"
+		TraitTestsBase::TEST_BUFFER += "E"
 	}
 
 	override void methodPublic() {
-		TraitTestsBase.TEST_BUFFER += "F"
+		TraitTestsBase::TEST_BUFFER += "F"
+	}
+
+	override void methodWillNotBeOverridden() {
+		TraitTestsBase::TEST_BUFFER += "K"
+	}
+
+	override void methodWillNotBeOverriddenFinal() {
+		TraitTestsBase::TEST_BUFFER += "XK"
 	}
 
 }
@@ -211,12 +248,12 @@ abstract class TraitClassWithInheritanceWrapCallTestBase {
 
 	@ProcessedMethod(processor=EPVoidPost)
 	def protected void methodOnlyInBaseProtected() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=EPVoidPost)
 	override void methodOnlyInBasePublic() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 }
@@ -240,11 +277,40 @@ abstract class TraitClassWithInheritanceWrapCallTestDerived extends TraitClassWi
 class ExtendedClassWithInheritanceWrapCallTest implements ITraitClassWithInheritanceWrapCallTestDerived {
 
 	def void methodOnlyInBaseProtected() {
-		TraitTestsBase.TEST_BUFFER += "C"
+		TraitTestsBase::TEST_BUFFER += "C"
 	}
 
 	override void methodOnlyInBasePublic() {
-		TraitTestsBase.TEST_BUFFER += "D"
+		TraitTestsBase::TEST_BUFFER += "D"
+	}
+
+}
+
+@TraitClass
+abstract class TraitClassWithInheritanceSuperCallTestWithGenericsBase<T extends Number> {
+
+	@ProcessedMethod(processor=EPFirstNotNullPost)
+	override T methodParamProtectedBetween(T x) {
+		return x
+	}
+
+}
+
+@TraitClass
+abstract class TraitClassWithInheritanceSuperCallTestWithGenericsDerived extends TraitClassWithInheritanceSuperCallTestWithGenericsBase<Integer> {
+
+	@ProcessedMethod(processor=EPFirstNotNullPost)
+	override Integer methodParamProtectedBetween(Integer x) {
+		return super.methodParamProtectedBetween(x)
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedClassWithInheritanceSuperCallWithGenericsTest implements ITraitClassWithInheritanceSuperCallTestWithGenericsDerived {
+
+	override Integer methodParamProtectedBetween(Integer x) {
+		return null
 	}
 
 }
@@ -278,37 +344,58 @@ class TraitsInheritanceTests extends TraitTestsBase {
 
 		val obj = new ExtendedClassWithInheritanceSuperCallTest
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodPublic()
-		assertEquals("FYB", TraitTestsBase.TEST_BUFFER)
+		assertEquals("FYB", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodProtected()
-		assertEquals("EAX", TraitTestsBase.TEST_BUFFER)
+		assertEquals("EAX", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		assertEquals(10, obj.methodParamPublic(9, 10))
-		assertEquals("Y910T1011", TraitTestsBase.TEST_BUFFER)
+		assertEquals("Y910T1011", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		assertEquals(1, obj.methodParamProtected(21, 18))
-		assertEquals("X2118S2219", TraitTestsBase.TEST_BUFFER)
+		assertEquals("X2118S2219", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		assertEquals(12, obj.methodParamPublicBetween(9))
-		assertEquals("N11", TraitTestsBase.TEST_BUFFER)
+		assertEquals("N11", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		assertEquals(2, obj.methodParamProtectedBetween(21))
-		assertEquals("M23", TraitTestsBase.TEST_BUFFER)
+		assertEquals("M23", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodProtectedVarArgs(1, 2, 3, 4)
-		assertEquals("1PRO234", TraitTestsBase.TEST_BUFFER)
+		assertEquals("1PRO234", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodPublicVarArgs(2, 3, 4, 5)
-		assertEquals("2PUB345", TraitTestsBase.TEST_BUFFER)
+		assertEquals("2PUB345", TraitTestsBase::TEST_BUFFER)
+
+		TraitTestsBase::TEST_BUFFER = ""
+		obj.methodCallNonOverridden1
+		assertEquals("KLM1", TraitTestsBase::TEST_BUFFER)
+
+		TraitTestsBase::TEST_BUFFER = ""
+		obj.methodCallNonOverridden2
+		assertEquals("KLM2", TraitTestsBase::TEST_BUFFER)
+
+		TraitTestsBase::TEST_BUFFER = ""
+		obj.methodCallNonOverridden3
+		assertEquals("XKXLXM1", TraitTestsBase::TEST_BUFFER)
+
+	}
+
+	@Test
+	def void testSuperCallWithGenericsInTraitClassTest() {
+
+		val obj = new ExtendedClassWithInheritanceSuperCallWithGenericsTest
+
+		assertEquals(10, obj.methodParamProtectedBetween(10))
 
 	}
 
@@ -317,21 +404,21 @@ class TraitsInheritanceTests extends TraitTestsBase {
 
 		val obj = new ExtendedClassWithInheritanceWrapCallTest
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodOnlyInBasePublic
-		assertEquals("DB", TraitTestsBase.TEST_BUFFER)
+		assertEquals("DB", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodOnlyInBaseProtected
-		assertEquals("CA", TraitTestsBase.TEST_BUFFER)
+		assertEquals("CA", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodOnlyInBasePublicWrap
-		assertEquals("DB", TraitTestsBase.TEST_BUFFER)
+		assertEquals("DB", TraitTestsBase::TEST_BUFFER)
 
-		TraitTestsBase.TEST_BUFFER = ""
+		TraitTestsBase::TEST_BUFFER = ""
 		obj.methodOnlyInBaseProtectedWrap
-		assertEquals("CA", TraitTestsBase.TEST_BUFFER)
+		assertEquals("CA", TraitTestsBase::TEST_BUFFER)
 
 	}
 

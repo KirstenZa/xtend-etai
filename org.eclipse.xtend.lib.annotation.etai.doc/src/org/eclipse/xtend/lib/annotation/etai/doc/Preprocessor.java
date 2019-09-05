@@ -9,12 +9,12 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /**
- * This preprocesor can parse a text file and resolve includes.
+ * <p>This preprocesor can parse a text file and resolve includes.</p>
  * 
- * Format: [!include <filename>]
+ * <p>Format: [!include <filename>]</p>
  * 
- * Also specific includes for Pandoc (e.g. include_code) is supported. In this
- * case, additional steps for preprocessing are performed.
+ * <p>Specific includes for Pandoc (e.g. include_code) are supported as well. In this
+ * case, additional steps for preprocessing are performed.</p>
  */
 public class Preprocessor {
 
@@ -39,7 +39,7 @@ public class Preprocessor {
 				int indexIncludeEnd = data.indexOf("]", indexInclude);
 				String includeString = data.substring(indexInclude, indexIncludeEnd + 1);
 
-				// check, if it is a special include
+				// check if it is a special include
 				boolean isCodeFile = includeString.indexOf("!include_code") != -1;
 
 				// load included file

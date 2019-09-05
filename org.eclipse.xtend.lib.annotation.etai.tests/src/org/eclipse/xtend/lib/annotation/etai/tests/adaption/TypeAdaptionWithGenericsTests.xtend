@@ -145,7 +145,7 @@ class TypeAdaptionWithGenericsTests {
 	@Test
 	def void testAdaptionWithGenericsComplex() {
 
-		// must compile, if type is adapted correctly
+		// must compile if type is adapted correctly
 		val obj = new ControllerWithGenericsTopLevel<Float, Float>()
 		val IComponentWithGenericsTopLevel<? super ControllerWithGenericsTopLevel<?, ?>, ? extends Integer> myVar = obj.
 			_compComplexAdaption
@@ -184,7 +184,7 @@ class TypeAdaptionWithGenericsTests {
 	@Test
 	def void testAdaptionWithGenericsMainType() {
 
-		// must compile, if type is adapted correctly
+		// must compile if type is adapted correctly
 		val obj = new TypeAdaptionWithGenericsMainTypeDerived<Integer, Integer>()
 		obj.setTU(Integer::valueOf(10))
 		assertEquals(10, obj.getTU().intValue)

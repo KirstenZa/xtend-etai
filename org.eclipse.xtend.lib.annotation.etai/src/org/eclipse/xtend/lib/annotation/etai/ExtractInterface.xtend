@@ -48,7 +48,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.TypeMap.*
 
 /**
- * Extracts an interface (called mirror interface) for all locally declared public methods.
+ * <p>Extracts an interface (called mirror interface) for all locally declared public methods.</p>
  * 
  * @see NoInterfaceExtract
  */
@@ -62,7 +62,7 @@ annotation ExtractInterface {
 	 * prefix.</p>
 	 * 
 	 * <p>If the specified name does not contain any special character, it is considered
-	 * as the fully qualified name of the interface, which shall be extracted.</p>
+	 * as the fully qualified name of the interface that shall be extracted.</p>
 	 * 
 	 * <p>If the specified name starts with a <code>#</code> symbol, it contains a relative prefix.
 	 * For example, if the relative prefix is set to <code>subpack.I</code> for a class <code>mainpack.Foo</code>,
@@ -80,7 +80,7 @@ annotation ExtractInterface {
 }
 
 /**
- * A method can get this annotation in order to get not extracted to an interface.
+ * <p>A method can get this annotation in order to get not extracted to an interface.</p>
  * 
  * @see ExtractInterface
  */
@@ -90,7 +90,7 @@ annotation NoInterfaceExtract {
 }
 
 /**
- * Annotation for an interface, which has been extracted and generated from a class.
+ * <p>Annotation for an interface that has been extracted and generated from a class.</p>
  * 
  * @see ExtractInterface
  */
@@ -98,14 +98,14 @@ annotation NoInterfaceExtract {
 annotation ExtractedInterface {
 
 	/**
-	 * Stores the class the interface has been extracted from
+	 * <p>Stores the class the interface has been extracted from.</p>
 	 */
 	Class<?> extractedClass
 
 }
 
 /**
- * Active Annotation Processor for {@link NoInterfaceExtract}
+ * <p>Active Annotation Processor for {@link NoInterfaceExtract}.</p>
  * 
  * @see NoInterfaceExtract
  */
@@ -144,7 +144,7 @@ class NoInterfaceExtractProcessor extends AbstractMemberProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link ExtractInterface}
+ * <p>Active Annotation Processor for {@link ExtractInterface}.</p>
  * 
  * @see ExtractInterface
  */
@@ -159,9 +159,9 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns <code>true</code>, if the interface extracted by {@link ExtractInterface} is still unprocessed.
+	 * <p>Returns <code>true</code> if the interface extracted by {@link ExtractInterface} is still unprocessed.
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
-	 * processed specifically. 
+	 * processed specifically.</p>
 	 */
 	static def boolean isUnprocessedMirrorInterface(String interfaceName) {
 
@@ -173,13 +173,13 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns <code>true</code>, if the class annotated by {@link ExtractInterface} is still unprocessed.
+	 * <p>Returns <code>true</code> if the class annotated by {@link ExtractInterface} is still unprocessed.
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
-	 * processed specifically. 
+	 * processed specifically.</p>
 	 */
-	static def boolean isUnprocessedClassExtraction(String className) {
+	static def boolean isUnprocessedClassExtraction(String qualifiedClassName) {
 
-		if (EXTRACT_INTERFACE_TO_BE_PROCESSED.contains(className))
+		if (EXTRACT_INTERFACE_TO_BE_PROCESSED.contains(qualifiedClassName))
 			return true
 
 		return false
@@ -187,9 +187,9 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns the trait class for a given mirror interface.
+	 * <p>Returns the trait class for a given mirror interface.</p>
 	 * 
-	 * It will return <code>null</code>, if this is not the mirror interface for a trait class.
+	 * <p>It will return <code>null</code> if this is not the mirror interface for a trait class.</p>
 	 */
 	static def ClassDeclaration getTraitClassForMirrorInterface(InterfaceDeclaration interfaceDeclaration) {
 
@@ -214,7 +214,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns the corresponding class of the mirror interface (which must have been processed already).
+	 * <p>Returns the corresponding class of the mirror interface (which must have been processed already).</p>
 	 */
 	static def ClassDeclaration getClassOfProcessedMirrorInterface(InterfaceDeclaration interfaceDeclaration) {
 
@@ -225,8 +225,8 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns the class annotated by {@link ExtractInterface} which extracts the interface with the
-	 * specified name. 
+	 * <p>Returns the class annotated by {@link ExtractInterface} which extracts the interface with the
+	 * specified name.</p>
 	 */
 	static def ClassDeclaration getClassOfUnprocessedMirrorInterface(String interfaceName) {
 
@@ -235,8 +235,8 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns the (qualified) mirror interface name for the annotated class.
-	 * This method requires the class of the annotation which specifies the mirror interface prefix. 
+	 * <p>Returns the (qualified) mirror interface name for the annotated class.
+	 * This method requires the class of the annotation which specifies the mirror interface prefix.</p> 
 	 */
 	static def String getMirrorInterfaceName(ClassDeclaration annotatedClass) {
 
@@ -245,7 +245,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		if (cachedName !== null)
 			return cachedName
 
-		// determine annotation, which shall be checked
+		// determine annotation that shall be checked
 		var extractInterfaceAnnotation = annotatedClass.getAnnotation(ExtractInterface)
 		if (extractInterfaceAnnotation === null)
 			extractInterfaceAnnotation = annotatedClass.getAnnotation(TraitClassAutoUsing)
@@ -295,15 +295,15 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns if given class has a mirror interface.
+	 * <p>Returns if given class has a mirror interface.</p>
 	 */
 	static def boolean hasMirrorInterface(ClassDeclaration annotatedClass) {
 		annotatedClass.hasAnnotation(ExtractInterface) || annotatedClass.isTraitClass
 	}
 
 	/**
-	 * Filters out those methods which define the annotation,
-	 * that specifies that the method shall not be extracted to an interface.
+	 * <p>Filters out those methods which define the annotation,
+	 * that specifies that the method shall not be extracted to an interface.</p>
 	 */
 	static def withoutNoInterfaceExtract(Iterable<? extends MethodDeclaration> methods) {
 		return methods.filter [
@@ -313,15 +313,14 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 	/**
 	 * @bug This method is necessary because there is no way to register a class / interface with
-	 * type parameters, i.e. extract interface does not work together with type parameters, if
+	 * type parameters, i.e., @ExtractInterface does not work together with type parameters if
 	 * there are cyclic dependencies and the classes are within one xtend file.
 	 * (cp. Bug 491687 in Eclipse's Bugzilla.)
 	 */
 	def void addTypeParametersDuringRegistration(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		val typeLookup = context.class.getMethod("getTypeLookup").invoke(context) as TypeLookup
-		val mirrorInterface = typeLookup.findInterface(
-			annotatedClass.getMirrorInterfaceName)
+		val mirrorInterface = typeLookup.findInterface(annotatedClass.getMirrorInterfaceName)
 
 		mirrorInterface.mutate [
 			annotatedClass.cloneTypeParametersWithoutUpperBounds(mirrorInterface, null, null)
@@ -330,23 +329,23 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns the methods of the annotated class, which should be extracted. The result can contain duplicates,
-	 * which must be removed in a later step. 
+	 * <p>Returns the methods of the annotated class that shall be extracted. The result can contain duplicates,
+	 * which must be removed in a later step.</p> 
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getMethodExtractionCandidates(
 		ClassDeclaration annotatedClass, boolean resolveUnprocessed, TypeMap typeMap, extension T context) {
 
 		// collect methods which must be added to the mirror interface
-		// (also methods from supertypes are considered, if they do not have an ExtractInterface annotation)
+		// (also methods from supertypes are considered if they do not have an ExtractInterface annotation)
 		val methods = annotatedClass.getMethodClosure([
 			it.qualifiedName != Object.canonicalName && (it === annotatedClass || !it.hasAnnotation(ExtractInterface))
-		], [false], true, false, false, true, context)
+		], [false], true, false, false, true, false, context)
 
 		val result = new ArrayList<MethodDeclaration>
 
-		// filter for non-static, public methods, which do not have disabled extraction
+		// filter for non-static, public methods that do not have disabled extraction
 		for (method : methods.filter [
-			visibility == Visibility.PUBLIC && static == false && !hasAnnotation(NoInterfaceExtract)
+			visibility == Visibility::PUBLIC && static == false && !hasAnnotation(NoInterfaceExtract)
 		]) {
 			result.add(method)
 		}
@@ -358,37 +357,37 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 			for (field : annotatedClass.declaredFields) {
 
 				if (field.hasAnnotation(GetterRule) &&
-					GetterRuleProcessor.getGetterInfo(field, context).visibility == Visibility.PUBLIC &&
+					GetterRuleProcessor.getGetterInfo(field, context).visibility == Visibility::PUBLIC &&
 					!field.hasAnnotation(NoInterfaceExtract))
-					result.add(new MethodDeclarationFromGetter(field, Visibility.PUBLIC, null, context))
+					result.add(new MethodDeclarationFromGetter(field, Visibility::PUBLIC, null, context))
 
 				if (field.hasAnnotation(SetterRule) &&
-					SetterRuleProcessor.getSetterInfo(field, context).visibility == Visibility.PUBLIC &&
+					SetterRuleProcessor.getSetterInfo(field, context).visibility == Visibility::PUBLIC &&
 					!field.hasAnnotation(NoInterfaceExtract))
-					result.add(new MethodDeclarationFromSetter(field, Visibility.PUBLIC, context))
+					result.add(new MethodDeclarationFromSetter(field, Visibility::PUBLIC, context))
 
 				if (field.hasAnnotation(AdderRule) && !field.hasAnnotation(NoInterfaceExtract)) {
 
 					val adderInfo = AdderRuleProcessor.getAdderInfo(field, context)
-					if (adderInfo.visibility == Visibility.PUBLIC) {
+					if (adderInfo.visibility == Visibility::PUBLIC) {
 
 						if (context.newTypeReference(Collection).isAssignableFrom(field.type)) {
 
 							if (adderInfo.single == true) {
 
-								result.add(new MethodDeclarationFromAdder_AddTo(field, Visibility.PUBLIC, context))
+								result.add(new MethodDeclarationFromAdder_AddTo(field, Visibility::PUBLIC, context))
 								if (context.newTypeReference(List).isAssignableFrom(field.type))
 									result.add(
-										new MethodDeclarationFromAdder_AddToIndexed(field, Visibility.PUBLIC, context))
+										new MethodDeclarationFromAdder_AddToIndexed(field, Visibility::PUBLIC, context))
 
 							}
 
 							if (adderInfo.multiple == true) {
 
-								result.add(new MethodDeclarationFromAdder_AddAllTo(field, Visibility.PUBLIC, context))
+								result.add(new MethodDeclarationFromAdder_AddAllTo(field, Visibility::PUBLIC, context))
 								if (context.newTypeReference(List).isAssignableFrom(field.type))
 									result.add(
-										new MethodDeclarationFromAdder_AddAllToIndexed(field, Visibility.PUBLIC,
+										new MethodDeclarationFromAdder_AddAllToIndexed(field, Visibility::PUBLIC,
 											context))
 
 							}
@@ -396,10 +395,10 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 						} else if (context.newTypeReference(Map).isAssignableFrom(field.type)) {
 
 							if (adderInfo.single == true)
-								result.add(new MethodDeclarationFromAdder_PutTo(field, Visibility.PUBLIC, context))
+								result.add(new MethodDeclarationFromAdder_PutTo(field, Visibility::PUBLIC, context))
 
 							if (adderInfo.multiple == true)
-								result.add(new MethodDeclarationFromAdder_PutAllTo(field, Visibility.PUBLIC, context))
+								result.add(new MethodDeclarationFromAdder_PutAllTo(field, Visibility::PUBLIC, context))
 
 						}
 
@@ -410,14 +409,14 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 				if (field.hasAnnotation(RemoverRule) && !field.hasAnnotation(NoInterfaceExtract)) {
 
 					val removerInfo = RemoverRuleProcessor.getRemoverInfo(field, context)
-					if (removerInfo.visibility == Visibility.PUBLIC) {
+					if (removerInfo.visibility == Visibility::PUBLIC) {
 
 						if (removerInfo.single == true) {
 
-							result.add(new MethodDeclarationFromRemover_RemoveFrom(field, Visibility.PUBLIC, context))
+							result.add(new MethodDeclarationFromRemover_RemoveFrom(field, Visibility::PUBLIC, context))
 							if (context.newTypeReference(List).isAssignableFrom(field.type))
 								result.add(
-									new MethodDeclarationFromRemover_RemoveFromIndexed(field, Visibility.PUBLIC,
+									new MethodDeclarationFromRemover_RemoveFromIndexed(field, Visibility::PUBLIC,
 										context))
 
 						}
@@ -425,8 +424,8 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 						if (removerInfo.multiple == true) {
 
 							result.add(
-								new MethodDeclarationFromRemover_RemoveAllFrom(field, Visibility.PUBLIC, context))
-							result.add(new MethodDeclarationFromRemover_Clear(field, Visibility.PUBLIC, context))
+								new MethodDeclarationFromRemover_RemoveAllFrom(field, Visibility::PUBLIC, context))
+							result.add(new MethodDeclarationFromRemover_Clear(field, Visibility::PUBLIC, context))
 
 						}
 
@@ -445,7 +444,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	/**
 	 * <p>Adds the list of given methods to the given interface declaration.</p>
 	 * 
-	 * <p>The method does not add a method, if it is already available in the interface or
+	 * <p>The method does not add a method if it is already available in the interface or
 	 * through any super interface.</p>
 	 */
 	static def addMethodsToInterface(
@@ -459,10 +458,12 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 
 		for (method : methods) {
 
-			// do only add, if there is no other method with same name, parameters and
+			// only add if there is no other method with same name, parameters and
 			// return type in this interface or any super interface already
+			// contravariance is used in order to avoid adding a method with a super type as return type
+			// (this is not possible and would be an error, but this can be fixed during class extension by trait classes)
 			if (!interfaceMethods.exists [
-				it.methodEquals(method, TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_INVARIANT,
+				it.methodEquals(method, TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_CONTRAVARIANT,
 					false, typeMap, context)
 			]) {
 
@@ -488,7 +489,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 	}
 
 	/**
-	 * Returns all super interfaces of the interface extracted by the given class.
+	 * <p>Returns all super interfaces of the interface extracted by the given class.</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<TypeReference> getMirrorInterfaceExtends(
 		ClassDeclaration annotatedClass,
@@ -554,7 +555,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		addTypeParametersDuringRegistration(annotatedClass, context)
 
 		// track if class (and interface) has already been processed,
-		// i.e. the type hierarchy has been set correctly and methods have been generated
+		// i.e., the type hierarchy has been set correctly and methods have been generated
 		MIRROR_INTERFACE_TO_BE_PROCESSED.put(interfaceName, annotatedClass)
 		EXTRACT_INTERFACE_TO_BE_PROCESSED.add(annotatedClass.qualifiedName)
 
@@ -587,7 +588,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		} finally {
 
 			// stop tracking (hierarchy is complete now)
-			EXTRACT_INTERFACE_TO_BE_PROCESSED.remove(annotatedClass)
+			EXTRACT_INTERFACE_TO_BE_PROCESSED.remove(annotatedClass.qualifiedName)
 			MIRROR_INTERFACE_TO_BE_PROCESSED.remove(mirrorInterfaceName)
 
 		}
@@ -611,7 +612,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		val typeParameterIterator = mirrorInterfaceType.typeParameters.iterator
 		for (typeParameter : annotatedClass.typeParameters) {
 			val newTypeParameter = typeParameterIterator.next
-			typeMap.putClone(typeParameter, newTypeParameter.newTypeReference, context)
+			typeMap.putTypeClone(typeParameter, newTypeParameter.newTypeReference)
 		}
 
 		// specify annotation
@@ -637,7 +638,7 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		// add the public methods to the interface
 		mirrorInterfaceType.addMethodsToInterface(
 			methodsExtractionCandidates.unifyMethodDeclarations(
-				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE, null,
+				TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED, null,
 				false, typeMap, context), typeMap, context)
 
 		// add documentation
@@ -680,9 +681,9 @@ class ExtractInterfaceProcessor extends AbstractClassProcessor implements Queued
 		// methods must not have an inferred return type
 		for (method : xtendClass.getDeclaredMethodsResolved(true, false, false, context).withoutNoInterfaceExtract) {
 
-			if ((method.returnType === null || method.returnType.inferred) && method.visibility == Visibility.PUBLIC)
+			if ((method.returnType === null || method.returnType.inferred) && method.visibility == Visibility::PUBLIC)
 				method.
-					addError('''Method "«method.simpleName»" of must not have an inferred type, because it must be extracted to an interface''')
+					addError('''Method "«method.simpleName»" of must not have an inferred type because it must be extracted to an interface''')
 
 		}
 

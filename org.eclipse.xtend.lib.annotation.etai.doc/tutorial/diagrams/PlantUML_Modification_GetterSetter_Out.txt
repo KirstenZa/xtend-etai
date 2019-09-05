@@ -14,7 +14,7 @@ class Person <<ApplyRules>> {
 	#setName($name:String):boolean
 }
 
-note right of Person::getName
+note right of Person::getName()
   return this.name;
 end note
 

@@ -37,13 +37,13 @@ abstract class TraitBaseClass implements TraitBaseInterface {
 
 	@ExclusiveMethod
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 		method4
 	}
 
 	@ExclusiveMethod
 	override int method5() {
-		TraitTestsBase.TEST_BUFFER += "5"
+		TraitTestsBase::TEST_BUFFER += "5"
 		return 5
 	}
 
@@ -54,12 +54,12 @@ abstract class TraitClassExtendingBaseClass extends TraitBaseClass {
 
 	@ExclusiveMethod
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 	@ExclusiveMethod
 	protected override void method4() {
-		TraitTestsBase.TEST_BUFFER += "4"
+		TraitTestsBase::TEST_BUFFER += "4"
 	}
 
 }
@@ -68,7 +68,7 @@ abstract class TraitClassExtendingBaseClass extends TraitBaseClass {
 class ExtendedClassExtendingWithBaseClassUsage implements ITraitClassExtendingBaseClass {
 	
 	override method3() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 }
@@ -79,12 +79,12 @@ abstract class TraitClassUsingBase implements ITraitBaseClass {
 
 	@ExclusiveMethod
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "Z"
+		TraitTestsBase::TEST_BUFFER += "Z"
 	}
 
 	@ExclusiveMethod
 	override void methodX() {
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 	}
 
 }
@@ -94,7 +94,7 @@ abstract class TraitClassUsingBaseDerived extends TraitClassUsingBase implements
 
 	@ExclusiveMethod
 	override void methodY() {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 	}
 
 }
@@ -104,7 +104,7 @@ abstract class TraitClassUsingExtended implements ITraitClassExtendingBaseClass 
 
 	@ExclusiveMethod
 	override void methodY() {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 	}
 
 }
@@ -149,7 +149,7 @@ class ExtendedBaseClassTests extends TraitTestsBase {
 	def void testUsageOfTraitBaseClass() {
 
 		{
-			TraitTestsBase.TEST_BUFFER = ""
+			TraitTestsBase::TEST_BUFFER = ""
 			val obj = new ExtendedClassUsingBaseAndDerivedByDerivation
 			obj.method1
 			obj.method2
@@ -161,7 +161,7 @@ class ExtendedBaseClassTests extends TraitTestsBase {
 		}
 
 		{
-			TraitTestsBase.TEST_BUFFER = ""
+			TraitTestsBase::TEST_BUFFER = ""
 			val obj = new ExtendedClassUsingBaseAndDerivedLR
 			obj.method1
 			obj.method2
@@ -173,7 +173,7 @@ class ExtendedBaseClassTests extends TraitTestsBase {
 		}
 
 		{
-			TraitTestsBase.TEST_BUFFER = ""
+			TraitTestsBase::TEST_BUFFER = ""
 			val obj = new ExtendedClassUsingBaseAndDerivedRL
 			obj.method1
 			obj.method2
@@ -185,7 +185,7 @@ class ExtendedBaseClassTests extends TraitTestsBase {
 		}
 
 		{
-			TraitTestsBase.TEST_BUFFER = ""
+			TraitTestsBase::TEST_BUFFER = ""
 			val obj = new ExtendedClassUsingBaseAndDerivedDirectLR
 			obj.method1
 			obj.method2
@@ -196,7 +196,7 @@ class ExtendedBaseClassTests extends TraitTestsBase {
 		}
 
 		{
-			TraitTestsBase.TEST_BUFFER = ""
+			TraitTestsBase::TEST_BUFFER = ""
 			val obj = new ExtendedClassUsingBaseAndDerivedDirectRL
 			obj.method1
 			obj.method2
@@ -242,7 +242,7 @@ abstract class MyTraitClassAutoUsing implements IMyTraitBaseClass {
 abstract class MyTraitClassAutoUsingTwice implements IMyTraitBaseClassWithAutoUsing {
 }
 
-// will not cause error, because (base) trait class not specified explicitly
+// will not cause error because (base) trait class not specified explicitly
 @TraitClass
 abstract class MyTraitClassNoUsing implements IMyTraitClassAutoUsingTwice {
 }

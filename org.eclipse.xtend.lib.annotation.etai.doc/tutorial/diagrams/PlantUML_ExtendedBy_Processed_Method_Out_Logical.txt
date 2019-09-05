@@ -33,19 +33,19 @@ class Lion {
 	+hunt(prey:String)
 }
 
-note right of Lion::getHuntingMethods
+note right of Lion::getHuntingMethods()
   return "pursue";
 end note
 
-note right of Lion::getHunters
+note right of Lion::getHunters()
   return "pack,lioness";
 end note
 
-note right of Lion::canHunt
+note right of Lion::canHunt()
   return isAdult() && !isMale();
 end note
 
-note right of Lion::hunt
+note right of Lion::hunt(prey:String)
   <u>Output (prey: "Antelope"):</u>
     Roar!
     Hunting Antelope...

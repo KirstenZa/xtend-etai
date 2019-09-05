@@ -41,27 +41,27 @@ Animal <|-down- AnimalDog
 Animal <|-down- AnimalLion
 Animal <|--down-- AnimalZebra
 
-note right of Animal::createSoundObject
+note right of Animal::createSoundObject()
   return null;
 end note
 
-note right of AnimalDog::getClassName
+note right of AnimalDog::getClassName()
   return "virtual.AnimalDog";
 end note
 
-note right of AnimalDog::createSoundObject
+note right of AnimalDog::createSoundObject()
   return new SoundDog();
 end note
 
-note left of AnimalLion::getClassName
+note left of AnimalLion::getClassName()
   return "virtual.AnimalLion";
 end note
 
-note left of AnimalLion::createSoundObject
+note left of AnimalLion::createSoundObject()
   return new SoundLion();
 end note
 
-note left of AnimalZebra::getClassName
+note left of AnimalZebra::getClassName()
   return "virtual.AnimalZebra";
 end note
 

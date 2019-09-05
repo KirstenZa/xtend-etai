@@ -16,7 +16,7 @@ class FirstNotNullExtendedPostContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPost)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			null
 		}
 
@@ -26,7 +26,7 @@ class FirstNotNullExtendedPostContainer {
 	static class ExtendedClassFirstNotNullExtendedPost implements ITraitClassFirstNotNullExtendedPost {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			new Object
 		}
 
@@ -41,7 +41,7 @@ class FirstNotNullTraitClassPostContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPost)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			new Object
 		}
 
@@ -51,7 +51,7 @@ class FirstNotNullTraitClassPostContainer {
 	static class ExtendedClassFirstNotNullTraitClassPost implements ITraitClassFirstNotNullTraitClassPost {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			null
 		}
 
@@ -66,7 +66,7 @@ class FirstNotNullExtendedPreContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPre)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			null
 		}
 
@@ -76,7 +76,7 @@ class FirstNotNullExtendedPreContainer {
 	static class ExtendedClassFirstNotNullExtendedPre implements ITraitClassFirstNotNullExtendedPre {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			new Object
 		}
 
@@ -91,7 +91,7 @@ class FirstNotNullTraitClassPreContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPre)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			new Object
 		}
 
@@ -101,7 +101,7 @@ class FirstNotNullTraitClassPreContainer {
 	static class ExtendedClassFirstNotNullTraitClassPre implements ITraitClassFirstNotNullTraitClassPre {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			null
 		}
 
@@ -116,7 +116,7 @@ class FirstNotNullBothNullPostContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPost)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			null
 		}
 
@@ -126,7 +126,7 @@ class FirstNotNullBothNullPostContainer {
 	static class ExtendedClassFirstNotNullBothNullPost implements ITraitClassFirstNotNullBothNullPost {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			null
 		}
 
@@ -141,7 +141,7 @@ class FirstNotNullBothNullPreContainer {
 
 		@ProcessedMethod(processor=EPFirstNotNullPre)
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			null
 		}
 
@@ -151,7 +151,7 @@ class FirstNotNullBothNullPreContainer {
 	static class ExtendedClassFirstNotNullBothNullPre implements ITraitClassFirstNotNullBothNullPre {
 
 		override Object method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			null
 		}
 

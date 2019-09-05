@@ -281,10 +281,10 @@ abstract class TraitClassWithConstruction {
 
 			val clazz = findClass("virtual.TraitClassWithConstruction")
 
-			val problemsMethod1 = (clazz.findDeclaredMethod("construct1").
-				primarySourceElement as MethodDeclaration).problems
-			val problemsMethod2 = (clazz.findDeclaredMethod("construct2").
-				primarySourceElement as MethodDeclaration).problems
+			val problemsMethod1 = (clazz.findDeclaredMethod("construct1").primarySourceElement as MethodDeclaration).
+				problems
+			val problemsMethod2 = (clazz.findDeclaredMethod("construct2").primarySourceElement as MethodDeclaration).
+				problems
 
 			// do assertions
 			assertEquals(1, problemsMethod1.size)
@@ -294,6 +294,8 @@ abstract class TraitClassWithConstruction {
 			assertEquals(1, problemsMethod2.size)
 			assertEquals(Severity.ERROR, problemsMethod2.get(0).severity)
 			assertTrue(problemsMethod2.get(0).message.contains("protected"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

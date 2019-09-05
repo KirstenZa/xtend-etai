@@ -1,5 +1,5 @@
 /**
- * Test passes, if this file compiles without problem.
+ * Test passes if this file compiles without problem.
  */
 package org.eclipse.xtend.lib.annotation.etai.tests.implement
 

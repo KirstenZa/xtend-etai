@@ -1,5 +1,5 @@
 /**
- * Test passes, if this file compiles without problem.
+ * Test passes if this file compiles without problem.
  */
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
@@ -30,6 +30,7 @@ abstract class TraitClassExclusive {
 	 */
 	@ExclusiveMethod
 	override void method() {
+		TraitTestsBase::TEST_BUFFER += "NOT_USE"
 	}
 
 }
@@ -43,7 +44,7 @@ class ExtendedClassExclusive implements ITraitClassExclusive {
 
 abstract class ExtendedClassExclusiveDeclareAbstractBase {
 
-	// exclusive trait methods can override abstract methods, which are declared within superclasses of extended class
+	// exclusive trait methods can override abstract methods that have been declared within superclasses of extended class
 	abstract def void method()
 
 }
@@ -55,20 +56,47 @@ class ExtendedClassExclusiveDeclareAbstractFromBase extends ExtendedClassExclusi
 @ExtendedByAuto
 abstract class ExtendedClassExclusiveDeclareAbstract implements ITraitClassExclusive {
 
-	// exclusive trait methods can use abstract methods, which are declared within extended class
+	// exclusive trait methods can use abstract methods that have been declared within extended class
 	abstract override void method()
 
 }
 
 @ExtendedByAuto
 abstract class ExtendedClassExclusiveOverrideExclusive extends ExtendedClassExclusiveDeclareAbstract implements ITraitClassEmpty {
+
 	override void method() {}
 
 }
 
-class TraitsExclusiveTests {
+class ExtendedClassExclusivePrivateBase {
+	
+	private def void method() {
+		TraitTestsBase::TEST_BUFFER += "NOT_USE"
+	}
+
+	def void useMethods() {
+		method
+	}
+	
+}
+
+@ExtendedByAuto
+class ExtendedClassExclusivePrivateDerived extends ExtendedClassExclusivePrivateBase implements ITraitClassExclusive {
+}
+
+class TraitsExclusiveTests extends TraitTestsBase  {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
+
+	def void testExclusiveDoesNotApplyPrivateInBase() {
+		
+		val obj = new ExtendedClassExclusivePrivateDerived
+		
+		TEST_BUFFER = "";
+		obj.method
+		assertEquals("USE", TEST_BUFFER)
+		
+	}
 
 	@Test
 	def void testExtensionExclusive() {

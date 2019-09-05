@@ -9,14 +9,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
- * Utility class providing collection utilities.
+ * <p>Utility class providing collection utilities.</p>
  */
 public class CollectionUtils {
 
 	/**
-	 * This list is a specialized list containing array/list with increasing
+	 * <p>This list is a specialized list containing array/list with increasing
 	 * indices. It is initialized with the starting index and a length. It does not
-	 * support any operation for modifying the list.
+	 * support any operation for modifying the list.</p>
 	 */
 	public static class StraightIndexList implements List<Integer> {
 
@@ -169,7 +169,7 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * This is a specialized iterator for the list for array/list indices.
+	 * <p>This is a specialized iterator for the list for array/list indices.</p>
 	 * 
 	 * @see org.eclipse.xtend.lib.annotation.etai.utils.CollectionUtils.StraightIndexList
 	 */
@@ -240,7 +240,7 @@ public class CollectionUtils {
 	};
 
 	/**
-	 * Creates the cartesian product out of two lists (containing lists).
+	 * <p>Creates the cartesian product out of two lists (containing lists).</p>
 	 */
 	public static <E> List<List<E>> cartesianProduct(List<List<E>> a, List<List<E>> b) {
 
@@ -262,7 +262,7 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * Creates the cartesian product out of multiple lists (containing lists).
+	 * <p>Creates the cartesian product out of multiple lists (containing lists).</p>
 	 */
 	public static <E> List<List<E>> cartesianProduct(List<List<List<E>>> lists) {
 
@@ -281,11 +281,11 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * Checks if given collection contains the specified element.
+	 * <p>Checks if given collection contains the specified element.</p>
 	 * 
-	 * In contrast to the original method of java.util.Collection, this method
-	 * ensures that no exception is thrown, if the specified element is not
-	 * supported by the collection.
+	 * <p>In contrast to the original method of java.util.Collection, this method
+	 * ensures that no exception is thrown if the specified element is not
+	 * supported by the collection.</p>
 	 */
 	public static boolean containsNoThrow(Collection<?> collection, Object element) {
 
@@ -305,10 +305,10 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * Checks if given map contains the specified key.
+	 * <p>Checks if given map contains the specified key.</p>
 	 * 
-	 * In contrast to the original method of java.util.Map, this method ensures that
-	 * no exception is thrown, if the specified key is not supported by the map.
+	 * <p>In contrast to the original method of java.util.Map, this method ensures that
+	 * no exception is thrown if the specified key is not supported by the map.</p>
 	 */
 	public static boolean containsKeyNoThrow(Map<?, ?> map, Object key) {
 
@@ -328,10 +328,10 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * Checks if given map contains the specified value.
+	 * <p>Checks if given map contains the specified value.</p>
 	 * 
-	 * In contrast to the original method of java.util.Map, this method ensures that
-	 * no exception is thrown, if the specified value is not supported by the map.
+	 * <p>In contrast to the original method of java.util.Map, this method ensures that
+	 * no exception is thrown if the specified value is not supported by the map.</p>
 	 */
 	public static boolean containsValueNoThrow(Map<?, ?> map, Object value) {
 

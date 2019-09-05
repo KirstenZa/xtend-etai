@@ -1,3 +1,7 @@
+# ETAI Library - Tutorial
+
+[![Build Status](https://travis-ci.org/KirstenZa/xtend-etai.svg?branch=master)](https://travis-ci.org/KirstenZa/xtend-etai)
+
 ## Table of Contents
 - [ ETAI Library - Tutorial](#etai-library---tutorial)
   - [ Introduction](#introduction)
@@ -44,6 +48,7 @@
       - [ Implement Own Trait Method Processor](#implement-own-trait-method-processor)
     - [ Envelope Methods](#envelope-methods)
       - [ Default Value Provider](#default-value-provider)
+    - [ Priority Envelope Methods](#priority-envelope-methods)
     - [ Additional Flags for Trait Methods](#additional-flags-for-trait-methods)
       - [ Flag: *required*](#flag-required)
       - [ Flag: *setFinal*](#flag-setfinal)
@@ -56,8 +61,6 @@
     - [ Trait Classes and Inheritance](#trait-classes-and-inheritance)
       - [ Base Trait Classes](#base-trait-classes)
       - [ Trait Classes using Trait Classes](#trait-classes-using-trait-classes)
-
-# ETAI Library - Tutorial
 
 ## Introduction
 
@@ -117,9 +120,9 @@ In order to play around just create another Xtend project, put project *org.ecli
 
 Interface Extraction is a small, but very useful feature of the ETAI library. It can **automatically extract an interface** (also called **mirror interface** in this context) for a given class. For this, the class just has to be annotated by ***@ExtractInterface***. Of course, the interface extraction supports some options to adjust the concrete behavior.
 
-Defining and working with interfaces is very important in modern software development. The separation of implementation and interface will help to manage software complexity and especially offer flexibility in later project stages. Algorithms shall rather work on basis of abstract objects with a defined interface instead of concrete ones.
+Defining and working with interfaces is very important in modern software development. The separation of implementation and interface will help to manage software complexity and especially offer flexibility in later project stages. Algorithms shall rather work on basis of abstract classes with a defined interface instead of concrete ones.
 
-For many types of software components it is very hard to define interfaces in early phases and prototyping. Such interfaces will not be stable during the development process. This results in work overhead, because both implementation and interface must be maintained. Therefore, a meaningful usage of interfaces is even omitted at this point in time, so creating and using interfaces will cause work in refactoring phases.
+For many types of software components it is very hard to define interfaces in early phases and prototyping. Such interfaces will not be stable during the development process. This results in work overhead because both implementation and interface must be maintained. Therefore, a meaningful usage of interfaces is even omitted at this point in time, so creating and using interfaces will cause work in refactoring phases.
 
 Extracting interfaces automatically in early project stages will solve this problem. If necessary, interface and implementation can be decoupled in later phases by writing the interface manually. There is no real overhead for the programmer until then.
 
@@ -129,7 +132,7 @@ Interface Extraction is already available as an example of Xtend's Active Annota
 
 In the following example a simple interface extraction is used. The annotation ***@ExtractInterface*** is applied to a class called *Lion*. Therefore, a mirror interface *ILion* is generated automatically. By default, this interface is located in a sub package called *intf*. The name of the interface or sub package can be influenced by options as shown in the latter examples (see [Adapt Interface Extration](#adapt-interface-extraction)).
 
-The generated mirror interface *ILion* gets all ***public*** methods (abstract and non-abstract) of *Lion* by default. Also Javadoc comments of the methods in *Lion* will be copied to the interface. Non-public methods will not show up in the interface. Finally, the class *Lion* will be adapted in order to implement the interface *ILion*.
+The generated mirror interface *ILion* gets all ***public*** methods (*abstract* and non-*abstract*) of *Lion* by default. Also, Javadoc comments of the methods in *Lion* will be copied to the interface. Non-public methods will not show up in the interface. Finally, the class *Lion* will be adapted in order to implement the interface *ILion*.
 
 ##### Input (Code)
 
@@ -164,13 +167,13 @@ class Lion {
 
 ##### Important
 
-> Please note, that methods which shall be extracted must already be declared with ***override*** not *def*, even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
+> Please note, that methods which shall be extracted must already be declared with ***override*** not *def* even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
 
 ##### Limitation
 
 > A class using *@ExtractInterface* must **not be placed in the default package**.
 >
-> It is also necessary to explicitly define all types for methods, because **types cannot be inferred for the extraction process**.
+> It is also necessary to explicitly define all types for methods because **types cannot be inferred for the extraction process**.
 
 ### Adapt Interface Extraction
 
@@ -226,11 +229,11 @@ class Dog implements IAnimal {
 
 ##### Hint
 
-*@NoInterfaceExtract* can also be used for fields, if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
+> *@NoInterfaceExtract* can also be used for fields if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
 
 ##### Limitation
 
-*@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
+> *@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
 
 ### Behavior of Interface Extraction in Hierarchies
 
@@ -238,9 +241,9 @@ The extraction of mirror interfaces also takes the **type hierarchy** of the cla
 
 In addition, **methods of parent classes and their implemented interfaces** are processed as if they were in the annotated class. A recursive algorithm takes care that also elements in parents are extracted. It can stop, however, if another parent class with *@ExtractInterface* annotation is found.
 
-The example below shows this. The extracted mirror interface *IMammal* extends *IAnimal*, because this has been defined for *Mammal*. Another showcase is the mirror interface *ILion*. In this case, *Lion* does not directly define implemented interfaces. However, its base class *BigCat* does implement *ILargeAnimal*, which is why *ILion* is extending this interface. In addition, *ILion* is extending *ICat*, because *Cat* is a parent class of *Lion*. Because *ICat* itself is a mirror interface, *ILion* can rely on extraction mechanisms and does not need to extend another interface deeper in the class hierarchy.
+The example below shows this. The extracted mirror interface *IMammal* extends *IAnimal* because this has been defined for *Mammal*. Another showcase is the mirror interface *ILion*. In this case, *Lion* does not directly define implemented interfaces. However, its base class *BigCat* does implement *ILargeAnimal*, which is why *ILion* is extending this interface. In addition, *ILion* is extending *ICat* because *Cat* is a parent class of *Lion*. Because *ICat* itself is a mirror interface, *ILion* can rely on extraction mechanisms and does not need to extend another interface deeper in the class hierarchy.
 
-In a similar way, the class structure is analyzed for defining methods in the mirror interfaces. For example, *ILion* contains method *hintInPack*, because it is defined within *Lion*. It also contains method *roar*, because it is defined in its parent class *BigCat*. On the other side, it does not contain method *getHome*, because it is already contained in mirror interface *IAnimal*. The same applies for method *feed*, which is in mirror interface *IMammal*.
+In a similar way, the class structure is analyzed for defining methods in the mirror interfaces. For example, *ILion* contains method *hintInPack* because it is defined within *Lion*. It also contains method *roar* because it is defined in its parent class *BigCat*. On the other side, it does not contain method *getHome* because it is already contained in mirror interface *IAnimal*. The same applies for method *feed*, which is in mirror interface *IMammal*.
 
 ##### Input (Code)
 
@@ -311,19 +314,21 @@ The **generation of default implementations of methods found in interfaces** is 
 
 ##### Important
 
-> Please note, that once *@ApplyRules* is attached to a class all derived classes **must** also use this annotation. This will be checked via assertions during runtime.
+> Please note, that once *@ApplyRules* is attached to a class all derived classes **must** also use this annotation. This will be checked via assertions during runtime. In addition to this, it is also necessary to use *@ApplyRules* for a class extended by a trait class that is also using this annotation. 
+>
+> These necessities might change if Xtend changes support for activate annotations in respect to *@java.lang.annotation.Inherited*.
 
 ### Generate Accessors and Mutators
 
 Coding getter and setter methods is common in object-oriented programming and especially Java. For example, there is usually a method *getAge* for accessing field *age* or a method *setName* for changing field *name*. This is a requirement for keeping the principle of encapsulation.
 
-However, such methods are a prototype of boilerplate code and as a consequence many code generation technologies support the automatic generation. Even Xtend provides some exemplary active annotations, which perform this job.
+However, such methods are a prototype of boilerplate code and as a consequence many code generation technologies support the automatic generation. Even Xtend provides some exemplary active annotations that perform this job.
 
-The ETAI library also provides some active annotations. In contrast to the basic implementation, which is shipping with Xtend, there are more features and the annotations will fit to other mechanisms of the ETAI library. 
+The ETAI library also provides some active annotations. In contrast to the basic implementation that is shipping with Xtend there are more features and the annotations will fit to other mechanisms of the ETAI library. 
 
 In order to enable the **generation of getter and setter**, specific rules (active annotations) must be attached to the fields of a class. Available rules will be explained in the following sub sections.
 
-Besides getters and setters the ETAI library also supports a special treatment for fields, which have the type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) and *java.util.Map* (or any derived type). The usage of such types allows the **generation of so-called adder and remover** methods, which can be used to add/put or remove values to/from the collections/maps.
+Besides getters and setters the ETAI library also supports a special treatment for fields that have the type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) and *java.util.Map* (or any derived type). The usage of such types allows the **generation of so-called adder and remover** methods that can be used to add/put or remove values to/from the collections/maps.
 
 In the following, getter methods will also be referenced as **accessors**. Setter, adder and remover methods will also be called **mutators**. 
 
@@ -339,7 +344,7 @@ All topics will be covered by later sub sections.
 
 ##### Hint
 
-> Some annotations like *@ExclusiveMethod* (or other trait methods, see [Traits](#traits)), *@TypeAdaptionRule* (see [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)) or *@NoInterfaceExtract* (see [Adapt Interface Extraction](#adapt-interface-extraction)) are related to methods and must annotate methods therefore. However, they can also annotate fields, if these fields apply annotations for generating accessors or mutators. In such a case, the annotations behave as if they would be annotated to the generated methods.
+> Some annotations like *@ExclusiveMethod* (or some other annotations for trait methods like *@ProcessedMethod*, see [Traits](#traits)), *@TypeAdaptionRule* (see [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)) or *@NoInterfaceExtract* (see [Adapt Interface Extraction](#adapt-interface-extraction)) are related to methods and must annotate methods therefore. However, they can also annotate fields if these fields apply annotations for generating accessors or mutators. In such a case, the annotations behave as if they would be annotated to the generated methods.
 >
 > For example, if *@ExclusiveMethod* and *@GetterRule* are used together for a field in a trait class, a getter method will be generated as exclusive trait method of that trait class, i.e. each class extended by this trait class will receive this getter method.
 
@@ -347,7 +352,7 @@ All topics will be covered by later sub sections.
 
 The generation of getter and setter methods can be triggered by the annotation of ***@GetterRule*** and ***@SetterRule***. Both annotations can be used independently, i.e., if only *@GetterRule* is used, only a getter method will be generated.
 
-In contrast to the common pattern, the generated setter method will return a *boolean* value. A result of *true* means that the actual value of the field has been changed. On contrary, *false* means that the value has not been changed. This can happen, if the new value (resp. reference) would have been the same as the old one. However, there are also other possibilities that the value is not changed in context of [change methods](#change-methods).
+In contrast to the common pattern, the generated setter method will return a *boolean* value. A result of *true* means that the actual value of the field has been changed. On contrary, *false* means that the value has not been changed. This can happen if the new value (or reference) would have been the same as the old one. However, there are also other possibilities that the value is not changed in context of [change methods](#change-methods).
 
 The following example shows class *Person* which specifies the field *name* and uses *@GetterRule* and *@SetterRule* for it. Therefore, the methods *getName* and *setName* are generated. They allow for accessing the field's value and modifying the field's value.
 
@@ -389,17 +394,17 @@ class Person {
 
 #### Generate Adder and Remover Methods
 
-If a field has type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) or *java.util.Map* (or any derived type), it is possible to apply the annotations ***@AdderRule*** and ***@RemoverRule***. They trigger the generation of methods for adding resp. removing elements to/from the *Collection*/*Map*.
+If a field has type *java.util.Collection* (or any derived type like *java.util.List* and *java.util.Set*) or *java.util.Map* (or any derived type), it is possible to apply the annotations ***@AdderRule*** and ***@RemoverRule***. They trigger the generation of methods for adding/removing elements to/from the *Collection*/*Map*.
 
-Both annotations support the *boolean* parameters ***single*** and ***multiple***. They control which types of methods will be generated: if *single* is *true*, methods for adding/removing single elements are generated, if *multiple* is *true*, methods for adding/removing multiple elements are generated. At least one of both options must be set to *true*.   
+Both annotations support the *boolean* parameters ***single*** and ***multiple***. They control which types of methods will be generated: if *single* is *true*, methods for adding/removing single elements are generated if *multiple* is *true*, methods for adding/removing multiple elements are generated. At least one of both options must be set to *true*.   
 
-The following tables show which methods are generated for a field named *X* based on the type (with element type *E* resp. key/value types *K*/*V*) and the applied annotation. 
+The following tables show which methods are generated for a field named *X* based on the type (with element type *E* or key/value types *K*/*V*) and the applied annotation. 
 
 | Method (*@AdderRule*)        | *single* /<br>*multiple* | Type  | Description                         |
 | -------------------------- |:------:|:--------:|------------------------------------:|
 | ***boolean addToX(E element)*** | *single* | *Collection* | *element* will be added to collection *X* (if the type is *List*, it will be added to the end of the list) |
 | ***boolean addToX(int index, E element)*** | *single* | *List* | *element* will be added to list *X* at the specified *index* |
-| ***V putToX(K key, V value)*** | *single* | *Map* | *value* for *key* will be put to to map *X*, the old value (resp. *null* if not available) will be replaced and returned by the method |
+| ***V putToX(K key, V value)*** | *single* | *Map* | *value* for *key* will be put to to map *X*, the old value (or *null* if not available) will be replaced and returned by the method |
 | ***boolean addAllToX(Collection&lt;E&gt; c)*** | *multiple* | *Collection* | the whole collection *c* will be added to collection *X* (if the type is *List*, it will be added to the end of the list) |
 | ***boolean addAllToX(int index, Collection&lt;E&gt; c)*** | *multiple* | *List* | the whole collection *c* will be added to list *X* at the specified *index* |
 | ***void putAllToX(Map&lt;? extends K,? extends V&gt; m)*** | *multiple* | *Map* | all entries of map *m* will be put to map<nobr>&nbsp;<nobr>*X* |
@@ -412,7 +417,7 @@ The following tables show which methods are generated for a field named *X* base
 | ***boolean removeAllFromX(Collection&lt;E&gt; c)*** | *multiple* | *Collection* | all elements in collection *c* will be removed from collection *X* (if an element is contained multiple times, all occurrences will be removed) |
 | ***boolean/void clearX()*** | *multiple* | *Collection*<nobr>&nbsp;<nobr>/<br>*Map* | the whole collection / map *X* will be emptied |
 
-All methods which return a *boolean* value will report, if there has been any change in the *Collection* (this is not available for *Map*). This can happen, for example, if the new element has already been contained in a *Set*. However, there are also other possibilities in context of [change methods](#change-methods).
+All methods which return a *boolean* value will report if there has been any change in the *Collection* (this is not available for *Map*). This can happen, for example, if the new element has already been contained in a *Set*. However, there are also other possibilities in context of [change methods](#change-methods).
 
 An example will be shown in the following sections.
 
@@ -428,7 +433,7 @@ An example will be shown in the following sections.
 
 Adder and remover methods as shown in the previous section can be used in order to modify collections/maps. However, there usually is the need to access elements of these collections/maps as well.
 
-This can be achieved by applying a *@GetterRule* to the collection/map. Once it is returned by the getter, it can be used to access its elements. However, this might bypass the idea of encapsulation, because the returned reference can also be used to modify the collection/map without using the generated adder and remover methods.
+This can be achieved by applying a *@GetterRule* to the collection/map. Once it is returned by the getter, it can be used to access its elements. However, this might bypass the idea of encapsulation because the returned reference can also be used to modify the collection/map without using the generated adder and remover methods.
 
 Therefore, *@GetterRule* supports a parameter called ***collectionPolicy***. Setting this parameter can influence how the collection/map is returned, and it can be protected this way. The following values are supported and have the described effect:
 
@@ -489,14 +494,14 @@ In context of accessors (*@GetterRule*) and mutators (*@SetterRule* and *@AdderR
 The annotation supports three *boolean* parameters:
 
 - ***notNullSelf*** (default *true*): the value of the field itself must not be set to *null* (via setter) and when retrieving the value (via getter), it must not be *null*.
-- ***notNullKeyOrElement*** (default *false*): it is not allowed to add a *null* element to a collection resp. to add a *null* key to a map (via adder).
+- ***notNullKeyOrElement*** (default *false*): it is not allowed to add a *null* element to a collection or to add a *null* key to a map (via adder).
 - ***notNullValue*** (default *false*): it is not allowed to add a *null* value to a map (via adder).
 
 If the specified *null* rule is violated, which can detected during the according method call (getter, setter or adder method), an *AssertionError* will be thrown. This requires assertions to be activated (see [Enabling and Disabling Assertions](https://docs.oracle.com/javase/7/docs/technotes/guides/language/assert.html#enable-disable)).
 
 The code example below shows the usage of *NotNullRule* twice. Firstly, it is not possible to set the name of a *Person* object to *null*. In addition, if a name with value *null* is be retrieved via getter (actually the field has this value directly after the object has been constructed), an error will be thrown.
 
-Secondly, the set *addresses* cannot retrieved, if it is *null* or contains a *null* element. When adding new elements to the set, it is checked that they are not *null* as well.
+Secondly, the set *addresses* cannot retrieved if it is *null* or contains a *null* element. When adding new elements to the set, it is checked that they are not *null* as well.
 
 ##### Input (Code)
 
@@ -530,17 +535,17 @@ class Person {
 
 ##### Hint
 
-It is also ensured that only non-*null* values/keys can be retrieved from collections/maps using the generated getter method. This can only be achieved by checking each element of the collection/map before returning the reference. As this is a very time consuming operation this feature should be considered as convenient helper for testing purposes and only be used for small collections/maps.  
+> It is also ensured that only non-*null* values/keys can be retrieved from collections/maps using the generated getter method. This can only be achieved by checking each element of the collection/map before returning the reference. As this is a very time consuming operation this feature should be considered as convenient helper for testing purposes and only be used for small collections/maps.  
 
 ##### Important
 
-There is no protection, if the field/collection/map is modified or accessed directly without getter, setter or adder.
+> There is no protection if the field/collection/map is modified or accessed directly without getter, setter or adder.
 
 #### Change Methods
 
-Before/after the value of a field or the content of a collection is changed, it is sometimes necessary to **trigger some additional checks or actions**. In this case, it is possible to write a non-generated mutator method accordingly. However, triggering additional checks or actions is also possible, if generating mutators via *@SetterRule*, *@AdderRule* or *@RemoverRule*.
+Before/after the value of a field or the content of a collection is changed, it is sometimes necessary to **trigger some additional checks or actions**. In this case, it is possible to write a non-generated mutator method accordingly. However, triggering additional checks or actions is also possible if generating mutators via *@SetterRule*, *@AdderRule* or *@RemoverRule*.
 
-All rules for generating mutator methods support some additional parameters of type *String*, e.g. parameter *afterChange* is supported by *@SetterRule*. Their purpose is to hold the name of a method, which must be available in context of the generated mutator method (*static* or non-*static*). The method must also comply with one of several allowed signatures. If such a parameter is set, the referenced method is called inside the generated mutator method. It is even possible to block a change.
+All rules for generating mutator methods support some additional parameters of type *String*, e.g. parameter *afterChange* is supported by *@SetterRule*. Their purpose is to hold the name of a method that must be available in context of the generated mutator method (*static* or non-*static*). The method must also comply with one of several allowed signatures. If such a parameter is set, the referenced method is called inside the generated mutator method. It is even possible to block a change.
 
 The specified method name can use the *%* symbol. This symbol will be replaced automatically by the field's name applying also the camel case schema.
 
@@ -559,9 +564,9 @@ The following table shows an overview of available parameters together with the 
 | *@RemoverRule* | *afterElementRemove* | after an element has been removed from the collection |
 | *@RemoverRule* | *afterRemove* | after one or more elements have been removed from the collection |
 
-Please note, that multiple methods can be called during one call of a generated mutator. For example, if a field's value is going to be set to a new value, i.e. the value differs from the old one, the method referenced by *beforeChange* will be called before the actual change, and the *boolean* result of this call can even block the change. After the change has been performed the method referenced by *afterChange* will be called.
+Please note, that multiple methods can be called during one call of a generated mutator. For example, if a field's value is going to be set to a new value (i.e. the value differs from the old one), the method referenced by *beforeChange* will be called before the actual change, and the *boolean* result of this call can even block the change. After the change has been performed the method referenced by *afterChange* will be called.
 
-If adding multiple elements to a collection, the method referenced by *beforeElementAdd* is called **for each element**. Afterwards, the method referenced by *beforeAdd* will be called. Thereby, adding elements can be blocked individually or entirely. For each element, which has actually been added, the method referenced by *afterElementAdd* will be called then. Finally, *afterAdd* will be called, if there are elements, which have been added. For removing elements the same schema is applied.
+If adding multiple elements to a collection, the method referenced by *beforeElementAdd* is called **for each element**. Afterwards, the method referenced by *beforeAdd* will be called. Thereby, adding elements can be blocked individually or entirely. For each element that has actually been added the method referenced by *afterElementAdd* will be called then. Finally, *afterAdd* will be called if there are elements that have been added. For removing elements the same schema is applied.
 
 All referenced methods must have one of multiple possible signatures. Depending on the signature, information about the change will be available inside the method. The following table shows all supported signatures. The meaning of the individual signature elements will be explained below the table.
 
@@ -600,7 +605,7 @@ All referenced methods must have one of multiple possible signatures. Depending 
 The following elements are used in the table above:
 
 - *X*: the name of the called method
-- *T*: the type of the annotated field resp. the type of the collection's element
+- *T*: the type of the annotated field or the type of the collection's element
 - *fieldName*: the name of the field/collection which shall be changed
 - *oldValue*: the old value of the field
 - *newValue*: the new value of the field (which has or has not already been set)
@@ -609,13 +614,13 @@ The following elements are used in the table above:
 - *newElements*: the element(s) which will be in the collection after the change (read-only)
 - *index* / *indices*: the index/indices of the elements(s) which shall be added/removed to/from the collection
 
-All methods which are triggered before a change also support return type *boolean* in addition to *void*. If *boolean* is used, the return value of the method will **control, if the change is allowed and shall be performed**. If *false* is returned, the change will be aborted. In case of methods called for individual elements of a bigger change (e.g. *beforeElementAdd*) only adding/removing this particular element will be skipped.
+All methods which are triggered before a change also support return type *boolean* in addition to *void*. If *boolean* is used, the return value of the method will **control if the change is allowed and shall be performed**. If *false* is returned, the change will be aborted. In case of methods called for individual elements of a bigger change (e.g. *beforeElementAdd*) only adding/removing this particular element will be skipped.
 
-Please note, that not all kind of actions should be performed within change methods. For example, throwing exceptions might be problematic (see [Bidirectional Connections](#bidirectional-connections)). Also the currently changed value resp. the currently altered collection should not be changed again within the change method. This might lead to (endless) recursive calls. Therefore, there is even a protection against concurrent changes at least if mutator methods are called. For example, inside a change method for a field *A* triggered by setter *setA* another call of *setA* will not change *A* and return *false*.
+Please note, that not all kind of actions should be performed within change methods. For example, throwing exceptions might be problematic (see [Bidirectional Connections](#bidirectional-connections)). Also, the currently changed value or the currently altered collection should not be changed again within the change method. This might lead to (endless) recursive calls. Therefore, there is even a protection against concurrent changes at least if mutator methods are called. For example, inside a change method for a field *A* triggered by setter *setA* another call of *setA* will not change *A* and return *false*.
 
 The following code example shows how change methods can be used and also how a (logically) equivalent Java code would look like. It applies *beforeChange* and *afterChange* together with *@SetterRule* (field *percentage*) and *afterAdd* together with *@AdderRule* (field *log*).
 
-In case of *percentage* the *beforeChange* method *percentageChange* checks, if the new value is between 0 and 100. If not, it will not be applied (but also no error is thrown). If the value is actually changed, method *percentageChanged* will be called. In the example, this method does not need any information and just wants to report a change, so no parameter is specified.
+In case of *percentage* the *beforeChange* method *percentageChange* checks if the new value is between 0 and 100. If not, it will not be applied (but also no error is thrown). If the value is actually changed, method *percentageChanged* will be called. In the example, this method does not need any information and just wants to report a change, so no parameter is specified.
 
 Field *log* is a *String* list. After new strings have been added, *afterAdd* method *addedToList* is called. It gets information about all added strings and their indices within *log*, and it reports these changes as well.
 
@@ -725,15 +730,15 @@ public class Progress {
 
 #### Bidirectional Connections
 
-In object-oriented data models it is often required that two objects link to each other (bidirectional connection). In object-oriented programming this would mean that a reference is set from both sides, e.g. by calling a setter method for both objects. If it is known that a bidirectional connection must be established, however, it would be sufficient to call one setter, because **setting the bidirectional connection from the other side (opposing side) can be done automatically**.
+In object-oriented data models it is often required that two objects link to each other (bidirectional connection). In object-oriented programming this would mean that a reference is set from both sides, e.g. by calling a setter method for both objects. If it is known that a bidirectional connection must be established, however, it would be sufficient to call one setter because **setting the bidirectional connection from the other side (opposing side) can be done automatically**.
 
-The ETAI library supports the generation of mutator methods, which can handle bidirectional connections automatically, i.e., setting a reference on one side is sufficient. To enable this feature it is necessary to add rule ***@BidirectionalRule*** to a field, which references to another (opposing) object. As value of the rule a string must be provided. The string designated the field in the opposing object, which represents the opposing side of the bidirectional connection. 
+The ETAI library supports the generation of mutator methods that can handle bidirectional connections automatically, i.e., setting a reference on one side is sufficient. To enable this feature it is necessary to add rule ***@BidirectionalRule*** to a field that references to another (opposing) object. As value of the rule a string must be provided. The string designated the field in the opposing object that represents the opposing side of the bidirectional connection. 
 
 If the mutator of a field annotated by *@BidirectionalRule* is called, also the opposing object will get according information about the connection. This information will be stored inside the field named in *@BidirectionalRule* by calling an appropriate mutator of the opposing object. This way, both objects contain a reference to each other and a bidirectional connection is established.
 
 In object-oriented data modeling (bidirectional) associations with **0..1:1, 0..1:n and m:n multiplicities** can be modeled. These schemas can be reproduced via *@BidirectionalRule*. If both sides use a simple reference, the 0..1:1 schema will be applied and setter methods on both sides are expected (e.g. via *@SetterRule*). If one side uses a simple reference and the other side a set of references (*java.util.Set*), the 0..1:n schema will be applied. The side containing a set of references is required to have adder and remover methods for single references (e.g. via *@AdderRule*/*@RemoverRule* and *single* set to *true*), the other side is required to have a setter method again. Finally, if both sides have a set of references, the m:n schema will be applied and adder/remover methods are required on both sides.
 
-An example for realizing a 0..1:n association is shown below. On one side, there is field *location* in class *City*, and on the other side, there is field *cities* in class *Country* and they refer to each other. If a *City* object sets a *Country* object as *location*, this *City* object will be added to the *cities* set within the *Country* object. The *City* object will also be removed from any *cities* set it has been before. The other way around, if a *Country* object adds a *City* object to *cities*, this *Country* object will be set as *location* for the *City* object. This behavior is also reflected in the exemplary output code shown below.
+An example for realizing a 0..1:n association is shown below. On one side, there is field *location* in class *City*, and on the other side, there is field *cities* in class *Country* and they refer to each other. If a *City* object sets a *Country* object as *location*, this *City* object will be added to the *cities* set within the *Country* object. The *City* object will also be removed from any *cities* set it has been before. The other way around if a *Country* object adds a *City* object to *cities*, this *Country* object will be set as *location* for the *City* object. This behavior is also reflected in the exemplary output code shown below.
 
 ##### Input (Code)
 
@@ -839,7 +844,7 @@ public class Country {
 
 > If a new bidirectional connection shall be established, potential old connections must be cut. With the currently implemented logic this would mean that some fields must be set to *null* at least temporarily. Therefore, it is not possible to perfectly reproduce 1:1 or 1:n associations, e.g. by using *@NotNullRule* in addition (see [*null* Checks](#null-checks)). 
 >
-> In addition to this, if bidirectional connections are used, the usage of [change methods](#change-methods), which are called before a change, might be restricted. For example, during the call of such a change methods the current connection state might be inconsistent, because the internal algorithms are still processing a consistent connection state using mutator methods. Therefore, throwing exceptions there should be avoided.
+> In addition to this, if bidirectional connections are used, the usage of [change methods](#change-methods) that are called before a change might be restricted. For example, during the call of such a change methods the current connection state might be inconsistent because the internal algorithms are still processing a consistent connection state using mutator methods. Therefore, throwing exceptions there should be avoided.
 
 #### Multi-Threading and Mutators
 
@@ -891,11 +896,11 @@ class Country {
 
 ##### Hint
 
-In particular, the usage of a shared lock name in *@SynchronizationRule* can be very important, if using *@BidirectionalRule* in a multi-threading environment. If changes are initiated from different threads, deadlocks can occur. This problem can be resolved by using the same lock (name) on both sides.
+> In particular, the usage of a shared lock name in *@SynchronizationRule* can be very important if using *@BidirectionalRule* in a multi-threading environment. If changes are initiated from different threads, deadlocks can occur. This problem can be resolved by using the same lock (name) on both sides.
 
 ### Generate the Implementation of Constructors and Methods
 
-It is possible to **generate method or constructor implementations in derived classes based on an adaption rule** specified in a parent class. This rule is annotated on an abstract or non-abstract method by using ***@ImplAdaptionRule***. By default, each derived class will implement this method then using this rule.
+It is possible to **generate method or constructor implementations in derived classes based on an adaption rule** specified in a parent class. This rule is annotated on an *abstract* or non-*abstract* method by using ***@ImplAdaptionRule***. By default, each derived class will implement this method then using this rule.
 
 The adaption rule is given by a string assigned to the ***value*** of *@ImplAdaptionRule*. It must follow the schema described in [Adaption Rule Specification](#adaption-rule-specification). The string will be evaluated during code generation and the evaluation result will be the (Java) code of the generated method's body.
 
@@ -903,7 +908,7 @@ There is also another supported parameter: ***typeExistenceCheck***. With this p
 
 A very simple use case is shown in the example below. The methods *getClassName* and *createSoundObject* shall be generated in derived classes of *Animal* based on the name of the derived class. For example, the method *getClassName* of *AnimalDog* will return the string *"virtual.AnimalDog"* while *getClassName* of *AnimalLion* will return *"virtual.AnimalLion"* without the usage of Java Reflection.
 
-The method *createSoundObject* will create a corresponding *Sound* object, e.g. *SoundDog* for *AnimalDog* and *SoundLion* for *AnimalLion*. Within *AnimalZebra* this method is not generated, because the rule also specified an appropriate *typeExistenceCheck*, but the resulting type *virtual.SoundZebra* does not exist.
+The method *createSoundObject* will create a corresponding *Sound* object, e.g. *SoundDog* for *AnimalDog* and *SoundLion* for *AnimalLion*. Within *AnimalZebra* this method is not generated because the rule also specified an appropriate *typeExistenceCheck*, but the resulting type *virtual.SoundZebra* does not exist.
  
 ##### Input (Code)
 
@@ -964,7 +969,7 @@ class AnimalZebra extends Animal {}
 
 ### Reimplement Constructors and Methods with Adapted Parameter and Return Types
 
-With type adaption rules it is possible to **adjust the return type of a method** within derived classes. This means that wrapper method with the adapted types are generated, i.e., they are simply calling the method of the super class and returning its result, but they have another return type. For **parameter types the same principle can be used for constructors** (i.e. it is also possible for [Constructor Methods](#constructor-methods-and-construction-process)) **or *static* methods, which also apply *@ImplAdaptionRule***.
+With type adaption rules it is possible to **adjust the return type of a method** within derived classes. This means that wrapper method with the adapted types are generated, i.e., they are simply calling the method of the super class and returning its result, but they have another return type. For **parameter types the same principle can be used for constructors** (i.e. it is also possible for [Constructor Methods](#constructor-methods-and-construction-process)) **or *static* methods that also apply *@ImplAdaptionRule***.
 
 Usually, the reason for adapting types by such rules is to reflect the limitation of the returned type in the derived class's method or the limitation of a parameter type when constructing an object of the derived class (see [Covariance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science))).
 
@@ -1038,19 +1043,19 @@ class AnimalZebra extends Animal {}
 
 ##### Hint
 
-> The described methodology does not only work within regular class hierarchies. Also classes extended by trait classes with (trait) methods using *@TypeAdaptionRule* will apply such rules and types will be adapted in further processing.
+> The described methodology does not only work within regular class hierarchies. Classes that are extended by trait classes with (trait) methods using *@TypeAdaptionRule* will also apply such rules and types will be adapted in further processing.
 
 ##### Limitation
 
-> The adaption of type parameters within generic types is usually only possible, if using wildcards. For example, the return type *java.util.List<Sound>* cannot be adapted to *java.util.List<SoundDog>*, but *java.util.List<? extends Sound>* can be adapted to *java.util.List<? extends SoundDog>*.
+> The adaption of type parameters within generic types is usually only possible if using wildcards. For example, the return type *java.util.List<Sound>* cannot be adapted to *java.util.List<SoundDog>*, but *java.util.List<? extends Sound>* can be adapted to *java.util.List<? extends SoundDog>*.
 >
-> This must also be respected, if using collection types, *@TypeAdaptionRule* and the generation of accessors and mutators (see [Generate Accessors and Mutators](#generate-accessors-and-mutators)) together.
+> This must also be respected if using collection types, *@TypeAdaptionRule* and the generation of accessors and mutators (see [Generate Accessors and Mutators](#generate-accessors-and-mutators)) together.
 
 #### Reimplement Constructors without Parameters
 
-The example in [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types) shows how constructors in derived classes, which basically have no functionality in addition, can be implemented automatically based on constructors in the parent class. This can be triggered by the type adaption rule on a parameter.
+The example in [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types) shows how constructors in derived classes that basically have no functionality in addition can be implemented automatically based on constructors in the parent class. This can be triggered by the type adaption rule on a parameter.
 
-However, this use case can be valid even without adapting parameter types. For this, there is the annotation ***CopyConstructorRule***, which can be applied to several constructors in the base class. Each **annotated constructor will be implemented automatically in derived classes**, if there is no other manually implemented constructor.
+However, this use case can be valid even without adapting parameter types. For this, there is the annotation ***CopyConstructorRule*** that can be applied to several constructors in the base class. Each **annotated constructor will be implemented automatically in derived classes** if there is no other manually implemented constructor.
 
 An example can be found in the following section.
 
@@ -1060,15 +1065,15 @@ Rules are usually applied for each derived class. However, there are several rul
 
 In case of **methods, adaption is affected** (relating to further derivation) as soon as a derived class overrides it, i.e., there is a (manual) implementation of a method with the same name. In the class with the overridden method, there will be no adaption, of course. For further derived classes there are three possibilities:
 
-1. Adaption will be **changed**, if the implemented method applies another adaption rule, i.e., the new adaption rule is applied.
-2. Adaption will be **continued** unchanged, if the implemented method applies the annotation ***@AdaptedMethod***.
-3. Adaption will be **stopped** in other cases.
+1. Adaption will be **changed** if the implemented method applies another adaption rule, i.e., the new adaption rule is applied.
+2. Adaption will be **continued** unchanged if the implemented method applies the annotation ***@AdaptedMethod***.
+3. Adaption will be **stopped** in other cases, e.g., if the method is implemented without annotation.
 
 In case of **constructors, adaption is affected** (relating to further derivation) as soon as a derived class implements any constructor. Any adaption rule for constructors is obsolete after that. However, it is possible to attach a new adaption rule to an implemented constructors again. This adaption rule will be considered for further derivation then.
 
 The example below shows some of these cases. Method *getSound* in class *Animal* is annotated by *@TypeAdaptionRule*. It is already overridden in class *AnimalCarnivora*. However, it is annotated by *@AdaptedMethod* there, so adaption is not stopped and the method gets automatically generated in *AnimalFelidae*. The same method is overridden again in *AnimalLion*, but not annotated by *@AdaptedMethod* this time. Therefore, in the derived class *AnimalLionSouthAfrica* it is not generated.
 
-Also the behavior for constructors is shown. Adaption is in place because *@TypeAdaptionRule* and *@CopyConstructorRule* (see [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)) are applied to the two constructors in *Animal*, so both constructors are generated in *AnimalCarnivora* and *AnimalFelidae*. Later, in class *AnimalLion* there is one constructor implemented manually. Therefore, no constructor is generated in *AnimalLionSouthAfrica*, which is why a constructor must be implemented there by hand. 
+The behavior for constructors is shown as well. Adaption is in place because *@TypeAdaptionRule* and *@CopyConstructorRule* (see [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters)) are applied to the two constructors in *Animal*, so both constructors are generated in *AnimalCarnivora* and *AnimalFelidae*. Later, in class *AnimalLion* there is one constructor implemented manually. Therefore, no constructor is generated in *AnimalLionSouthAfrica*, which is why a constructor must be implemented there by hand. 
 
 ##### Input (Code)
 
@@ -1163,21 +1168,25 @@ class AnimalLionSouthAfrican extends AnimalLion {
 
 ### Generate Factory Methods
 
-The ETAI library supports the **generation of factory methods**, i.e. methods for creating an object instead of using constructors. This feature enables [Constructor Methods](#constructor-methods-and-construction-process) in trait classes (see [Automatic Generation of Constructors](#automatic-generation-of-constructors)), and it can be useful, if additional code shall be executed automatically after object construction (see [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)), or the factory methods become part of a factory (see [Generate Factories](#generate-factories)).
+The ETAI library supports the **generation of factory methods**, i.e. methods for creating an object instead of using constructors. This feature enables [Constructor Methods](#constructor-methods-and-construction-process) in trait classes (see [Automatic Generation of Constructors](#automatic-generation-of-constructors)), and it can be useful if additional code shall be executed automatically after object construction (see [Initialization after Object has been Constructed Completely](#initialization-after-object-has-been-constructed-completely)), or the factory methods become part of a factory (see [Generate Factories](#generate-factories)).
 
-In order to generate factory methods, a class and derived classes must enable adaption (*@ApplyRules*). Afterwards, the first class in the type hierarchy, which shall get a factory method, must be annotated by a rule represented by ***@FactoryMethodRule***. All derived classes will also get a factory method according to the same rule. However, the rule can be changed by derived classes by annotating it again with other options. It can even be deactivated by annotating *@FactoryMethodRule* to a derived class and setting parameter *factoryMethod* to an empty string.
+In order to generate factory methods, a class and derived classes must enable adaption (*@ApplyRules*). Afterwards, the first class in the type hierarchy that shall get a factory method, must be annotated by a rule represented by ***@FactoryMethodRule***. All derived classes will also get a factory method according to the same rule. The rule can be changed by derived classes by annotating it again with other options. It can even be deactivated by annotating *@FactoryMethodRule* to a derived class and setting parameter *factoryMethod* to an empty string.
 
-The annotation *@FactoryMethodRule* supports several parameters, which allow for different patterns, e.g. a naming pattern or if the method shall be generated inside a factory class (see [Generate Factories](#generate-factories)). The name of the generated factory method can be defined by parameter ***factoryMethod***. It supports a special character *%*, which is replaced by the name of the class, in which the factory method is generated.
+The annotation *@FactoryMethodRule* supports several parameters that allow for different patterns, e.g. a naming pattern or if the method shall be generated inside a factory class (see [Generate Factories](#generate-factories)). The name of the generated factory method can be defined by parameter ***factoryMethod***. It supports a special character *%* that is replaced by the name of the class in which the factory method is generated.
 
-The generated factory methods will reflect the parameters of the given constructors and factory methods will call them accordingly. This also works in scenarios, where this rule is combined with other rules and concepts of the ETAI library, i.e., it might be that constructors are not present in the Xtend code, because they will be generated as well (cp. [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters) or [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)).
+The generated factory methods will reflect the parameters of the given constructors and factory methods will call them accordingly. This also works in scenarios, where this rule is combined with other rules and concepts of the ETAI library, i.e., it might be that constructors are not present in the Xtend code because they will be generated as well (cp. [Reimplement Constructors without Parameters](#reimplement-constructors-without-parameters) or [Constructor Methods and Construction Process](#constructor-methods-and-construction-process)).
 
 As soon as factory methods are generated, **constructors become *protected***, i.e., classes usually can only be created via factory method from outside.
 
+##### Hint
+
+> It is also possible that rule *@FactoryMethodRule* is specified for a trait class. All classes extended by this trait class will inherit this rule then.
+
 #### Initialization after Object has been Constructed Completely
 
-If there is code, which shall be **executed after the object has been constructed completely**, the parameter ***initMethod*** can help. With this parameter the name of a method can be specified. This method will be called automatically after the complete construction, no matter which factory method has been called. Thereby, the word "complete" is important, because this actually means that it is save to call any method, which is not possible within constructors (cp. [Calling Methods from a Constructor](https://www.javaspecialists.eu/archive/Issue210.html)). However, **the method must not have parameters or a return value (*void*)**.
+If there is code that shall be **executed after the object has been constructed completely**, the parameter ***initMethod*** can help. With this parameter the name of a method can be specified. This method will be called automatically after the complete construction, no matter which factory method has been called. Thereby, the word "complete" is important because this actually means that it is save to call any method, which is not possible within constructors (cp. [Calling Methods from a Constructor](https://www.javaspecialists.eu/archive/Issue210.html)). However, **the method must not have parameters or a return value (*void*)**.
 
-In the example, class *Animal* specifies a factory method rule, which is why two factory methods are generated based on the two constructors of *Animal*. It also shows method *init*, which is called automatically after the object has been constructed via factory method. 
+In the example, class *Animal* specifies a factory method rule, which is why two factory methods are generated based on the two constructors of *Animal*. It also shows method *init* that is called automatically after the object has been constructed via factory method. 
 
 ##### Input (Code)
 
@@ -1220,7 +1229,7 @@ The return type of the generated factory method usually matches the class it is 
 
 However, it is possible to influence the return type of the generated methods. This can be accomplished via an adaption rule specification (see [Adaption Rule Specification](#adaption-rule-specification)) in parameter ***returnTypeAdaptionRule*** of *@FactoryMethodRule*. If the specified string is not empty, the rule will be applied in order to determine the return type of the factory method.
 
-If the application of the adaption rule specification would lead to a string, which does not represent a locatable type, the generation does not consider the adaption rule.
+If the application of the adaption rule specification would lead to a string that does not represent a locatable type, the generation does not consider the adaption rule.
 
 ### Generate Factories
 
@@ -1228,11 +1237,11 @@ Another parameter of *@FactoryMethodRule* (see [Generate Factory Methods](#gener
 
 A *public*, *static* instance of this class will be made available via the adapted class as well. The name of this instance is given by *factoryInstance*. The variable will be declared *final* (or read-only) unless parameter ***factoryInstanceFinal*** of *@FactoryMethodRule* is explicitly set to *false*.
 
-If generating factory classes, it can also be helpful to provide an interface for them, which allows for supporting the [Abstract Factory Pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern). The type of such an interface can be specified by setting the ***factoryInterface*** parameter.
+If generating factory classes, it can also be helpful to provide an interface for them that allows for supporting the [Abstract Factory Pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern). The type of such an interface can be specified by setting the ***factoryInterface*** parameter.
 
 An alternative to *factoryInterface* is ***factoryInterfaceVariable*** (both must not be used). In case of *factoryInterfaceVariable*, the name of the factory class's interface is not fixed, but will be equal to the value of an adaption variable (see [Use Adaption Variables](#use-adaption-variables)) in context of the adapted class. The name of the adaption variable is given by *factoryInterfaceVariable*. If the referred adaption variable is not set, an interface will not be applied.
 
-By default, the generated factory classes will not use inheritance, i.e. the factory class generated for class *A* will not be the parent class (*extends*) for the factory class generated for class *B* which extends *A*. Inheritance can lead to the problem that the *B*-factory has to override the (factory) methods of the *A*-factory, which might be *abstract* methods, if *A* is *abstract*. This can result in errors, if *B* does not implement the same constructor as *A* (e.g. parameters changed). In this case, the factory method in the *B*-factory has other parameters compared to the factory method in the *A*-factory. However, if inheritance of generated factory classes is not an issue, this feature can be enabled by setting parameter ***factoryClassDerived*** of *@FactoryMethodRule* to *true*.
+By default, the generated factory classes will not use inheritance, i.e., the factory class generated for class *A* will not be the parent class (*extends*) for the factory class generated for class *B* which extends *A*. Inheritance can lead to the problem that the *B*-factory has to override the (factory) methods of the *A*-factory, which might be *abstract* methods if *A* is *abstract*. This can result in errors if *B* does not implement the same constructor as *A* (e.g. parameters changed). In this case, the factory method in the *B*-factory has other parameters compared to the factory method in the *A*-factory. However, if inheritance of generated factory classes is not an issue, this feature can be enabled by setting parameter ***factoryClassDerived*** of *@FactoryMethodRule* to *true*.
 
 The example below shows the generation of factory classes. The rule specification can be found on *Animal*. Based on this, *AnimalLion* and *AnimalDog* generate two factory classes. Both implement their interface *IAnimalFactory*, and both can be referenced by a *static* attribute called *FACTORY*. Finally, method *main* shows how an *AnimalLion* object can be constructed.
 
@@ -1288,13 +1297,13 @@ class App {
 
 The default implementation feature of the ETAI library can be used for **generating default implementations of methods automatically**. This is useful for simplifying the implementation of mock classes in testing scenarios, for example.
 
-In order to use this feature, a non-abstract class is annotated by *@ImplementDefault*. Afterwards, **default methods** are generated in the Java code for all **missing methods**. Please note, that this feature is not based on rules and therefore does not require *@ApplyRules*.
+In order to use this feature, a non-*abstract* class is annotated by *@ImplementDefault*. Afterwards, **default methods** are generated in the Java code for all **missing methods**. Please note, that this feature is not based on rules and therefore does not require *@ApplyRules*.
 
-The term "missing methods" refers to methods, which are declared *abstract* in a parent class (or in an implemented interface) and are not implemented, yet. The term "default method" means a method, which is empty and does not do anything in general. At least an appropriate value will be returned, if the method specifies a return type.
+The term "missing methods" refers to methods that are declared *abstract* in a parent class (or in an implemented interface) and are not implemented, yet. The term "default method" refers to a method that is empty and does not do anything in general. At least an appropriate value will be returned if the method specifies a return type.
 
 For all numerical return types the returned value is a representation of zero. For *boolean* the value *false* is returned. And finally for all non-primitive types, *null* is returned, e.g. for *String* or even *Integer*.  
 
-The following example shows how to enable default implementation. The class *ElephantMock* does not implement any method. Because of the abstract method in the parent class *AnimalBase* and obligations due to the implemented interface *IElephant*, some methods like *getWeight* must be implemented. However, this is done automatically, so after applying ***@ImplementDefault*** there actually exists a (default) method *getWeight* which returns zero.
+The following example shows how to enable default implementation. The class *ElephantMock* does not implement any method. Because of the *abstract* method in the parent class *AnimalBase* and obligations due to the implemented interface *IElephant*, some methods like *getWeight* must be implemented. However, this is done automatically, so after applying ***@ImplementDefault*** there actually exists a (default) method *getWeight* which returns zero.
 
 Please note, that generated default methods are annotated by ***@DefaultImplementation***, which might be available using reflection during runtime. 
 
@@ -1332,9 +1341,9 @@ class Elephant extends AnimalBase implements IElephant {
 
 Some features of the ETAI library require the specification of an *adaption rule* (cp. [Generate the Implementation of Constructors and Methods](#generate-the-implementation-of-constructors-and-methods) or [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types)).
 
-An adaption rule specification is stored in a string, which contains **adaption function calls**. Thereby, each adaption function call looks similar to a regular Java function call. Multiple adaption function calls are separated by ";".
+An adaption rule specification is stored in a string that contains **adaption function calls**. Thereby, each adaption function call looks similar to a regular Java function call. Multiple adaption function calls are separated by ";".
 
-When applying an adaption rule the adaption function calls are executed sequentially and each function manipulates the **current value**, which is a string and starts *empty*. After the last adaption function call, this value represents also the *result*.
+When applying an adaption rule the adaption function calls are executed sequentially and each function manipulates the **current value** that is a string and starts *empty*. After the last adaption function call, this value represents also the *result*.
 
 The following diagram describes this principle. The basis is this adaption rule specification:
 
@@ -1358,14 +1367,14 @@ The following table lists supported *adaption functions*:
 | ***replace(x,y)*** | in the *current value* all occurrences of *x* will be replaced by<nobr>&nbsp;<nobr>*y* |
 | ***replaceAll(x,y)*** | in the *current value* all occurrences of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
 | ***replaceFirst(x,y)*** | in the *current value* the first occurrence of *x* will be replaced by *y* (support of [regular expressions](https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#sum)) |
-| ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* |
-| ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
-| ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule), which will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
+| ***addTypeParam(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule) that will be evaluated and (if not empty) added as type parameter to the *current value* |
+| ***addTypeParamWildcardExtends(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule) that will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? extends *result-of-x*"  |
+| ***addTypeParamWildcardSuper(x)*** | *specific for type adaption rules*: *x* is an adaption rule specification (nested rule) that will be evaluated and (if not empty) added as type parameter to the *current value* using the format "? super *result-of-x*"  |
 | ***alternative(x)*** | see [Adaption Function: *alternative*](#adaption-function-alternative) |
 
 #### Predefined Adaption Variables
 
-Within adaption rule specifications it is possible to access the values of **adaption variables**. They can be set and changed freely in context of a class hierarchy (see [Use Adaption Variables](#use-adaption-variables)). However, there are also predefined variables, which are usually automatically set in relation to the current generation context. An example can be found here: [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types).
+Within adaption rule specifications it is possible to access the values of **adaption variables**. They can be set and changed freely in context of a class hierarchy (see [Use Adaption Variables](#use-adaption-variables)). However, there are also predefined variables that are usually automatically set in relation to the current generation context. An example can be found here: [Reimplement Constructors and Methods with Adapted Parameter and Return Types](#reimplement-constructors-and-methods-with-adapted-parameter-and-return-types).
 
 The following table shows existing predefined adaption variables:
 
@@ -1382,7 +1391,7 @@ The following table shows existing predefined adaption variables:
 | *...* | |
 | ***var.class.typeparameter.x*** | the name of type parameter *#x* (if available) |
 | ***const.bracket.round.open*** | round bracket, open, "("<br>(enables workaround to access this character in specific situations) |
-| ***const.bracket.round.close*** | round bracket, closed, "("<br>(enables workaround to access this character in specific situations) |
+| ***const.bracket.round.close*** | round bracket, closed, ")"<br>(enables workaround to access this character in specific situations) |
 
 #### Adaption Function: *alternative*
 
@@ -1465,14 +1474,15 @@ Extending classes via trait classes is the most powerful feature of the ETAI lib
 
 ### Basic Usage of Trait Classes
 
-Each regular (Xtend) class can be extended by trait classes besides usual class inheritance. This means that annotated methods of the trait classes will be "injected" into the **extended class**. This happens during code generation of the Java code. Actually, the generated code will call the method of the trait class by using a delegation pattern, i.e., internally an object of trait type is maintained. This way, methods of trait classes can also access and use attributes, which are defined inside the trait class.
+Each regular (Xtend) class can be extended by trait classes besides usual class inheritance. This means that annotated methods of the trait classes will be "injected" into the **extended class**. This happens during code generation of the Java code. Actually, the generated code will call the method of the trait class by using a delegation pattern, i.e., internally an object of trait type is maintained. This way, methods of trait classes can also access and use attributes that are defined inside the trait class.
 
-A trait class must be declared *abstract* and annotated by ***@TraitClass***. This implicates several effects. First, a mirror interface will be extracted exactly as if *@ExtractInterface* is annotated (cp. [Interface Extraction](#interface-extraction)). Second, trait classes support attributes, but they do not support the specification of non-private, non-static methods and constructors. Non-*private*, non-*static* methods must be so-called **trait methods** and annotated accordingly. There are:
+A trait class must be declared *abstract* and annotated by ***@TraitClass***. This implicates several effects. First, a mirror interface will be extracted exactly as if *@ExtractInterface* is annotated (cp. [Interface Extraction](#interface-extraction)). Second, trait classes support attributes, but they do not support the specification of non-*private*, non-*static* methods and constructors. Non-*private*, non-*static* methods must be so-called **trait methods** and annotated accordingly. There are:
 
 - [Exclusive Methods](#exclusive-methods)
 - [Processed Methods](#processed-methods)
 - [Required Methods](#required-methods)
 - [Envelope Methods](#envelope-methods)
+- [Priority Envelope Methods](#priority-envelope-methods)
 
 Private or static methods can be used as usual.
 
@@ -1480,7 +1490,7 @@ Instead of constructors, trait classes must specify so-called **constructor meth
 
 In order to extend a class by a trait class, **the mirror interface of the trait class must be included in the list of implemented interfaces** (*implements*) of the class which shall be extended. In addition, the this class must be annotated by ***@ExtendedByAuto***.
 
-The example below shows a class named *Dog* which is extended by trait class *XNamed*. This trait class shall simply offer attribute *name* and the according methods *getName* and *setName* for any class, which is extended by this trait class. In order to extend dog this way, it *implements* the mirror interface *IXNamed*. Therefore it gets *getName* and *setName*, which can be used for any *Dog* object.
+The example below shows a class named *Dog* which is extended by trait class *XNamed*. This trait class shall simply offer attribute *name* and the according methods *getName* and *setName* for any class that is extended by this trait class. In order to extend dog this way, it *implements* the mirror interface *IXNamed*. Therefore it gets *getName* and *setName*, which can be used for any *Dog* object.
 
 Internally, *getName* and *setName* delegate to the methods implemented in *XNamed* via *delegate\$XNamed*. The attribute *name* can logically be considered as part of class *Dog*, but there is no access to it except via getter/setter. The used annotation *@ExclusiveMethod* for the trait methods *getName* and *setName* is explained in [Exclusive Methods](#exclusive-methods). 
 
@@ -1538,9 +1548,27 @@ class Dog extends Animal implements IXNamed {
 
 > Historically, the annotation ***@ExtendedBy*** was the only way to apply trait classes. With *@ExtendedBy* such trait classes can explicitly be specified within the annotation itself (*value*). However, it was not possible to enable the usage of Java Generics this way.
 >
-> Therefore, other possibilities have been investigated including the usage of a string. The easiest way, however, was to request the specification of the mirror interfaces of trait classes via *implements* in addition. The annotation *@ExtendedByAuto* does not demand the specification of any trait class, but it scans the listed interfaces for trait classes (resp. their mirror interfaces) and applies all of them automatically.
+> Therefore, other possibilities have been investigated including the usage of a string. The easiest way, however, was to request the specification of the mirror interfaces of trait classes via *implements* in addition. The annotation *@ExtendedByAuto* does not demand the specification of any trait class, but it scans the listed interfaces for trait classes (or rather their mirror interfaces) and applies all of them automatically.
+>
+> If there is a mismatch between **visibility** of trait method and an existing method in the extended class, the access modifier with higher visibility will be applied. Similarly, if there is a mismatch with the **return types**, but one type is inherited from the other, the more concrete type is applied (covariance).
 >
 > **Java Generics are fully supported** now.
+>
+> If applying the annotations described in [Generate Accessors and Mutators](#generate-accessors-and-mutators), class *XNamed* can be specified as easy as shown here:
+
+```java
+@TraitClass
+@ApplyRules
+abstract class XNamed {
+
+	@ExclusiveMethod
+	@GetterRule
+	@SetterRule
+    String name
+
+}
+```
+ 
 
 ### Exclusive Methods
 
@@ -1552,9 +1580,9 @@ An example can be found in [Basic Usage of Trait Classes](#basic-usage-of-trait-
 
 Another type of trait methods are **required methods** which are annotated by ***@RequiredMethod***. They must not be implemented and can be considered as a **way to define *abstract* methods** within trait classes and serve a very similar purpose, e.g. the declared method can already be used in algorithms of the trait class.
 
-Primarily, the possibility to specify required methods is just a simplification, because it is not necessary to create and apply additional interfaces. In addition, it is also possible to demand methods, which are not *public*. This cannot be realized via interfaces.
+Primarily, the possibility to specify required methods is just a simplification because it is not necessary to create and apply additional interfaces. In addition, it is also possible to demand methods that are not *public*. This cannot be realized via interfaces.
 
-In the example, there are three declarations of required methods within *XFlying*. They can be used in method *fly*, but they must be implemented somewhere in the extended class's hierarchy. This is ensured via different mechanisms, which is why three examples are shown. For *isHealthy* nothing happens during generation, because it is already implemented in the base class *Bird*. The method *getFlyingSpeedFactor* is included in the mirror interface *IXFlying*, which is a base mechanism for *public* trait methods. Finally, there are several cases where implementation must be ensured by generating an *abstract* method in the extended class. Such a scenario is illustrated by the *protected* method *isFledged*, which is included in *Raptor* therefore. Because it is generated with keyword *abstract* there, it must be implemented later on.
+In the example, there are three declarations of required methods within *XFlying*. They can be used in method *fly*, but they must be implemented somewhere in the extended class's hierarchy. This is ensured via different mechanisms, which is why three examples are shown. For *isHealthy* nothing happens during generation because it is already implemented in the base class *Bird*. The method *getFlyingSpeedFactor* is included in the mirror interface *IXFlying*, which is a base mechanism for *public* trait methods. Finally, there are several cases where implementation must be ensured by generating an *abstract* method in the extended class. Such a scenario is illustrated by the *protected* method *isFledged* that is included in *Raptor* therefore. Because it is generated with keyword *abstract* there, it must be implemented later on.
 
 ##### Input (Code)
 
@@ -1617,7 +1645,7 @@ class Eagle extends Raptor {
 
 **Processed methods** allow that the method is already implemented in the extended class. They must be annotated in the trait class by ***@ProcessedMethod***.
 
-This means that next to the method in the trait class, **the same method might exist in the extended class**. If this is not the case, the method in simply injected (see [Exclusive Methods](#exclusive-methods)). If the method exists in both classes the execution order must be coordinated and the final result based on two return values must be calculated. For that reason, a processed method needs to specify a **trait method processor**. This way it can be defined, if only one of the methods shall be executed or the return value shall be combined, for example.
+This means that next to the method in the trait class, **the same method might exist in the extended class**. If this is not the case, the method in simply injected (see [Exclusive Methods](#exclusive-methods)). If the method exists in both classes the execution order must be coordinated and the final result based on two return values must be calculated. For that reason, a processed method needs to specify a **trait method processor**. This way it can be defined if only one of the methods shall be executed or the return value shall be combined, for example.
 
 With such a processor a huge variety of scenarios can be realized. They can be implemented individually (see [Implement Own Trait Method Processor](#implement-own-trait-method-processor)), but there are also standard ones (see [Standard Trait Method Processors](#standard-trait-method-processors)).
 
@@ -1627,25 +1655,25 @@ The following trait method processors are predefined and ready-to-use (package *
 
 | Trait Method Processor    | Return Type     | Description                                                    |
 | ------------------------- |:----------:|---------------------------------------------------------------:|
-| ***EPDefault*** | any | If the trait method exists in the extended class, the extended class will override the functionality in the trait class, i.e. the functionality in the trait class just represents a default behavior. |
+| ***EPDefault*** | any | If the trait method exists in the extended class, the extended class will override the functionality in the trait class, i.e., the functionality in the trait class just represents a default behavior. |
 | ***EPOverride*** | any | The trait method overrides a potential method in the extended class. |
 | ***EPVoidPre*** | *void* | The trait method is executed before a potential method in the extended class. |
 | ***EPVoidPost*** | *void* | The trait method is executed after a potential method in the extended class. |
-| ***EPVoidFinally*** | *void* | The trait method is executed after a potential method in the extended class, even if there has been an exception. |
-| ***EPBooleanPreAnd*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed, if the result of the trait method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. |
-| ***EPBooleanPostAnd*** | *boolean* | The trait method will only be executed after a potential method in the extended class, if the result of such a method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. If such a method does not exist, only the trait method will be called. |
-| ***EPBooleanPreOr*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed, if the result of the trait method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. |
-| ***EPBooleanPostOr*** | *boolean* | The trait method will only be executed after a potential method in the extended class, if the result of such a method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. If such a method does not exist, only the trait method will be called. |
-| ***EPFirstNotNullPre*** | non-*void* | The functionality of the trait class will be processed first. If there is a result, which is not *null*, this result will be returned immediately. If the result is *null*, the functionality of the extended class (if existing) will be processed afterwards and the latter result will be returned. |
-| ***EPFirstNotNullPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. If there is a result, which is not *null*, this result will be returned immediately. If the result is *null* (or there is no method in the extended class), the functionality of the trait class will be processed afterwards and the latter result will be returned. |
-| ***EPExtendedResultPre*** | non-*void* | The functionality of the trait class will be processed first. Afterwards, the functionality of the extended class (if existing) will be processed. The returned result will be the result from the functionality of the extended class, if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
-| ***EPExtendedResultPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. Afterwards, the functionality of the trait class will be processed. The returned result will be the result from the functionality of the extended class, if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
+| ***EPVoidFinally*** | *void* | The trait method is executed after a potential method in the extended class even if there has been an exception. |
+| ***EPBooleanPreAnd*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed if the result of the trait method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. |
+| ***EPBooleanPostAnd*** | *boolean* | The trait method will only be executed after a potential method in the extended class if the result of such a method is *true* (short-circuit evaluation). Afterwards, both results are combined via AND operation. If such a method does not exist, only the trait method will be called. |
+| ***EPBooleanPreOr*** | *boolean* | The trait method is executed before a potential method in the extended class. If such a method exists in the extended class, it will only be executed if the result of the trait method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. |
+| ***EPBooleanPostOr*** | *boolean* | The trait method will only be executed after a potential method in the extended class if the result of such a method is *false* (short-circuit evaluation). Afterwards, both results are combined via OR operation. If such a method does not exist, only the trait method will be called. |
+| ***EPFirstNotNullPre*** | non-*void* | The functionality of the trait class will be processed first. If there is a result that is not *null*, this result will be returned immediately. If the result is *null*, the functionality of the extended class (if existing) will be processed afterwards and the latter result will be returned. |
+| ***EPFirstNotNullPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. If there is a result that is not *null*, this result will be returned immediately. If the result is *null* (or there is no method in the extended class), the functionality of the trait class will be processed afterwards and the latter result will be returned. |
+| ***EPExtendedResultPre*** | non-*void* | The functionality of the trait class will be processed first. Afterwards, the functionality of the extended class (if existing) will be processed. The returned result will be the result from the functionality of the extended class if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
+| ***EPExtendedResultPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. Afterwards, the functionality of the trait class will be processed. The returned result will be the result from the functionality of the extended class if this functionality exists. Otherwise, the result from the functionality of the trait class will be used. |
 | ***EPTraitClassResultPre*** | non-*void* | The functionality of the trait class will be processed first. Afterwards, the functionality of the extended class (if existing) will be processed. The returned result will be the result from the functionality of the trait class. The result from the functionality of the extended class will be ignored. |
 | ***EPTraitClassResultPost*** | non-*void* | The functionality of the extended class (if existing) will be processed first. Afterwards, the functionality of the trait class will be processed. The returned result will be the result from the functionality of the trait class. The result from the functionality of the extended class will be ignored. |
 
 In the example below, the consequences of three different standard trait method processors is shown.
 
-First of all, the processed methods *getHuntingMethods* and *getHunters* both apply processor *EPDefault*. This means, that *XHunter* specifies two methods representing default behavior, which is used, if the extended class does not specify an own behavior. Therefore, the extended class *Lion* completely applies *getHuntingMethods* from *XHunter*, but uses its own *getHunters* method.
+First of all, the processed methods *getHuntingMethods* and *getHunters* both apply processor *EPDefault*. This means, that *XHunter* specifies two methods representing default behavior that is used if the extended class does not specify an own behavior. Therefore, the extended class *Lion* completely applies *getHuntingMethods* from *XHunter*, but uses its own *getHunters* method.
 
 Another possibility is show by processed method *canHunt* which applies *EPBooleanPreAnd*. This way, in context of *Lion* both implementations of *canHunt* (from *XHunter* and *Lion* itself) are logically executed and combined via AND operation.
 
@@ -1731,11 +1759,13 @@ class Lion extends Animal implements IXHunter {
 
 As shown in the previous section, there are some standard processors which cover basic use cases. However, in case of more complex return types and accompanying requirements for combining return values and executing the methods, these use cases might not fit. Then it is necessary to write an own trait method processor.
 
-A trait method processor must implement the interface ***TraitMethodProcessor*** and therefore its method ***call***. If a trait class's method *myMethod* gets annotated by *@ProcessedMethod* together with a trait method processor, the processor's *call* method will get responsible for executing the implementation of *myMethod* in the trait class and the potential implementation in the extended class. So it is wrapping the original implementations. For example, if the implementation of *call* is empty, actually nothing from the original implementations of *myMethod* will be executed.
+A trait method processor must implement the interface ***TraitMethodProcessor*** and therefore its method ***call***. In addition to that, the class must provide a constructor that does not require arguments.
 
-Method *call* gets two arguments of type ***LazyEvaluation***: ***expressionTraitClass*** and ***expressionExtendedClass***. Both are actually [function objects](https://en.wikipedia.org/wiki/Function_object) which already bind the arguments for calling the original methods. Argument ***expressionExtendedClass* might be *null***, if there is no according method in the extended class. If such a method is required, by the way, it is possible to set attribute *required* of *@ProcessedMethod* to *true* (see [Flag: *required*](#flag-required)).
+If a trait class's method *myMethod* gets annotated by *@ProcessedMethod* together with a trait method processor, the processor's *call* method will get responsible for executing the implementation of *myMethod* in the trait class and the potential implementation in the extended class. So it is wrapping the original implementations. For example, if the implementation of *call* is empty, actually nothing from the original implementations of *myMethod* will be executed.
 
-Objects of type *LazyEvaluation* offer method *eval*. If calling this method for *expressionTraitClass*, the implementation of the original method in the trait class is executed. If calling this method for *expressionExtendedClass*, the implementation of the original method in the extended class is executed. The return value of both executions is returned by *eval* and can be used and modified within *call*. In the end, also ***call* has to return a value**, which then represents the final result.
+Method *call* gets two arguments of type ***LazyEvaluation***: ***expressionTraitClass*** and ***expressionExtendedClass***. Both are actually [function objects](https://en.wikipedia.org/wiki/Function_object) which already bind the arguments for calling the original methods. Argument ***expressionExtendedClass* might be *null*** if there is no according method in the extended class. If such a method is required, by the way, it is possible to set attribute *required* of *@ProcessedMethod* to *true* (see [Flag: *required*](#flag-required)).
+
+Objects of type *LazyEvaluation* offer method *eval*. If calling this method for *expressionTraitClass*, the implementation of the original method in the trait class is executed. If calling this method for *expressionExtendedClass*, the implementation of the original method in the extended class is executed. The return value of both executions is returned by *eval* and can be used and modified within *call*. In the end, also ***call* has to return a value** that represents the final result then.
 
 If the original method has return type *void*, *call* is simply expected to return *null*.
 
@@ -1751,7 +1781,7 @@ The following code shows an exemplary trait method processor *ProcessorStringCom
 
 This trait method processor is used for method *getCharacteristics* of all three trait classes *XFlying*, *XTalking* and *XColorful*. Class *Parrot* is extended by these trait classes, so in the end, it gets a method *getCharacteristics* which returns *"flying,talking,colorful"*, i.e. the individual results combined by *ProcessorStringCommaSeparated*.
 
-The example also shows what happens, if multiple trait classes with the same processed method are applied. The extension starts with trait class  *XFlying*. This class logically introduces the first implementation of *getCharacteristics*. Second, *XTalking* is applied, so its method *getCharacteristics* gets combined with the first implementation (via *ProcessorStringCommaSeparated*). Finally, *XColorful* has another implementation of *getCharacteristics*, which again is combined with the combination before (also via *ProcessorStringCommaSeparated*). This represents the final logical behavior of the method *getCharacteristics*, which is injected into *Parrot*. 
+The example also shows what happens if multiple trait classes with the same processed method are applied. The extension starts with trait class  *XFlying*. This class logically introduces the first implementation of *getCharacteristics*. Second, *XTalking* is applied, so its method *getCharacteristics* gets combined with the first implementation (via *ProcessorStringCommaSeparated*). Finally, *XColorful* has another implementation of *getCharacteristics* that again is combined with the combination before (also via *ProcessorStringCommaSeparated*). This represents the final logical behavior of the method *getCharacteristics*, which is injected into *Parrot*. 
 
 ##### Input (Code)
 
@@ -1871,13 +1901,15 @@ class Frog implements IXEater {
 
 #### Default Value Provider
 
-Applying an envelope method usually requires that the extended class implements a matching method, because the envelope wants to call it (*method\$extended*). However, it might be ok that there is no such method in the extended class. If this is the case, the envelope must specify a **default value provider**. This provider has to provide a (default) value. If the method of the extended class is called, but such a method does not exist, this default value will be queried and used as if it is returned by the method.
+Applying an envelope method usually requires that the extended class implements a matching method because the envelope wants to call it (*method\$extended*). This can be demanded by setting the *required* flag to *true*, which is the default (see [Flag: required](#flag-required)).
 
-The default value provider can be set by parameter ***defaultValueProvider*** of *@EnvelopeMethod*, whereby the potential value is a class. The given class must implement the interface ***DefaultValueProvider&lt;T&gt;***, where *T* can be replaced by the actual type of the provided default value. As a consequence, the class must implement method *getDefaultValue* which just has to return the default value.
+However, it might be valid that there is no such method in the extended class. For example, if the method has no return type (*void*), this is not necessary. If the envelope method still calls such a method via *method\$extended*, nothing will be executed then.
+
+If the return type of the method is non-*void* and flag *required* is set to *false*, the envelope must specify a **default value provider**. This provider has to provide a (default) value. If the method of the extended class is called, but such a method does not exist, this default value will be queried and used as if it was returned by an existing method.
+
+The default value provider can be set by parameter ***defaultValueProvider*** of *@EnvelopeMethod*, whereby the potential value is a class. The given class must implement the interface ***DefaultValueProvider&lt;T&gt;***, where *T* can be replaced by the actual type or the wrapper class of the provided default value. As a consequence, the class must implement method *getDefaultValue* which just has to return the default value. In addition to that, the class must provide a constructor that does not require arguments.
 
 An exemplary implementation of a default value provider is shown below. Because *Rabbit* does not implement method *eat*, but the trait class *XEater* calls *eat\$extended*, the default value *"ok"* is returned for a call of *eat*. This resulting value is caused by *StringOkProvider*.
-
-If a default value provider is given, it is also meaningful to set the *required* flag of the *@EnvelopeMethod* annotation to *false* (see [Flag: required](#flag-required)).
 
 ##### Input (Code)
 
@@ -1924,17 +1956,121 @@ class Rabbit implements IXEater {}
 
 ![](images/PlantUML_ExtendedBy_Envelope_Method_Default_Value_Out_Logical.png)
 
+##### Hint
+
+> There is a standard default value provider that returns *null* and is compatible for any object return type: ***org.eclipse.xtend.lib.annotation.etai.DefaultValueProviderNull***.
+
+### Priority Envelope Methods
+
+**Priority envelope methods**, which are are annotated by ***@PriorityEnvelopeMethod***, serve the same purpose as [envelope methods](#envelope-methods). They override a potential method in the extended class or methods applied to the extended class because of other priority envelope methods. And just like for envelope methods, it is possible to call the overridden method explicitly.
+
+The major difference to regular envelope methods is that a priority envelope method provides a property for setting its **priority** (parameter ***value*** in *@PriorityEnvelopeMethod*). Based on its priority a priority envelope method will override other (priority envelope or directly applied) methods with a compatible signature but lower priority. Thereby, priority envelope methods completely ignore typical principles in object oriented programming. For example, a priorly applied priority envelope method in a parent class with high priority can still override methods with lower priority in any derived class.
+
+Because of the required call sequences, the code generation for *@PriorityEnvelopeMethod* is more complex than for other trait methods. Therefore, the generation is rule based and it is necessary to apply *@ApplyRules* to the extended class as well (see [Automatic Modification of Classes](#automatic-modification-of-classes)).
+
+A method with higher priority value overrides all methods with lower value. If there is an implemented method in the extended class, it is considered to have a priority value of *0*, which means lowest priority. The highest priority is *java.lang.Integer.MAX_VALUE*. If multiple methods with the same priority are found during compilation, an error will be shown.
+
+Within priority envelope methods it is possible to call the overridden method, whereby "overridden method" means the method with the next lower priority value in the internally created list. The call itself can be programmed in the same way as for [envelope methods](#envelope-methods). Analogously, priority envelope methods support the parameters *required* (see [Flag: required](#flag-required)) and *defaultValueProvider* (see [Default Value Provider](#default-value-provider)).
+
+In the example below, class *MethodImplementation* has an own method called *getString*. The class applies trait class *XMethodLogged*, which has this method specified as priority envelope method. Class *MethodImplementationCached* which extends class *MethodImplementation* applies trait class *XMethodCached*, which also has specified this priority envelope method.
+
+When calling *getString* for an object of type *MethodImplementationCached*, the implementation in *XMethodLogged* is executed because it specifies the highest priority *90*. Please note, that this implementation is called even though *getString* is overridden in *MethodImplementationCached* and *XMethodLogged* has been applied to the parent class. Afterwards, the implementation in *XMethodLogged* calls *getString\$extended* which results in the execution of the implementation in *XMethodCached* (priority *10*). Because also there *getString\$extended* is called, the method specified directly in *MethodImplementationCached* is executed. Via *super* call even the implementation in *MethodImplementationCached* will be executed.
+
+##### Input (Code)
+
+```java
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+
+import virtual.intf.IXMethodCached
+import virtual.intf.IXMethodLogged
+
+@TraitClass
+abstract class XMethodLogged {
+
+	@PriorityEnvelopeMethod(90)
+	override String getString() {
+		System.out.println('''"getString" called''')
+		try {
+			return getString$extended
+		} finally {
+			System.out.println('''"getString" finished''')
+		}
+	}
+
+}
+
+@TraitClass
+abstract class XMethodCached {
+
+	String getStringResult
+
+	@PriorityEnvelopeMethod(10)
+	override String getString() {
+		if (methodResult === null) {
+			System.out.println('''"getString" is going to be cached''')
+			getStringResult = getString$extended
+			System.out.println('''"getString" cached, value: "«getStringResult»"''')
+		}
+		return methodResult
+	}
+
+}
+
+@ExtendedByAuto
+@ApplyRules
+class MethodImplementation implements IXMethodLogged {
+
+	override String getString() {
+		System.out.println('''inside "MethodImplementation::getString"''')
+		return "base"
+	}
+
+}
+
+@ApplyRules
+@ExtendedByAuto
+class MethodImplementationCached extends MethodImplementation implements IXMethodCached {
+
+	override String getString() {
+		System.out.println('''inside "MethodImplementationCached::getString"''')
+		super.getString
+		return "derived"
+	}
+
+}
+```
+
+
+##### Input (Diagram)
+
+![](images/PlantUML_ExtendedBy_Priority_Envelope_Method_In.png)
+
+##### Output (Diagram - Logical)
+
+![](images/PlantUML_ExtendedBy_Priority_Envelope_Method_Out_Logical.png)
+
+##### Hint
+
+> [Exclusive methods](#exclusive-methods) do not prevent the application a priority envelope methods, no matter if applied before or after applying the exclusive method.
+
 ### Additional Flags for Trait Methods
 
 Some trait method annotations offer additional configuration parameters. They will be explained in the following.
 
 #### Flag: *required*
 
-It is possible for *@ProcessedMethod* and *@EnvelopeMethod* to **demand that the extended class already implements this method**. It is not sufficient, if there is only an abstract method.
+It is possible for *@ProcessedMethod* and *@EnvelopeMethod* to **demand that the extended class implements the trait method already in the extended class** (or any super class). Thereby, it is not sufficient if there is only an *abstract* method because this method will be implemented by the extension method and overriding the method would mean to override the complete functionality of the extension method anyway.
 
-In order to activate this demand, the flag ***required*** must be set in the annotation of the trait method.
+In case of *@PriorityEnvelopeMethod* it is possible to **demand that a method with lower priority is implemented** in any class of the hierarchy.
 
-In certain situations, it is not possible to change the value of this flag. For example, it must be set to *true* in case of *@EnvelopeMethod*, because the envelope method is able to call the method in the extended class. However, if a default value provider is given, it can be set to *false* (cp. [Default Value Provider](#default-value-provider)).
+In order to activate such a demand, the flag ***required*** must be set in the annotation of the trait method.
+
+In certain situations, it is not possible to change the value of this flag. For example, it must be set to *true* in case of *@EnvelopeMethod*, which does not have return type *void* and no default value provider is set (cp. [Default Value Provider](#default-value-provider)). The reason is that the envelope method is able to call the method in the extended class and a returned value is expected.
 
 #### Flag: *setFinal*
 
@@ -1942,23 +2078,23 @@ For *@ExclusiveMethod*, *@ProcessedMethod* and *@EnvelopeMethod* the flag ***set
 
 Afterwards, the method cannot be overridden any more. This way, the trait class can **ensure that there is no derivation** in context of the extended class. This can be very important for processed methods or envelope methods. In case of *@EnvelopeMethod* the parameter *setFinal* is even set to *true* by default.
 
-Sometimes, a trait method wants to guarantee that it is, for example, executed in the very beginning or the very end (*@ProcessedMethod*) of the whole algorithm, or a trait method wants to wrap the implementation of the extended class (*@EnvelopeMethod*) completely. This can only be guaranteed, if the method is set to *final*.
+Sometimes, a trait method wants to guarantee that it is, for example, executed in the very beginning or the very end (*@ProcessedMethod*) of the whole algorithm, or a trait method wants to wrap the implementation of the extended class (*@EnvelopeMethod*) completely. This can only be guaranteed if the method is set to *final*.
 
 If it is necessary that child classes influence the functionality of a method, but it has been set to *final*, a possible solution would be to delegate the execution flow to another (internal) method. This pattern and also some more details concerning *setFinal* are shown in the example in [Redirection of Trait Methods](#redirection-of-trait-methods). 
 
 ### Redirection of Trait Methods
 
-It is possible to specify **rules so that a trait method is renamed** before it is actually injected into the extended class. This can be done by a feature called **trait method redirection**.
+It is possible to specify **rules to rename a trait method** before it is actually injected into the extended class. This can be done by a feature called **trait method redirection**.
 
-If a method in the extended class is annotated by ***@TraitMethodRedirection***, which specifies a new method name via *String* *value*, each matching trait method will be renamed to this name before it is extending the class. In addition, it will become a new visibility, which is also specified by *@TraitMethodRedirection* via parameter *visibility* (default: *PROTECTED*). 
+If a method in the extended class is annotated by ***@TraitMethodRedirection***, which specifies a new method name via *String* *value*, each matching trait method will be renamed to this name before it is extending the class. In addition, it will become a new visibility that is also specified by *@TraitMethodRedirection* via parameter *visibility* (default: *PROTECTED*). 
 
-The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive can be changed. Either the redirection is deactivated, if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
+The redirection directive will be valid for the class in which it actually is set and for derived classes. However, as soon as the annotated method is overridden, the directive can be changed. Either the redirection is deactivated if there is no *@TraitMethodRedirection* any more, or the values of the new annotation are used.
 
-However, **trait methods can ignore the redirection**. For this, there is a parameter *disableRedirection*, which can be specified together with *@EnvelopeMethod*, *@ProcessedMethod* or *@ExclusiveMethod*. If the flag is set to to *true*, which is the default value for *@EnvelopeMethod*, any setting by *@TraitMethodRedirection* is ignored.
+However, **trait methods can ignore the redirection**. For this, there is a parameter ***disableRedirection***, which can be specified together with *@EnvelopeMethod*, *@ProcessedMethod* or *@ExclusiveMethod*. If the flag is set to to *true*, which is the default value for *@EnvelopeMethod*, any setting by *@TraitMethodRedirection* is ignored.
 
-The following example shows redirection together with a use case. Trait class *XMoveLogger* specifies envelope method *move*. Its purpose is to log calls of method *move*. There shall be a log message before and after any other functionality within *move*, i.e. the envelope method must surround everything else. In order to ensure this, the flag *setFinal* is set to *true* (default) in *@EnvelopeMethod* and also redirection is disabled by setting *disableRedirection* to *true*. Because *move* becomes *final* in *Animal*, overriding is not possible any more, so the requirements mentioned above are always fulfilled.
+The following example shows redirection together with a use case. Trait class *XMoveLogger* specifies envelope method *move*. Its purpose is to log calls of method *move*. There shall be a log message before and after any other functionality within *move*, i.e., the envelope method must surround everything else. In order to ensure this, the flag *setFinal* is set to *true* (default) in *@EnvelopeMethod* and also redirection is disabled by setting *disableRedirection* to *true*. Because *move* becomes *final* in *Animal*, overriding is not possible any more, so the requirements mentioned above are always fulfilled.
 
-However, it is intended that the functionality of *move* is overridden in child classes, which is why an internal method *moveInternal* is specified and called from within *move*. In case other trait classes want to extend *move* as well, a redirection to *moveInternal* is configured. Therefore, the processed method *move* of *XMoveDigger* adjusts *moveInternal* instead of *move*.
+However, it is intended that the functionality of *move* is overridden in child classes especially via trait classes, which is why an internal method *moveInternal* is specified and called from within *move*. In case other trait classes want to extend *move* as well, a redirection to *moveInternal* is configured. Therefore, the processed method *move* of *XMoveDigger* adjusts *moveInternal* instead of *move*.
 
 ##### Input (Code)
 
@@ -2035,9 +2171,17 @@ class Mole extends Animal implements IXMoveDigger {
 
 ![](images/PlantUML_ExtendedBy_Method_Redirection_Out_Java.png)
 
+##### Important
+
+> After applying *@TraitMethodRedirection* an abstract method with the specified name will be created if no method with this name is implemented already. This avoids additional boilerplate code and ensures that a method with the specified name will be implemented.
+
+##### Limitation
+
+> Redirection of trait methods cannot be applied to [Priority Envelope Methods](#priority-envelope-methods).
+
 ##### Hint
 
-> Redirection allows that an exclusive method is renamed **before** it is checked, if it already exists in the extended class. 
+> Redirection allows that an exclusive method is renamed **before** it is checked if it already exists in the extended class. 
 
 ### Constructor Methods and Construction Process
 
@@ -2045,7 +2189,7 @@ As trait classes can have a state, it might be necessary that this state is init
 
 The name of a constructor method can be chosen freely. It has no impact on the generated code from a logical perspective. However, it must be declared *protected* and non-*static* and have return type *void*.
 
-A constructor method can be thought of as constructor for the trait class, so exactly one constructor method for each trait class **must be called when an object extended by this trait is constructed**. This means that in each constructor of the extended class such a call must exist. There is an **assertion during runtime**, which checks this prerequisite. This requirement is not applicable, of course, if there is no constructor method or only one constructor method without any parameter in a trait class. In the latter case, the constructor method is called automatically at the beginning of processing the object construction.
+A constructor method can be thought of as constructor for the trait class, so exactly one constructor method for each trait class **must be called when an object extended by this trait is constructed**. This means that in each constructor of the extended class such a call must exist. There is an **assertion during runtime** that checks this prerequisite. This requirement is not applicable, of course, if there is no constructor method or only one constructor method without any parameter in a trait class. In the latter case, the constructor method is called automatically at the beginning of processing the object construction.
 
 For calling constructor methods, if applicable, **construction helper methods** are generated within the extended class. They are named ***new\$TraitClass*** where *TraitClass* is the name of the trait class containing the constructor methods. Such a helper method is generated for each constructor method. They are distinguished - exactly like constructors - only by parameters and their major purpose is to call the constructor method of the trait class.
 
@@ -2114,8 +2258,8 @@ class Cat implements IXWithName {
 
 ##### Important
 
-The construction of objects based on trait classes and the classes extended by them is a complex internal process. Therefore, it
-should be avoided to perform complex operations during this process, i.e. within any constructor, because the necessary internal structure is still going to be built. Trait methods cannot be called in a regular way, for example.
+> The construction of objects based on trait classes and the classes extended by them is a complex internal process. Therefore, it
+should be avoided to perform complex operations during this process, i.e. within any constructor because the necessary internal structure is still going to be built. Trait methods cannot be called in a regular way, for example.
 
 #### Automatic Generation of Constructors
 
@@ -2124,7 +2268,7 @@ In combination with [modification features](#automatic-modification-of-classes) 
 - the construction helper methods are called at the end of the constructor and
 - the parameters needed by construction helper methods are added to the constructor's parameter lists and later passed to the construction helper methods.
 
-If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes, if the extended class is annotated by ***@ConstructRuleAuto***. Also the application of *@ApplyRules* is needed (see [Automatic Modification of Classes](#automatic-modification-of-classes)).
+If this pattern is needed, a **construct rule** can be applied. With this rule no change in the extended class concerning the construction of applied trait classes is required. However, it can only be used in combination with the [generation of factory methods](#generate-factory-methods). The generated factory methods of the extended class (and child classes) will automatically call constructor methods of trait classes if the extended class is annotated by ***@ConstructRuleAuto***. The application of *@ApplyRules* is needed as well (see [Automatic Modification of Classes](#automatic-modification-of-classes)).
 
 Parameters of constructor methods are fully supported by this technique. They are simply added to the generated factory methods. In the trivial case that there is only one constructor method in the trait class and one constructor in the extended class, the parameters of the constructor methods are added to the end of the constructor's parameter list and then transferred to the generated factory method. In cases where multiple constructor methods, multiple (or no) constructors in the extended class or even multiple trait classes exist, cross products are calculated during code generation in order to generate factory methods and their parameter lists. The order of parameters is based on the order of applying trait classes, whereas parameters of the extended class's constructor always start the parameter list.
 
@@ -2218,9 +2362,9 @@ class Cat extends Animal implements IXWithName {
 
 ##### Hint
 
-> There are more fine-granular possibilities to control the automatic generation of factory methods as described above. The origin of *@ConstructRuleAuto* is the annotation ***@ConstructRule***. This annotation expects that a list of classes is given by its *value*. The listed classes must be trait classes. For all listed trait classes the extended class and child classes are not expected to call corresponding construction helper methods. Generated factory methods are adapted accordingly (as described above). The annotation *@ConstructRuleAuto* is just a shortcut, which automatically applies these rules for all trait classes which extend the annotated class.
+> There are more fine-granular possibilities to control the automatic generation of factory methods as described above. The origin of *@ConstructRuleAuto* is the annotation ***@ConstructRule***. This annotation expects that a list of classes is given by its *value*. The listed classes must be trait classes. For all listed trait classes the extended class and child classes are not expected to call corresponding construction helper methods. Generated factory methods are adapted accordingly (as described above). The annotation *@ConstructRuleAuto* is just a shortcut that automatically applies these rules for all trait classes which extend the annotated class.
 >
-> In addition to this, there is the annotation ***@ConstructRuleDisable***. It can be applied, if a construct rule for a specific trait class is active, i.e., factory methods would be adapted in order to call corresponding construction helper methods. This is not a valid use case for classes which apply *@ConstructRule* or *@ConstructRuleAuto*, but for child classes, because construct rules are also inherited. If construction helper methods must be called manually again there, e.g. because calculations must be performed or parameters shall be controlled completely, a construct rule can be disabled for the specified trait classes via *@ConstructRuleDisable* and its *value*.
+> In addition to this, there is the annotation ***@ConstructRuleDisable***. It can be applied if a construct rule for a specific trait class is active, i.e., factory methods would be adapted in order to call corresponding construction helper methods. This is not a valid use case for classes which apply *@ConstructRule* or *@ConstructRuleAuto*, but for child classes because construct rules are also inherited. If construction helper methods must be called manually again there, e.g. because calculations must be performed or parameters shall be controlled completely, a construct rule can be disabled for the specified trait classes via *@ConstructRuleDisable* and its *value*.
 
 ##### Limitation
 
@@ -2234,13 +2378,13 @@ Trait classes can be thought of as extension for the class annotating it. Logica
 
 Of course, if the keyword *this* is used within methods of trait classes, it will technically not reference the object, we logically construct, but the technical instantiation of the trait class. This can lead to several logical problems, e.g. when calling methods. Due to several internal mechanisms some of these logical problems have been solved.
 
-For example, if a **trait method *methodX* within a trait class *A* calls *this.methodY***, whereas *methodY* is a trait method (but not a constructor method) which is also in *A*, it does not necessarily mean that *methodY* of *A* is called. Imagine that *methodY* in *A* is a default method (cp. [Standard Trait Method Processors](#standard-trait-method-processors)), but the class extended by *A* has its own *methodY* implemented. In this case, it would usually be **expected that *methodY* of the extended class is called** and not the method in *A*, even if the call is within the trait class.
+For example, if a **trait method *methodX* within a trait class *A* calls *this.methodY***, whereas *methodY* is a trait method (but not a constructor method) which is also in *A*, it does not necessarily mean that *methodY* of *A* is called. Imagine that *methodY* in *A* is a default method (cp. [Standard Trait Method Processors](#standard-trait-method-processors)), but the class extended by *A* has its own *methodY* implemented. In this case, it would usually be **expected that *methodY* of the extended class is called** and not the method in *A* even if the call is within the trait class.
 
 **The ETAI library can ensure this**. Technically, this is possible by renaming methods and adding helper methods within trait classes during Java code generation.
 
-However, there is a **possibility to call the original method within the trait class explicitly**. By adding *\$impl* the real implementation of a trait method can be called from within a trait class. If a method is called via *super*, the real method (within the super class) is called as well.
+However, there is a **possibility to call the original method within the trait class explicitly**. By adding *\$impl* the real implementation of a trait method can be called from within a trait class. If a method is called via *super*, the real method (within the super class) is called as well, so adding *\$impl* is not necessary.
 
-The following showcase exemplifies this. Method *attack* within trait class *XPredator* calls *sound*. However, the method *sound* within *XPredator* is not called directly. In case of a *Tiger* object, it actually is called in the end, because *Tiger* does not specify any method. In context of a *Wolf* object, however, the *sound* method of the *Wolf* class is called.
+The following showcase exemplifies this. Method *attack* within trait class *XPredator* calls *sound*. However, the method *sound* within *XPredator* is not called directly. In case of a *Tiger* object, it actually is called in the end because *Tiger* does not specify any method. In context of a *Wolf* object, however, the *sound* method of the *Wolf* class is called.
 
 The example also shows that method *sound* in *XPredator* wants to call the base functionality in *XAnimal*. For this it is using *super.attack*, which actually works as expected and does not call method *attack* in the extended class.
 
@@ -2311,7 +2455,7 @@ class Tiger implements IXPredator {}
 
 #### Usage of *\$extendedThis*
 
-It is tricky to perform type checks regarding *this* within trait classes. As described above, *this* does not reference the logical object, which is extended by the trait class.
+It is tricky to perform type checks regarding *this* within trait classes. As described above, *this* does not reference the logical object that is extended by the trait class.
 
 In order to perform type checks, ***\$extendedThis*** instead of *this* should be used:
 
@@ -2320,13 +2464,13 @@ In order to perform type checks, ***\$extendedThis*** instead of *this* should b
 
 ##### Hint
 
-> *\$extendedThis* always references the extended class. Actually, *\$extendedThis* is a generated method with the trait class's mirror interface as return type, because the extended class also implements this interface. The method returns *\$extendedThis\$data* (see example in previous section). This member variable is automatically set accordingly during construction of the object.
+> *\$extendedThis* always references the extended class. Actually, *\$extendedThis* is a generated method with the trait class's mirror interface as return type because the extended class also implements this interface. The method returns *\$extendedThis\$data* (see example in previous section). This member variable is automatically set accordingly during construction of the object.
 
 ### Trait Classes and Inheritance
 
-Trait classes support inheritance and **most known techniques can be used as usual**. For example, it is possible to override trait methods and even changing the type of a trait method is sometimes possible. For example, it is possible to change a trait method from *@ExclusiveMethod* to *@ProcessedMethod*, but not from *@EnvelopeMethod* to anything else.
+Trait classes support inheritance and **most known techniques can be used as usual**. For example, it is possible to override trait methods and even changing the type of a trait method is sometimes possible. For example, it is possible to change a trait method from *@ExclusiveMethod* to *@ProcessedMethod*, but not from *@EnvelopeMethod* or *@PriorityEnvelopeMethod* to anything else.
 
-It is also important to know that **a trait class cannot be applied twice in the hierarchy of extended classes**. This is also a problem, if applied trait classes are not exactly equal, but there is a relationship, e.g. a trait class *A* is derived from trait class *B* (or the other way around). Then, it is not possible to extend a class by *A* and *B* together. 
+It is also important to know that **a trait class cannot be applied twice in the hierarchy of extended classes**. This is also a problem if applied trait classes are not exactly equal, but there is a relationship, e.g. a trait class *A* is derived from trait class *B* (or the other way around). Then, it is not possible to extend a class by *A* and *B* together. 
 
 The following sub sections show some more specifics regarding trait classes and inheritance.
 
@@ -2334,7 +2478,7 @@ The following sub sections show some more specifics regarding trait classes and 
 
 If a class is declared *abstract* it is not possible to construct corresponding objects. However, writing such classes is still meaningful as some base functionality for derived classes can be implemented there.
 
-This schema is also be applicable for trait classes, i.e. it is possible to declare trait classes with base functionality, but it should not be possible to use them already. The keyword *abstract*, however, is not suitable, because each trait class is declared *abstract* anyways as it should not be possible to construct them.
+This schema is also be applicable for trait classes, i.e. it is possible to declare trait classes with base functionality, but it should not be possible to use them already. The keyword *abstract*, however, is not suitable because each trait class is declared *abstract* anyways as it should not be possible to construct them.
 
 Therefore, it is possible to set flag *baseClass* in annotation *@TraitClass*. If it is set to *true*, it will not be possible to apply this trait class in order to extend another class. It can only be used as a base in order to derive other trait classes.
 
@@ -2342,13 +2486,13 @@ Therefore, it is possible to set flag *baseClass* in annotation *@TraitClass*. I
 
 Trait classes can extend regular classes but not other trait classes via *@ExtendedByAuto*. However, there is a concept which solves this issue for the most part.
 
-The ETAI library allows to declare that a **trait class *A* uses another trait class *B***. This way, methods in *B* can be called in context of methods of trait class *A*. This is possible, because it will be ensured that a class, which is extended by trait class *A*, is also extended by *B*. As soon as a class is extended by *A*, there is a check, if the class (or any parent class) has also been extended by *B*. If not, the extension by *B* will automatically be applied (after *A*). In the end, the logically constructed object contains all required methods, which is why all calls are successful and work as expected. Internally, delegation and redirection of calls are used again. 
+The ETAI library allows to declare that a **trait class *A* uses another trait class *B***. This way, methods in *B* can be called in context of methods of trait class *A*. This is possible because it will be ensured that a class that is extended by trait class *A* is also extended by *B*. As soon as a class is extended by *A*, there is a check if the class (or any parent class) has also been extended by *B*. If not, the extension by *B* will automatically be applied (after *A*). In the end, the logically constructed object contains all required methods, which is why all calls are successful and work as expected. Internally, delegation and redirection of calls are used again. 
 
 In order to specify that a trait class *A* is using trait class *B*, it is necessary for *A* to implement the mirror interfaces of *B* (*implements*), which follows the pattern of extending a regular class by a trait class. Instead of annotating a trait class by *@TraitClass*, it must be annotated by ***@TraitClassAutoUsing***. Of course, using multiple trait classes is supported.
 
 The following example shows how class *Bird* is extended by trait class *XExtendedAttributes*. This trait class uses other trait classes: *XWithSpeed* and *XBasicAttributes*. *XBasicAttributes* again uses other trait classes, which finally results in the fact that *Bird* is extended by *XWithName*, *XWithAge* and *XWithSpeed*. It is also be extended by *XBasicAttributes* and *XExtendedAttributes*, of course, but in the end these trait classes are empty and they represent only an abstraction layer for combining further trait classes. An important fact, however, is that *XWithName* and *XWithAge* have already extended the base class *Animal*, which is why they are technically not extending *Bird* again.
 
-Trait class *XWithSpeed* also shows that it is actually possible to call methods of used trait classes. Method *getSpeed* calls method *getAge*, which is implemented in *XWithAge*. This is possible, because it is ensured that the class which is extended by *XWithSpeed* will also be extended by *XWithAge*, so the corresponding implementation of *getAge* will be available in the constructed object.
+Trait class *XWithSpeed* also shows that it is actually possible to call methods of used trait classes. Method *getSpeed* calls method *getAge*, which is implemented in *XWithAge*. This is possible because it is ensured that the class which is extended by *XWithSpeed* will also be extended by *XWithAge*, so the corresponding implementation of *getAge* will be available in the constructed object.
 
 ##### Input (Code)
 

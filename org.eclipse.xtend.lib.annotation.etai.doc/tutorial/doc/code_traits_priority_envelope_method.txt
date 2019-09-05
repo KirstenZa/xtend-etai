@@ -1,0 +1,64 @@
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+
+import virtual.intf.IXMethodCached
+import virtual.intf.IXMethodLogged
+
+@TraitClass
+abstract class XMethodLogged {
+
+	@PriorityEnvelopeMethod(90)
+	override String getString() {
+		System.out.println('''"getString" called''')
+		try {
+			return getString$extended
+		} finally {
+			System.out.println('''"getString" finished''')
+		}
+	}
+
+}
+
+@TraitClass
+abstract class XMethodCached {
+
+	String getStringResult
+
+	@PriorityEnvelopeMethod(10)
+	override String getString() {
+		if (methodResult === null) {
+			System.out.println('''"getString" is going to be cached''')
+			getStringResult = getString$extended
+			System.out.println('''"getString" cached, value: "«getStringResult»"''')
+		}
+		return methodResult
+	}
+
+}
+
+@ExtendedByAuto
+@ApplyRules
+class MethodImplementation implements IXMethodLogged {
+
+	override String getString() {
+		System.out.println('''inside "MethodImplementation::getString"''')
+		return "base"
+	}
+
+}
+
+@ApplyRules
+@ExtendedByAuto
+class MethodImplementationCached extends MethodImplementation implements IXMethodCached {
+
+	override String getString() {
+		System.out.println('''inside "MethodImplementationCached::getString"''')
+		super.getString
+		return "derived"
+	}
+
+}

@@ -27,8 +27,9 @@ import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcesso
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
- * Implements all methods which are not implemented (yet) in the annotated non-abstract class
- * via default implementations (i.e. just return default values of method's return type).
+ * <p>Marks a non-abstract class in order to implements all methods that are not implemented
+ * via default implementations (i.e. just return default values of the method's
+ * return type).</p>
  */
 @Target(ElementType.TYPE)
 @Active(ImplementDefaultProcessor)
@@ -36,8 +37,8 @@ annotation ImplementDefault {
 }
 
 /**
- * A method, which has been implemented because of the ({@link ImplementDefault}) annotation,
- * will be marked by this annotation
+ * <p>Marks a method that has been implemented because of the ({@link ImplementDefault}) annotation,
+ * will be marked by this annotation.</p>
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -45,7 +46,7 @@ annotation DefaultImplementation {
 }
 
 /**
- * Active Annotation Processor for {@link DefaultImplementation}
+ * <p>Active Annotation Processor for {@link DefaultImplementation}.</p>
  * 
  * @see ExtractInterface
  */
@@ -81,46 +82,47 @@ class ImplementDefaultProcessor extends AbstractClassProcessor implements Queued
 		val typeMap = new TypeMap
 		fillTypeMapFromTypeHierarchy(annotatedClass, typeMap, context)
 
-		// retrieve all methods, which are implemented
+		// retrieve all methods that are implemented
 		val methodsImplemented = new ArrayList<MethodDeclaration>(
-			annotatedClass.getMethodClosure(null, [false], true, false, false, true, context).filter[!it.abstract].
-				toList)
+			annotatedClass.getMethodClosure(null, [false], true, false, false, true, false, context).filter [
+				!it.abstract
+			].toList)
 
-		// retrieve all methods, which are not implemented (abstract)
+		// retrieve all methods that are not implemented (abstract)
 		val methodsToBeImplemented = new ArrayList<MethodDeclaration>(
-			annotatedClass.getMethodClosure(null, [true], true, false, false, true, context).filter[it.abstract].toList)
+			annotatedClass.getMethodClosure(null, [true], true, false, false, true, false, context).filter[it.abstract].
+				toList)
 
 		// add methods from trait classes (which are relevant)
 		for (traitClass : annotatedClass.getTraitClassesSpecifiedForExtendedClosure(null, context))
 			for (traitMethod : (traitClass.type as ClassDeclaration).getTraitMethodClosure(typeMap, context))
-				if (traitMethod.isRequiredMethod && traitMethod.visibility != Visibility.PUBLIC)
+				if (traitMethod.isRequiredMethod && traitMethod.visibility != Visibility::PUBLIC)
 					methodsToBeImplemented.add(traitMethod)
 				else if ((traitMethod.isProcessedMethod &&
 					traitMethod.getProcessedMethodInfo(context).required == true) ||
-					(traitMethod.isEnvelopeMethod && traitMethod.getEnvelopeMethodInfo(context).required == true
-						))
+					(traitMethod.isEnvelopeMethod && traitMethod.getEnvelopeMethodInfo(context).required == true))
 					methodsToBeImplemented.add(
-						new ExtendedByProcessor.MethodDeclarationRenamed(traitMethod,
+						new MethodDeclarationRenamed(traitMethod,
 							traitMethod.getExtendedMethodImplName(traitClass.type as ClassDeclaration),
-							Visibility.PRIVATE)
+							Visibility::PRIVATE)
 					)
 
 		// implement all abstract methods...
-		for (methodNotImplemented : methodsToBeImplemented) {
+		for (methodToBeImplemented : methodsToBeImplemented) {
 
 			// ... except an implementation can be found 
-			if (methodsImplemented.getMatchingMethod(methodNotImplemented,
-				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+			if (methodsImplemented.getMatchingMethod(methodToBeImplemented,
+				TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
 				false, typeMap, context) === null) {
 
-				// maybe an abstract method exists in current class (adaption), which can be used
+				// maybe an abstract method exists in current class (adaption) that can be used
 				// otherwise a new method must be created (by copying)
-				var implementedMethod = annotatedClass.getMatchingExecutableInClass(methodNotImplemented,
-					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+				var implementedMethod = annotatedClass.getMatchingExecutableInClass(methodToBeImplemented,
+					TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
 					false, false, true, false, false, typeMap, context) as MutableMethodDeclaration
 				if (implementedMethod === null)
-					implementedMethod = annotatedClass.copyMethod(methodNotImplemented, true, false, true, false, false,
-						false, typeMap, context)
+					implementedMethod = annotatedClass.copyMethod(methodToBeImplemented, true, false, true, false,
+						false, false, typeMap, context)
 
 				// the implemented method will not be abstract
 				implementedMethod.abstract = false

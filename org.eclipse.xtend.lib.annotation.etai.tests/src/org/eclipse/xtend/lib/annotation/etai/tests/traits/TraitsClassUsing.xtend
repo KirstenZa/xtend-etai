@@ -1,17 +1,22 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
-import org.eclipse.xtend.lib.annotation.etai.ConstructRule
+import java.lang.reflect.Modifier
+import java.math.BigInteger
+import java.util.List
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ConstructRule
 import org.eclipse.xtend.lib.annotation.etai.ConstructorMethod
 import org.eclipse.xtend.lib.annotation.etai.EPDefault
 import org.eclipse.xtend.lib.annotation.etai.EPOverride
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IExtendedClassTypeArgsUsingIndirectTraits
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IExtendedClassTypeArgsUsingIndirectTraitsFactory
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IExtendedClassUsingIndirectTraits
@@ -26,20 +31,17 @@ import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassLongAs
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassNameAspect
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassProtectedMethods1
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassProtectedMethods2
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassSpecifiedMultipleTimes
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassTAspect
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassTypeArgsUsed
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassTypeArgsUsingOtherExtension
-import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionTypeArgumentsBase
-import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassSpecifiedMultipleTimes
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtension
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionBase
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionProtectedMethods
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionTypeArguments1
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionTypeArguments2
-import java.lang.reflect.Modifier
-import java.math.BigInteger
-import java.util.List
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassUsingOtherExtensionTypeArgumentsBase
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.IXDifferencesInVisibilityCovarianceMustCompileTraitUsed
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -195,12 +197,12 @@ abstract class TraitClassProtectedMethods1 {
 
 	@ExclusiveMethod
 	protected def void protectedMethodA() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=EPOverride)
 	protected def void protectedMethodDefault() {
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 	}
 
 }
@@ -213,7 +215,7 @@ abstract class TraitClassProtectedMethods2 {
 
 	@ProcessedMethod(processor=EPOverride)
 	protected def void protectedMethodDefault() {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 	}
 
 }
@@ -227,12 +229,12 @@ abstract class TraitClassUsingOtherExtensionProtectedMethods implements ITraitCl
 		protectedMethodDefault$impl
 		protectedMethodDefault
 		protectedMethodA
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	@ProcessedMethod(processor=EPDefault)
 	protected def void protectedMethodDefault() {
-		TraitTestsBase.TEST_BUFFER += "Z"
+		TraitTestsBase::TEST_BUFFER += "Z"
 	}
 
 }
@@ -242,12 +244,12 @@ abstract class TraitClassUsingOtherExtensionProtectedMethods implements ITraitCl
 class ExtendedClassUsingIndirectTraitsProtectedMethods implements ITraitClassUsingOtherExtensionProtectedMethods {
 
 	protected def void protectedMethodRequired() {
-		TraitTestsBase.TEST_BUFFER += "R"
+		TraitTestsBase::TEST_BUFFER += "R"
 	}
 
 	override void publicMethodC() {
 		protectedMethodB
-		TraitTestsBase.TEST_BUFFER += "C"
+		TraitTestsBase::TEST_BUFFER += "C"
 	}
 
 }
@@ -329,6 +331,24 @@ abstract class TraitClassUsingOtherExtensionTypeArguments2<T> implements ITraitC
 
 @ExtendedByAuto
 class ExtendedClassUsingIndirectTraitsTypeArguments implements ITraitClassUsingOtherExtensionTypeArguments1<Integer>, ITraitClassUsingOtherExtensionTypeArguments2<Integer> {
+}
+
+interface IDifferencesInVisibilityCovarianceMustCompile {
+
+	def TypeA test()
+
+}
+
+@TraitClass
+abstract class XDifferencesInVisibilityCovarianceMustCompileTraitUsed {
+
+	@ExclusiveMethod
+	protected def TypeB test() {}
+
+}
+
+@TraitClassAutoUsing
+abstract class XDifferencesInVisibilityCovarianceMustCompile implements IDifferencesInVisibilityCovarianceMustCompile, IXDifferencesInVisibilityCovarianceMustCompileTraitUsed {
 }
 
 class TraitsClassUsingOtherTraitsTests extends TraitTestsBase {

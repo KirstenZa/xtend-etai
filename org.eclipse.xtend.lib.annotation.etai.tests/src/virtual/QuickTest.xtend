@@ -7,7 +7,7 @@ import org.junit.Test
 import static org.junit.Assert.*
 
 /**
- * This facility can be used to quickly test and debug the compilation of the specified xtend code.
+ * <p>This facility can be used to quickly test and debug the compilation of the specified Xtend code.</p>
  */
 class QuickTest extends TraitTestsBase {
 

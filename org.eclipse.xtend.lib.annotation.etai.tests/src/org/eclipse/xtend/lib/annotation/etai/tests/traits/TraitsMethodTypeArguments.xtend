@@ -1,5 +1,5 @@
 /**
- * Test passes, if this file compiles without problem.
+ * Test passes if this file compiles without problem.
  */
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
@@ -50,7 +50,7 @@ class ExtendedMethodTypeArguments implements ITraitMethodTypeArguments {
 		return null
 
 	}
-	
+
 	override <T extends TypeA> List<List<T>> getSomething3(Class<T> type) {
 
 		return null
@@ -59,8 +59,28 @@ class ExtendedMethodTypeArguments implements ITraitMethodTypeArguments {
 
 }
 
+class MethodTypeArgumentsBase {
+
+	def <V extends TypeA> V getSomething2(Class<V> type) {
+
+		return null
+
+	}
+
+	def <V extends TypeA> List<List<V>> getSomething3(Class<V> type) {
+
+		return null
+
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedMethodTypeArgumentsWithBase extends MethodTypeArgumentsBase implements ITraitMethodTypeArguments {
+}
+
 class TraitsMethodTypeArgumentsTests extends TraitTestsBase {
-	
+
 	// using this method avoids warnings concerning unnecessary instanceof tests
 	static def boolean instanceOf(Object obj, Class<?> clazz) {
 		return clazz.isAssignableFrom(obj.class)
@@ -69,10 +89,31 @@ class TraitsMethodTypeArgumentsTests extends TraitTestsBase {
 	@Test
 	def void testTraitMethodTypeArgumentReturns() {
 
-		val obj = new ExtendedMethodTypeArguments
-		assertNull(obj.getSomething1(String))
-		assertTrue(obj.getSomething2(TypeA).instanceOf(TypeA))
-		assertTrue(obj.getSomething3(TypeA).instanceOf(List))
+		{
+
+			val obj = new ExtendedMethodTypeArguments
+			assertNull(obj.getSomething1(String))
+			assertTrue(obj.getSomething2(TypeA).instanceOf(TypeA))
+			assertTrue(obj.getSomething3(TypeA).instanceOf(List))
+
+			assertEquals(1, ExtendedMethodTypeArguments.methods.filter[name == "getSomething1"].size)
+			assertEquals(1, ExtendedMethodTypeArguments.methods.filter[name == "getSomething2"].size)
+			assertEquals(1, ExtendedMethodTypeArguments.methods.filter[name == "getSomething3"].size)
+
+		}
+
+		{
+
+			val obj = new ExtendedMethodTypeArgumentsWithBase
+			assertNull(obj.getSomething1(String))
+			assertTrue(obj.getSomething2(TypeA).instanceOf(TypeA))
+			assertTrue(obj.getSomething3(TypeA).instanceOf(List))
+
+			assertEquals(1, ExtendedMethodTypeArgumentsWithBase.methods.filter[name == "getSomething1"].size)
+			assertEquals(1, ExtendedMethodTypeArgumentsWithBase.methods.filter[name == "getSomething2"].size)
+			assertEquals(1, ExtendedMethodTypeArgumentsWithBase.methods.filter[name == "getSomething3"].size)
+
+		}
 
 	}
 

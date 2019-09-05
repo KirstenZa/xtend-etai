@@ -14,6 +14,7 @@ import java.util.Map
 import java.util.Set
 import java.util.SortedMap
 import java.util.SortedSet
+import java.util.TreeMap
 import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllTo
 import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddAllToIndexed
 import org.eclipse.xtend.lib.annotation.etai.AdderRuleProcessor.MethodDeclarationFromAdder_AddTo
@@ -26,6 +27,7 @@ import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarat
 import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFrom
 import org.eclipse.xtend.lib.annotation.etai.RemoverRuleProcessor.MethodDeclarationFromRemover_RemoveFromIndexed
 import org.eclipse.xtend.lib.annotation.etai.SetterRuleProcessor.MethodDeclarationFromSetter
+import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummy
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckApplyRules
 import org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.IConstructorParamDummyCheckFactoryCall
@@ -62,7 +64,9 @@ import static extension org.eclipse.xtend.lib.annotation.etai.ConstructRuleDisab
 import static extension org.eclipse.xtend.lib.annotation.etai.ConstructorMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.FactoryMethodRuleProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitMethodRedirectionProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.CollectionUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.StringUtils.*
@@ -102,10 +106,10 @@ annotation ApplyRules {
 }
 
 /**
- * <p>Annotation for an adapted method, i.e., a method which has been included because of
+ * <p>Annotation for an adapted method, i.e. a method which has been included because of
  * auto adaption of types ({@link TypeAdaptionRule}) or implementation ({@link ImplAdaptionRule}).</p>
  * 
- * <p>This annotation can also be used explicitly, if overriding a method that shall not
+ * <p>This annotation can also be used explicitly if overriding a method that shall not
  * deactivate the adaption rule of a superclass.</p>
  * 
  * @see ApplyRules
@@ -129,9 +133,9 @@ annotation AssertParameterType {
 }
 
 /**
- * Annotation for an adapted constructor, i.e., a constructor which has been included because of
+ * <p>Annotation for an adapted constructor, i.e., a constructor that has been included because of
  * type auto adaption ({@link TypeAdaptionRule}) or the explicit request for copying the
- * constructor ({@link CopyConstructorRule}).
+ * constructor ({@link CopyConstructorRule}).</p>
  * 
  * @see ApplyRules
  * @see TypeAdaptionRule
@@ -142,8 +146,8 @@ annotation AdaptedConstructor {
 }
 
 /**
- * Annotation for an adapted constructor, which has been hidden because of the automatic
- * implementation of a factory method.
+ * <p>Annotation for an adapted constructor that has been hidden because of the automatic
+ * implementation of a factory method.</p>
  * 
  * @see ApplyRules
  * @see FactoryMethodRule
@@ -153,7 +157,7 @@ annotation ConstructorHiddenForFactoryMethod {
 }
 
 /**
- * Annotation for a factory method, which has been generated to create an adapted class.
+ * <p>Annotation for a factory method that has been generated to create an adapted class.</p>
  * 
  * @see ApplyRules
  * @see FactoryMethodRule#factoryMethod
@@ -163,7 +167,7 @@ annotation GeneratedFactoryMethod {
 }
 
 /**
- * Annotation for the factory class, which has been generated to hold a factory method.
+ * <p>Annotation for the factory class that has been generated to hold a factory method.</p>
  * 
  * @see ApplyRules
  * @see GeneratedFactoryInstance
@@ -174,7 +178,7 @@ annotation GeneratedFactoryClass {
 }
 
 /**
- * Annotation for a getter method, which has been generated retrieving a field's value.
+ * <p>Annotation for a getter method that has been generated retrieving a field's value.</p>
  * 
  * @see GetterRule
  */
@@ -183,7 +187,7 @@ annotation GeneratedGetterMethod {
 }
 
 /**
- * Annotation for a setter method, which has been generated setting a field's value.
+ * <p>Annotation for a setter method that has been generated setting a field's value.</p>
  * 
  * @see SetterRule
  */
@@ -192,7 +196,7 @@ annotation GeneratedSetterMethod {
 }
 
 /**
- * Annotation for a method, which has been generated for adding a elements to a collection/map.
+ * <p>Annotation for a method that has been generated for adding a elements to a collection/map.</p>
  * 
  * @see AdderRule
  */
@@ -201,7 +205,7 @@ annotation GeneratedAdderMethod {
 }
 
 /**
- * Annotation for a method, which has been generated for removing a elements from a collection/map.
+ * <p>Annotation for a method that has been generated for removing a elements from a collection/map.</p>
  * 
  * @see RemoverRule
  */
@@ -210,7 +214,15 @@ annotation GeneratedRemoverMethod {
 }
 
 /**
- * Annotation for the instance of the generated factory class.
+ * <p>This annotation is put onto methods which have been generated for
+ * calling the method in the super class.</p>
+ */
+@Target(ElementType.METHOD)
+annotation GeneratedSuperCallMethod {
+}
+
+/**
+ * <p>Annotation for the instance of the generated factory class.</p>
  * 
  * @see ApplyRules
  * @see GeneratedFactoryClass
@@ -221,19 +233,19 @@ annotation GeneratedFactoryInstance {
 }
 
 /**
- * This annotation is attached to classes, which do have a (xtend) source class with at
- * least one explicit constructor.
+ * <p>This annotation is attached to classes that do have a (xtend) source class with at
+ * least one explicit constructor.</p>
  */
 @Target(ElementType.TYPE)
 annotation HasExplicitConstructors {
 }
 
 /**
- * This annotation is put onto constructors within adapted classes,
+ * <p>This annotation is put onto constructors within adapted classes,
  * which have been generated for delegation purpose. Thereby, the main purpose
  * of delegation is to include a check procedure. In constructors annotated
- * by this annotation, it is checked, if the {@link ApplyRules} annotation
- * is used consistently.
+ * by this annotation, it is checked if the {@link ApplyRules} annotation
+ * is used consistently.</p>
  * 
  * @see ApplyRules
  */
@@ -242,11 +254,11 @@ annotation ApplyRulesCheckerDelegationConstructor {
 }
 
 /**
- * This annotation is put onto constructors within adapted classes,
+ * <p>This annotation is put onto constructors within adapted classes,
  * which have been generated for delegation purpose. Thereby, the main purpose
  * of delegation is to include a check procedure. In constructors annotated
- * by this annotation, it is checked, if the constructor has been called by
- * an associated factory method.
+ * by this annotation, it is checked if the constructor has been called by
+ * an associated factory method.</p>
  * 
  * @see ApplyRules
  */
@@ -255,13 +267,14 @@ annotation FactoryCallCheckerDelegationConstructor {
 }
 
 /**
- * Active Annotation Processor for {@link ApplyRules}
+ * <p>Active Annotation Processor for {@link ApplyRules}.</p>
  * 
  * @see ApplyRules
  */
 class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransformationParticipant<MutableClassDeclaration> {
 
-	final static public String AUTO_RULE_ADAPTION_MISSING_ERROR = "Class \"%s\" must be annotated by @ApplyRules, because a base class is marked for automatic adaption"
+	final static public String AUTO_RULE_ADAPTION_MISSING_ERROR = "Class \"%s\" must be annotated by @ApplyRules because a base class is marked for automatic adaption"
+	final static public String SUPER_CALL_NOT_AVAILABLE_ERROR = "Super call of method \"%s\" detected, but method is not available in class \"%s\""
 
 	final static public String INJECTED_PARAMETER_NAME_SEPARATOR = "______$injectedParam$"
 	final static public String FACTORY_CLASS_NAME = "Factory"
@@ -273,8 +286,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves all constructors in hierarchy, which declared type adaption rules (in parameters) or
-	 * the copy constructor rule for constructor itself.
+	 * <p>Retrieves all constructors in the hierarchy that declare type adaption rules (in parameters) or
+	 * the copy constructor rule.</p>
 	 */
 	static protected def getConstructorsToAdapt(ClassDeclaration classDeclaration, Class<?> annotationType,
 		extension TransformationContext context) {
@@ -282,20 +295,20 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		for (superType : classDeclaration.getSuperClasses(false)) {
 
 			val constructorsToAdapt = superType.declaredConstructors.filter [
-				it.visibility != Visibility.PRIVATE && (
+				it.visibility != Visibility::PRIVATE && (
 				it.getAnnotation(annotationType) !== null || it.parameters.exists [
 					it.getAnnotation(annotationType) !== null
 				])
 			]
 
-			// do not continue with parent's constructors, if already found adaption rules
+			// do not continue with parent's constructors if already found adaption rules
 			if (constructorsToAdapt.size > 0) {
 
 				return constructorsToAdapt
 
 			} else {
 
-				// no adaption, if there is a explicitly declared constructor
+				// no adaption if there is a explicitly declared constructor
 				if (superType.hasAnnotation(HasExplicitConstructors))
 					return new ArrayList<ConstructorDeclaration>
 
@@ -308,7 +321,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * <p>Retrieves all methods in the type hierarchy, which have an adaption rule declared
+	 * <p>Retrieves all methods in the type hierarchy that have an adaption rule declared
 	 * (in parameters or return type).</p>
 	 * 
 	 * <p>The result is a map of methods, together with the "super classes" (in order) leading to the class 
@@ -325,6 +338,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		TypeMap typeMap,
 		Class<?> annotationType,
 		(MethodDeclaration)=>Boolean annotationCheckExistenceOnMethod,
+		List<String> errors,
 		extension TransformationContext context
 	) {
 
@@ -338,14 +352,14 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		getMethodsToAdaptInternal(annotatedClass, annotatedClass, true, new ArrayList<ClassDeclaration>, methodsToAdapt,
 			methodsNotToAdapt, !annotatedClass.getDeclaredMethodsResolved(true, false, false, context).exists [
 				it.isConstructorMethod
-			], typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+			], typeMap, annotationType, annotationCheckExistenceOnMethod, errors, context)
 
 		return methodsToAdapt
 
 	}
 
 	/**
-	 * Internal method for searching adaption methods.
+	 * <p>Internal method for searching adaption methods.</p>
 	 */
 	static private def void getMethodsToAdaptInternal(
 		ClassDeclaration original,
@@ -358,6 +372,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		TypeMap typeMap,
 		Class<?> annotationType,
 		(MethodDeclaration)=>Boolean annotationCheckExistenceOnMethod,
+		List<String> errors,
 		extension TransformationContext context
 	) {
 
@@ -371,7 +386,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				!it.hasAnnotation(AdaptedMethod)
 			]
 
-			// check for constructor methods, if not processed yet
+			// check for constructor methods if not processed yet
 			if (continueAddConstructorMethods) {
 
 				val relevantConstructorMethods = relevantMethods.filter[it.isConstructorMethod]
@@ -379,7 +394,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					continueAddConstructorMethods = false
 					val constructorMethodsWithAdaptionRule = relevantConstructorMethods.filter [
-						it.visibility != Visibility.PRIVATE && it.hasAnnotation(annotationType) || it.parameters.exists [
+						it.visibility != Visibility::PRIVATE && it.hasAnnotation(annotationType) || it.parameters.exists [
 							it.hasAnnotation(annotationType)
 						]
 					]
@@ -408,7 +423,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			// search for methods with adaption rules and add
 			val methodsWithAdaptionRule = relevantMethods.filter [
-				it.visibility != Visibility.PRIVATE && annotationCheckExistenceOnMethod.apply(it)
+				it.visibility != Visibility::PRIVATE && annotationCheckExistenceOnMethod.apply(it)
 			]
 
 			// add found methods
@@ -428,7 +443,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				getMethodsToAdaptInternal(original, currentClass.extendedClass.type as ClassDeclaration, false,
 					currentlyProcessingSuperClasses, methodsToAdapt, new HashSet<String>(methodsNotToAdapt),
-					continueAddConstructorMethods, typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+					continueAddConstructorMethods, typeMap, annotationType, annotationCheckExistenceOnMethod, errors,
+					context)
 
 			} finally {
 				currentlyProcessingSuperClasses.remove(currentlyProcessingSuperClasses.size - 1)
@@ -456,7 +472,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					getMethodsToAdaptInternal(original, traitClassRef.type as ClassDeclaration, false,
 						currentlyProcessingSuperClasses, methodsToAdaptTemp, new HashSet<String>(methodsNotToAdapt),
-						false, typeMap, annotationType, annotationCheckExistenceOnMethod, context)
+						false, typeMap, annotationType, annotationCheckExistenceOnMethod, errors, context)
 
 				} finally {
 					currentlyProcessingSuperClasses.remove(currentlyProcessingSuperClasses.size - 1)
@@ -468,9 +484,10 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// check for ambiguous type adaption rules
 					for (methodToAdaptTemp : methodsToAdaptTemp.keySet)
-						if (methodsNamesAdapted.findFirst[it == methodToAdaptTemp.simpleName] !== null)
-							currentClass.
-								addError('''Trait class "«traitClassRef?.type.simpleName»" contains method "«methodToAdaptTemp.simpleName»", which specifies another type adaption rule''')
+						if (methodsNamesAdapted.findFirst[it == methodToAdaptTemp.simpleName] !== null) {
+							errors?.
+								add('''Trait class "«traitClassRef?.type.simpleName»" contains method "«methodToAdaptTemp.simpleName»", which specifies another adaption rule''')
+						}
 
 					// copy entries of temporary structures to main structures
 					methodsToAdapt.putAll(methodsToAdaptTemp)
@@ -485,8 +502,9 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves the fallback type for a specific parameter (or return type, if "paramPos" is -1) from the method of 
-	 * the given class. It will search through superclasses until method is found.
+	 * <p>Retrieves the fallback type for a specific parameter (or return type if <code>paramPos</code>
+	 * is <code>-1</code>) from the method of the given class. It will search through superclasses
+	 * until method is found.</p>
 	 */
 	static protected def TypeReference getSuperClassesMethodFallbackParamType(
 		ClassDeclaration classDeclaration,
@@ -503,7 +521,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			var methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
 				it.simpleName == methodDeclaration.simpleName &&
 					methodDeclaration.parameters.parametersEquals(it.parameters, TypeMatchingStrategy.MATCH_INVARIANT,
-						true, typeMap, null, context)
+						true, typeMap, context)
 
 			]
 
@@ -513,7 +531,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
 					it.simpleName == methodDeclaration.simpleName &&
 						methodDeclaration.parameters.parametersEquals(it.parameters,
-							TypeMatchingStrategy.MATCH_COVARIANCE, true, typeMap, null, context)
+							TypeMatchingStrategy.MATCH_COVARIANT, true, typeMap, context)
 
 				]
 
@@ -524,7 +542,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				// step 3: search similar type match
 				methodsFound = currentClass.getDeclaredMethodsResolved(true, false, false, context).filter [
 					it.simpleName == methodDeclaration.simpleName &&
-						methodDeclaration.parameters.parameterListsSimilar(it.parameters)
+						methodDeclaration.parameters.parametersSimilar(it.parameters)
 				]
 
 			}
@@ -585,8 +603,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves the fallback type for a specific parameter from the constructor of 
-	 * the given class. It will search through superclasses until constructor is found.
+	 * <p>Retrieves the fallback type for a specific parameter from the constructor of 
+	 * the given class. It will search through superclasses until constructor is found.</p>
 	 */
 	static protected def TypeReference getSuperClassesConstructorFallbackParamType(
 		ClassDeclaration classDeclaration,
@@ -602,7 +620,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// step 1: search exact type match
 			var constructorsFound = currentClass.declaredConstructors.filter [
 				constructorDeclaration.parameters.parametersEquals(it.parameters, TypeMatchingStrategy.MATCH_INVARIANT,
-					true, typeMap, null, context)
+					true, typeMap, context)
 			]
 
 			if (constructorsFound.size == 0) {
@@ -610,7 +628,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				// step 2: search covariant type match
 				constructorsFound = currentClass.declaredConstructors.filter [
 					constructorDeclaration.parameters.parametersEquals(it.parameters,
-						TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, null, context)
+						TypeMatchingStrategy.MATCH_INHERITED, true, typeMap, context)
 				]
 
 			}
@@ -619,7 +637,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// step 3: search similar type match
 				constructorsFound = currentClass.declaredConstructors.filter [
-					constructorDeclaration.parameters.parameterListsSimilar(it.parameters)
+					constructorDeclaration.parameters.parametersSimilar(it.parameters)
 				]
 
 			}
@@ -656,50 +674,140 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
-	/** 
-	 * <p>Returns true, if two parameter lists are considered as "similar".</p>
-	 * 
-	 * <p>They are considered as similar, if they have the same size and primitive types
-	 * match.</p>
+	/**
+	 * <p>This method returns the declared method in the given class that are extended by the
+	 * given priority envelope method, e.g., there is a method which must be considered when calling
+	 * via priority queue.</p>
 	 */
-	static def boolean parameterListsSimilar(Iterable<? extends ParameterDeclaration> parameterList1,
-		Iterable<? extends ParameterDeclaration> parameterList2) {
+	static def MethodDeclaration getDeclaredPriorityEnvelopeMethod(ClassDeclaration annotatedClass,
+		MethodDeclaration priorityEnvelopeMethod, TypeMap typeMap, extension TransformationContext context) {
 
-		if (parameterList1.size != parameterList2.size)
-			return false
+		val declaredPriorityEnvelopeMethod = annotatedClass.declaredMethods.filter [
+			it.visibility != Visibility::PRIVATE
+		].getMatchingMethod(priorityEnvelopeMethod, TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+			TypeMatchingStrategy.MATCH_INHERITED, false, typeMap, context)
 
-		val iteratorParam1 = parameterList1.iterator
-		val iteratorParam2 = parameterList2.iterator
+		if (declaredPriorityEnvelopeMethod !== null) {
 
-		while (iteratorParam1.hasNext) {
+			// do not consider method if it is an delegation method implemented for a priority envelope method
+			// if it is, search for original method
+			if (declaredPriorityEnvelopeMethod.hasAnnotation(DelegationPriorityEnvelopeCaller)) {
 
-			val param1 = iteratorParam1.next
-			val param2 = iteratorParam2.next
+				return annotatedClass.declaredMethods.getMatchingMethod(
+					new MethodDeclarationRenamed(priorityEnvelopeMethod,
+						priorityEnvelopeMethod.getExtendedMethodImplNameAfterExtendedByPriorityEnvelope),
+					TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
+					false, typeMap, context)
 
-			if (param1.type.isPrimitive != param2.type.isPrimitive)
-				return false
-			if (param1.type.isPrimitive == true) {
-				if (param1.type != param2.type)
-					return false
 			}
+
+			return declaredPriorityEnvelopeMethod
+
 		}
 
-		return true
+		return null
 
 	}
 
 	/**
-	 * Returns the position of the parameter in its executable
+	 * <p>This method returns the first (non-abstract) declared priority envelope method in the list of parents of the
+	 * given class that are extended by the given priority envelope method, e.g., there is a method which
+	 * must be considered when calling via priority queue.</p>
 	 */
-	static protected def int getParameterPosition(ParameterDeclaration parameter) {
+	static def MethodDeclaration getParentDeclaredPriorityEnvelopeMethod(ClassDeclaration annotatedClass,
+		MethodDeclaration priorityEnvelopeMethod, TypeMap typeMap, extension TransformationContext context) {
 
-		var int number = 0
-		for (currentParameter : parameter.declaringExecutable.parameters) {
-			if (currentParameter === parameter)
-				return number
-			number++
+		for (parentClass : annotatedClass.getSuperClasses(false)) {
+
+			val implementedPriorityEnvelopeMethod = parentClass.
+				getDeclaredPriorityEnvelopeMethod(priorityEnvelopeMethod, typeMap, context)
+
+			if (implementedPriorityEnvelopeMethod !== null) {
+				if (implementedPriorityEnvelopeMethod.abstract && !parentClass.hasAnnotation(ImplementDefault))
+					return null
+				else
+					return implementedPriorityEnvelopeMethod
+
+			}
+
 		}
-		return -1
+
+		return null
+
+	}
+
+	/**
+	 * <p>Retrieves the class requiring an implementation for the given priority envelope method in
+	 * the extended class.</p>
+	 * 
+	 * <p>If it is not required, the method return <code>null</code>.</p>
+	 */
+	static def ClassDeclaration getRequiringTraitClassForPriorityEnvelopeMethod(
+		MethodDeclaration priorityEnvelopeMethod,
+		Map<MethodDeclaration, Map<Integer, MethodDeclaration>> priorityEnvelopeMethodsMapAll,
+		extension TransformationContext context) {
+
+		// check if an implementation in extended class is required
+		if (!priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.last.
+			getPriorityEnvelopeMethodInfo(context).required)
+			return null
+
+		// return class in which the "required" is set
+		return priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.last.declaringType as ClassDeclaration
+
+	}
+
+	/**
+	 * <p>This method returns if "priority envelope method caller" for the given priority envelope method has been or
+	 * must be implemented in the given class.</p>
+	 */
+	static def boolean hasImplementedPriorityEnvelopeCaller(ClassDeclaration annotatedClass,
+		MethodDeclaration priorityEnvelopeMethod,
+		Map<MethodDeclaration, Map<Integer, MethodDeclaration>> priorityEnvelopeMethodsMapAll, TypeMap typeMap,
+		extension TransformationContext context) {
+
+		val declaredPriorityEnvelopeMethod = annotatedClass.
+			getDeclaredPriorityEnvelopeMethod(priorityEnvelopeMethod, typeMap, context)
+		val parentDeclaredPriorityEnvelopeMethod = annotatedClass.
+			getParentDeclaredPriorityEnvelopeMethod(priorityEnvelopeMethod, typeMap, context)
+
+		var hasImplementation = ((((declaredPriorityEnvelopeMethod !== null &&
+			(!declaredPriorityEnvelopeMethod.abstract || annotatedClass.hasAnnotation(ImplementDefault))) ||
+			( annotatedClass.hasAnnotation(ImplementDefault) &&
+				getRequiringTraitClassForPriorityEnvelopeMethod(priorityEnvelopeMethod, priorityEnvelopeMethodsMapAll,
+					context) !== null)) &&
+			(parentDeclaredPriorityEnvelopeMethod === null || parentDeclaredPriorityEnvelopeMethod.abstract) &&
+			hasImplementedPriorityEnvelopeCallerInAnyParent(annotatedClass, priorityEnvelopeMethod,
+				priorityEnvelopeMethodsMapAll, typeMap, context)) ||
+			annotatedClass.getAppliedPriorityEnvelopeMethods(typeMap, context).getMatchingMethod(priorityEnvelopeMethod,
+				TypeMatchingStrategy.MATCH_INVARIANT, TypeMatchingStrategy.MATCH_INHERITED, false, typeMap, context) !==
+				null)
+
+		// check if implementation might be automatic
+		if (!hasImplementation) {
+
+			annotatedClass.hasAnnotation(ImplementDefault)
+
+		}
+
+		return hasImplementation
+
+	}
+
+	/**
+	 * <p>This method returns if a "priority envelope method caller" for the given priority envelope method
+	 * has been or must be implemented in any parent of the given class.</p>
+	 */
+	static def boolean hasImplementedPriorityEnvelopeCallerInAnyParent(ClassDeclaration annotatedClass,
+		MethodDeclaration priorityEnvelopeMethod,
+		Map<MethodDeclaration, Map<Integer, MethodDeclaration>> priorityEnvelopeMethodsMapAll, TypeMap typeMap,
+		extension TransformationContext context) {
+
+		for (parentClass : annotatedClass.getSuperClasses(false))
+			if (parentClass.hasImplementedPriorityEnvelopeCaller(priorityEnvelopeMethod, priorityEnvelopeMethodsMapAll,
+				typeMap, context))
+				return true;
+		return false;
 
 	}
 
@@ -708,7 +816,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * 
 	 * <p>If the method of the source parameter has been adapted, the method will search for adaption
 	 * rules in superclasses. However, this method does not search for type adaptions coming from trait
-	 * classes, which extend the current type hierarchy.</p>
+	 * classes that extend the current type hierarchy.</p>
 	 */
 	static protected def String getTypeAdaptionRuleWithinTypeHierarchy(ParameterDeclaration parameterDeclaration,
 		TypeMap typeMap, extension TransformationContext context) {
@@ -731,7 +839,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				val superMethod = getMatchingExecutableInClass(
 					(executable.declaringType as ClassDeclaration).extendedClass?.type as ClassDeclaration, executable,
-					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
+					TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
 					false, false, true, false, false, typeMap, context)
 				if (superMethod !== null)
 					return getTypeAdaptionRuleWithinTypeHierarchy(
@@ -746,8 +854,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Apply type adaption rule (given by string) to a declared element (can be method or parameter), 
-	 * i.e. the type of the according element is changed by applying the rule.
+	 * <p>Apply type adaption rule (given by string) to a declared element (can be method or parameter), 
+	 * i.e., the type of the according element is changed by applying the rule.</p>
 	 */
 	static protected def TypeReference applyTypeAdaptionRule(
 		Declaration element,
@@ -762,7 +870,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		extension TransformationContext context
 	) {
 
-		// return with same type, if no rule is defined
+		// return with same type if no rule is defined
 		if (completeRule === null || completeRule.trim().empty) {
 
 			if (element instanceof MethodDeclaration)
@@ -790,11 +898,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		}
 
-		// return null, if type within supertype's element shall not be searched
+		// return null if type within supertype's element shall not be searched
 		if (!useSuperType)
 			return null;
 
-		// use type within supertype's element, if new type not found
+		// use type within supertype's element if new type not found
 		val paramPos = if (element instanceof ParameterDeclaration)
 				element.parameterPosition
 			else
@@ -812,8 +920,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Apply implementation adaption rule (given by string) to a declared method and
-	 * return resulting implementation (as string).
+	 * <p>Apply implementation adaption rule (given by string) to a declared method and
+	 * return resulting implementation (as string).</p>
 	 */
 	static protected def String applyImplAdaptionRule(ExecutableDeclaration annotatedExecutable, String completeRule,
 		Map<String, String> variableMap, extension TransformationContext context) {
@@ -828,7 +936,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * <p>The method returns, if there is any change for the given executable declaration.</p>
+	 * <p>The method returns if there is any change for the given executable declaration.</p>
 	 */
 	static protected def boolean checkAdaptionChange(ClassDeclaration annotatedClass,
 		List<ClassDeclaration> relevantSuperClasses, MethodDeclaration ruleMethod,
@@ -854,8 +962,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				parameterTypeMethodInExtendedClass = parameterMethodInExtendedClass.getAnnotation(AssertParameterType).
 					getClassValue("value")
 
-			if (!adaptedTypeAnnotatedClass.typeReferenceEquals(parameterTypeMethodInExtendedClass, null, true, typeMap,
-				null))
+			if (!adaptedTypeAnnotatedClass.typeReferenceEquals(
+				parameterTypeMethodInExtendedClass,
+				null,
+				true,
+				typeMap
+			))
 				return true
 
 		}
@@ -865,7 +977,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		val adaptedReturnType = methodInExtendedClass.applyTypeAdaptionRule(#[annotatedClass],
 			relevantSuperClasses.get(0), ruleReturnType, ruleMethod, variableMap, typeMap, true, errors, context)
 
-		if (!adaptedReturnType.typeReferenceEquals(methodInExtendedClass.returnType, null, true, typeMap, null))
+		if (!adaptedReturnType.typeReferenceEquals(methodInExtendedClass.returnType, null, true, typeMap))
 			return true
 
 		return false
@@ -877,9 +989,9 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	 * 
 	 * <p>The method supports copying parameters from multiple sources.</p>
 	 * 
-	 * <p>The parameter <code>createParameterAssertions</code> determines, if the parameter types shall
+	 * <p>The parameter <code>createParameterAssertions</code> determines if the parameter types shall
 	 * really be adapted/changed, or if a <code>AssertParameterType</code> annotation shall be added,
-	 * which will cause the generation of runtime type assertions. 
+	 * which will cause the generation of runtime type assertions.</p>
 	 */
 	static protected def void copyParametersAndAdapt(MutableClassDeclaration annotatedClass,
 		ClassDeclaration relevantSuperClass, ExecutableDeclaration source, MutableExecutableDeclaration target,
@@ -906,13 +1018,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// add information about adapted type
 			if (createParameterAssertions) {
 
-				if (!adaptedType.typeReferenceEquals(parameter.type, null, true, typeMap, null)) {
+				if (!adaptedType.typeReferenceEquals(parameter.type, null, true, typeMap)) {
 
 					// error if adaption to a type parameter (a check cannot be performed)
 					if (adaptedType?.type instanceof TypeParameterDeclaration) {
 
 						errors?.
-							add('''Parameter "«parameter.simpleName»" of method "«source.simpleName»" cannot be adapted to type parameter "«adaptedType.type.simpleName»", because it cannot be checked (type erasure)''')
+							add('''Parameter "«parameter.simpleName»" of method "«source.simpleName»" cannot be adapted to type parameter "«adaptedType.type.simpleName»" because it cannot be checked (type erasure)''')
 
 					}
 
@@ -920,7 +1032,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					if (adaptedType.actualTypeArguments.length > 0) {
 
 						errors?.
-							add('''«WARNING_PREFIX»Parameter "«parameter.simpleName»" of method "«source.simpleName»" should not be adapted to another type with type arguments, because they cannot be checked (type erasure)''')
+							add('''«WARNING_PREFIX»Parameter "«parameter.simpleName»" of method "«source.simpleName»" should not be adapted to another type with type arguments because they cannot be checked (type erasure)''')
 
 					}
 
@@ -941,8 +1053,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Transfers an annotation for an adaption rule (in a bigger context, e.g. annotated to a collection field) to a parameter
-	 * of a generated method (e.g. adder for this field).
+	 * <p>Transfers an annotation for an adaption rule (in a bigger context, e.g., if annotated to a collection field) to a parameter
+	 * of a generated method (e.g. adder for this field).</p>
 	 */
 	static def void transferTypeAdaptionRuleToParameter(MutableParameterDeclaration parameterDeclaration,
 		AnnotationTarget annotationTarget, int expectedTypeParameterRules, (String[])=>String ruleModifier,
@@ -962,7 +1074,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * <p>Returns true if given class is root class for auto adaption, i.e. a class which does not have
+	 * <p>Returns <code>true</code> if given class is root class for auto adaption, i.e. a class which does not have
 	 * any other classes with according annotation as superclass.</p>
 	 * 
 	 * <p>Thereby, it is an important assumption that there are no gaps for using the annotation within the
@@ -977,7 +1089,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Returns the (qualified) factory class name for the annotated class
+	 * <p>Returns the (qualified) factory class name for the annotated class.</p>
 	 */
 	static def String getFactoryClassName(ClassDeclaration annotatedClass) {
 
@@ -986,7 +1098,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Returns all adaption variables in the context of the given class
+	 * <p>Returns all adaption variables in the context of the given class.</p>
 	 * 
 	 * @see SetAdaptionVariable
 	 */
@@ -1025,7 +1137,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Internal method for retrieving adaption variables.
+	 * <p>Internal method for retrieving adaption variables.</p>
 	 */
 	static private def void getAdaptionVariablesInternal(
 		TypeDeclaration typeDeclaration,
@@ -1173,7 +1285,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Moves the {@link GeneratedFactoryMethod} annotation from one element to another.
+	 * <p>Moves the {@link GeneratedFactoryMethod} annotation from one element to another.</p>
 	 */
 	static def void moveAnnotationConstructorHiddenForFactoryMethod(MutableAnnotationTarget trg,
 		MutableAnnotationTarget src, extension TransformationContext context) {
@@ -1222,13 +1334,13 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			newConstructor.addAnnotation(delegationAnnotation.newAnnotationReference)
 
 		// copy parameters, create name and type list
-		var paramNameList = originalConstructor.parametersNames
+		var paramNameList = originalConstructor.parameterNames
 		if (!isDefaultConstructor)
 			paramNameList = paramNameList.subList(1, paramNameList.size)
 		originalConstructor.copyParameters(newConstructor, if(!isDefaultConstructor) 1 else 0, false, typeMap, context)
 
 		// hide original constructor
-		originalConstructor.visibility = Visibility.PRIVATE
+		originalConstructor.visibility = Visibility::PRIVATE
 
 		// move documentation
 		if (!isDefaultConstructor) {
@@ -1238,7 +1350,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				originalConstructor.hasAnnotation(ExtendedCheckerMethodDelegationConstructor)) {
 
 				newConstructor.docComment = originalConstructor.docComment
-				originalConstructor.docComment = '''This is a wrapper of constructor «newConstructor.getJavaDocLinkTo(context)», which is performing some additional checks.'''
+				originalConstructor.docComment = '''This is a wrapper of constructor «newConstructor.getJavaDocLinkTo(context)» that is performing some additional checks.'''
 
 			} else {
 
@@ -1283,6 +1395,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// start processing of this element
 		ProcessQueue.startTrack(ProcessQueue.PHASE_AUTO_ADAPT, annotatedClass, annotatedClass.qualifiedName)
+		ProcessQueue.startTrack(ProcessQueue.PHASE_AUTO_ADAPT_PRIORITY_ENVELOPE_METHODS, annotatedClass,
+			annotatedClass.qualifiedName)
 		ProcessQueue.startTrack(ProcessQueue.PHASE_AUTO_ADAPT_CHECK, annotatedClass, annotatedClass.qualifiedName)
 
 	}
@@ -1294,6 +1408,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// queue processing
 		ProcessQueue.processTransformation(ProcessQueue.PHASE_AUTO_ADAPT, this, annotatedClass,
 			annotatedClass.qualifiedName, context)
+		ProcessQueue.processTransformation(ProcessQueue.PHASE_AUTO_ADAPT_PRIORITY_ENVELOPE_METHODS, this,
+			annotatedClass, annotatedClass.qualifiedName, context)
 		ProcessQueue.processTransformation(ProcessQueue.PHASE_AUTO_ADAPT_CHECK, this, annotatedClass,
 			annotatedClass.qualifiedName, context)
 
@@ -1302,13 +1418,14 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	override boolean doTransformQueued(int phase, MutableClassDeclaration annotatedClass, BodySetter bodySetter,
 		extension TransformationContext context) {
 
-		// postpone transformation, if supertype must still be processed
-		if (phase === ProcessQueue.PHASE_AUTO_ADAPT) {
+		// postpone transformation if supertype must still be processed
+		if (phase === ProcessQueue.PHASE_AUTO_ADAPT ||
+			phase === ProcessQueue.PHASE_AUTO_ADAPT_PRIORITY_ENVELOPE_METHODS) {
 
 			for (traitType : annotatedClass.getTraitClassesAppliedToExtended(null, context)) {
 
 				if ((traitType.type as ClassDeclaration).hasAnnotation(ApplyRules) &&
-					ProcessQueue.isTrackedTransformation(ProcessQueue.PHASE_AUTO_ADAPT, annotatedClass.compilationUnit,
+					ProcessQueue.isTrackedTransformation(phase, annotatedClass.compilationUnit,
 						(traitType.type as ClassDeclaration).qualifiedName))
 					return false
 
@@ -1317,7 +1434,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			for (superType : annotatedClass.getSuperClasses(false)) {
 
 				if (superType.hasAnnotation(ApplyRules) &&
-					ProcessQueue.isTrackedTransformation(ProcessQueue.PHASE_AUTO_ADAPT, annotatedClass.compilationUnit,
+					ProcessQueue.isTrackedTransformation(phase, annotatedClass.compilationUnit,
 						superType.qualifiedName))
 					return false
 
@@ -1326,6 +1443,10 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		}
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
+
+		// do not process if priority envelope methods have already been processed during previous step
+		if (phase === ProcessQueue.PHASE_AUTO_ADAPT_PRIORITY_ENVELOPE_METHODS && annotatedClass.isExtendedClass)
+			return true
 
 		// create type map from type hierarchy
 		val typeMap = new TypeMap()
@@ -1343,7 +1464,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			doTransformConstructorsFactoryMethods(annotatedClass, variableMap, typeMap, bodySetter, context)
 			doTransformGetterSetterAdderRemover(annotatedClass, variableMap, typeMap, bodySetter, context)
 
-		} else {
+		} else if (phase === ProcessQueue.PHASE_AUTO_ADAPT_PRIORITY_ENVELOPE_METHODS) {
+
+			doTransformPriorityEnvelopeMethods(annotatedClass, typeMap, bodySetter, context)
+
+		} else if (phase === ProcessQueue.PHASE_AUTO_ADAPT_CHECK) {
 
 			doTransformConstructorsConsistencyChecks(annotatedClass, typeMap, bodySetter, context)
 
@@ -1363,13 +1488,21 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
-		// retrieve methods, which must be type/implementation adapted
+		// retrieve methods that must be type/implementation adapted
+		val errorsTypeAdaption = new ArrayList<String>
 		val methodsTypeAdaption = getMethodsToAdapt(annotatedClass, typeMap, TypeAdaptionRule, [
 			TypeAdaptionRuleProcessor.hasTypeAdaptionRule(it)
-		], context)
+		], errorsTypeAdaption, context)
+		if (xtendClass.reportErrors(errorsTypeAdaption, context))
+			return;
+
+		val errorsImplAdaption = new ArrayList<String>
 		val methodsImplAdaption = getMethodsToAdapt(annotatedClass, typeMap, ImplAdaptionRule, [
 			ImplAdaptionRuleProcessor.hasImplAdaptionRule(it)
-		], context)
+		], errorsImplAdaption, context)
+		if (xtendClass.reportErrors(errorsImplAdaption, context))
+			return;
+
 		val methodsAdaption = new HashSet<MethodDeclaration>
 		methodsAdaption.addAll(methodsTypeAdaption.keySet)
 		methodsAdaption.addAll(methodsImplAdaption.keySet)
@@ -1377,7 +1510,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// adapt methods
 		for (method : methodsAdaption.getMethodsSorted(context)) {
 
-			val errors = new ArrayList<String>
+			val errorsMethod = new ArrayList<String>
 			val extendedClass = annotatedClass.extendedClass.type as ClassDeclaration
 
 			// retrieve and calculate data
@@ -1388,7 +1521,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			// check if type adaption is needed due to type change
 			val executableInExtendedClass = extendedClass.getMatchingExecutableInClass(method,
-				TypeMatchingStrategy.MATCH_INHERITANCE, TypeMatchingStrategy.MATCH_INHERITANCE, true, true, true, false,
+				TypeMatchingStrategy.MATCH_INHERITED, TypeMatchingStrategy.MATCH_INHERITED, true, true, true, false,
 				false, typeMap, context) as MethodDeclaration
 			if (doTypeAdaption && !doImplAdaption) {
 
@@ -1396,12 +1529,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				if (!method.isConstructorMethod)
 					if (executableInExtendedClass !== null &&
 						!checkAdaptionChange(annotatedClass, relevantSuperClasses, method, executableInExtendedClass,
-							variableMap, typeMap, errors, context)) {
+							variableMap, typeMap, errorsMethod, context)) {
 
 						// perform type adaption if the extended class has multiple matching methods
 						val matchingMethodsInSuperClass = extendedClass.getDeclaredMethodsResolved(true, false, false,
-							context).getMatchingMethods(method, TypeMatchingStrategy.MATCH_INHERITANCE,
-							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
+							context).getMatchingMethods(method, TypeMatchingStrategy.MATCH_INHERITED,
+							TypeMatchingStrategy.MATCH_INHERITED, true, typeMap, context)
 
 						if (matchingMethodsInSuperClass.size > 1)
 							doTypeAdaption = true
@@ -1413,7 +1546,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			}
 
 			// check if implementation adaption is needed due to type check
-			if (doImplAdaption && errors.size == 0) {
+			if (doImplAdaption && errorsMethod.size == 0) {
 
 				val ruleImplTypeExistenceCheck = method.getAnnotation(ImplAdaptionRule)?.getStringValue(
 					"typeExistenceCheck")
@@ -1426,23 +1559,23 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			}
 
-			if ((doTypeAdaption || doImplAdaption) && errors.size == 0) {
+			if ((doTypeAdaption || doImplAdaption) && errorsMethod.size == 0) {
 
 				// method must not exist yet in current class
 				if (annotatedClass.getDeclaredMethodsResolved(true, false, false, context).exists [
 					it.simpleName == method.simpleName &&
-						it.methodEquals(method, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
-							TypeMatchingStrategy.MATCH_INHERITANCE, true, typeMap, context)
+						it.methodEquals(method, TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+							TypeMatchingStrategy.MATCH_INHERITED, true, typeMap, context)
 				]) {
 					xtendClass.
-						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, false, context).join(", ")»)" cannot be applied to current class, because the method has already been declared.''')
+						addError('''Adaption of method "«method.simpleName»(«method.getParametersTypeNames(TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, false, context).join(", ")»)" cannot be applied to current class because the method has already been declared.''')
 					return
 				}
 
 				// clone type map as it becomes modified locally
 				val typeMapLocal = typeMap.clone
 
-				// create new method, if not declared
+				// create new method if not declared
 				val newMethod = annotatedClass.copyMethod(method, false, true, false, false, false, false, typeMapLocal,
 					context)
 
@@ -1470,12 +1603,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// copy parameters and apply type adaption rules
 					copyParametersAndAdapt(annotatedClass, relevantSuperClasses.get(0), method, newMethod,
-						performTypeAssertions, variableMap, typeMapLocal, errors, context)
+						performTypeAssertions, variableMap, typeMapLocal, errorsMethod, context)
 
 					// apply adaption rule (for method return type)
 					val ruleMethod = method.getAnnotation(TypeAdaptionRule)?.getStringValue("value")
 					newMethod.returnType = method.applyTypeAdaptionRule(#[annotatedClass], relevantSuperClasses.get(0),
-						ruleMethod, method, variableMap, typeMapLocal, true, errors, context)
+						ruleMethod, method, variableMap, typeMapLocal, true, errorsMethod, context)
 
 				} else {
 
@@ -1486,9 +1619,9 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				}
 
 				// create name list of parameters
-				val paramNameList = newMethod.parametersNames
+				val paramNameList = newMethod.parameterNames
 
-				// set new method to abstract, if the implementation will not be adapted,
+				// set new method to abstract if the implementation will not be adapted,
 				// but also search for a reason to implement, which means calling the method of the superclass
 				newMethod.abstract = !(doImplAdaption ||
 					(executableInExtendedClass !== null && !executableInExtendedClass.abstract))
@@ -1497,8 +1630,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// if method in superclass is abstract, it could be that it is an adapted method,
 					// which has not been processed by the traits mechanism, yet.
-					// the following algorithm checks, if the abstract method will get implemented
-					// by the traits mechanism, i.e. there is a trait class extending the method
+					// the following algorithm checks if the abstract method will get implemented
+					// by the traits mechanism, i.e., there is a trait class extending the method
 					val superClassWithExecutable = executableInExtendedClass.declaringType as ClassDeclaration
 
 					if (!superClassWithExecutable.isTraitClass && method.isTraitMethod) {
@@ -1513,8 +1646,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 								val executableInTraitClass = traitClass.getMatchingExecutableInClass(
 									newMethod,
-									TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
-									TypeMatchingStrategy.MATCH_INHERITANCE,
+									TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+									TypeMatchingStrategy.MATCH_INHERITED,
 									true,
 									true,
 									true,
@@ -1547,7 +1680,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					} else {
 
-						// generate method body, which is a super call
+						// generate method body that is a super call
 						val isVoid = newMethod.returnType === null || newMethod.returnType.isVoid()
 						val returnTypeReferenceString = newMethod.returnType.getTypeReferenceAsString(true,
 							TypeErasureMethod.NONE, false, false, context)
@@ -1562,7 +1695,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			}
 
 			// report errors
-			xtendClass.reportErrors(errors, context)
+			xtendClass.reportErrors(errorsMethod, context)
 
 		}
 
@@ -1576,12 +1709,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		extension TransformationContext context
 	) {
 
-		// adapt constructors, if there is no declared constructor
+		// adapt constructors if there is no declared constructor
 		if ((annotatedClass.primarySourceElement as ClassDeclaration).declaredConstructors.size == 0) {
 
 			val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
-			// retrieve methods, which must be copied or type/implementation adapted
+			// retrieve methods that must be copied or type/implementation adapted
 			val constructorsCopyRule = getConstructorsToAdapt(annotatedClass, CopyConstructorRule, context)
 			val constructorsTypeAdaption = getConstructorsToAdapt(annotatedClass, TypeAdaptionRule, context)
 			val constructorsImplAdaption = getConstructorsToAdapt(annotatedClass, ImplAdaptionRule, context)
@@ -1612,7 +1745,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				}
 
-				// create new constructor, if no other constructor with same amount of parameters
+				// create new constructor if no other constructor with same amount of parameters
 				val newConstructor = annotatedClass.addConstructor() [
 
 					it.docComment = constructor.docComment
@@ -1622,7 +1755,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					// use originally used visibility
 					if (constructor.hasAnnotation(ConstructorHiddenForFactoryMethod)) {
 
-						it.visibility = Visibility.PUBLIC
+						it.visibility = Visibility::PUBLIC
 
 					} else {
 
@@ -1648,7 +1781,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 				}
 
 				// create name list of parameters
-				val paramNameList = newConstructor.parametersNames
+				val paramNameList = newConstructor.parameterNames
 
 				// mark as "adapted constructor"
 				newConstructor.addAnnotation(AdaptedConstructor.newAnnotationReference)
@@ -1662,7 +1795,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				} else {
 
-					// generate constructor body, which is a super call
+					// generate constructor body, that is a super call
 					bodySetter.setBody(newConstructor, '''super(«paramNameList.join(", ")»);''', context)
 
 				}
@@ -1675,7 +1808,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		} else {
 
 			// add information to class that there is an explicit constructor
-			// (this is necessary, because it is not possible to access primarySourceElement when processing
+			// (this is necessary because it is not possible to access primarySourceElement when processing
 			// another activate annotation from another file in order to determine explicit constructors)
 			if ((annotatedClass.primarySourceElement as ClassDeclaration).declaredConstructors.size > 0)
 				annotatedClass.addAnnotation(HasExplicitConstructors.newAnnotationReference)
@@ -2052,6 +2185,358 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
+	static protected def void doTransformPriorityEnvelopeMethods(MutableClassDeclaration annotatedClass,
+		TypeMap typeMap, BodySetter bodySetter, extension TransformationContext context) {
+
+		// do not apply rules in trait classes
+		if (annotatedClass.isTraitClass)
+			return;
+
+		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
+
+		// check if class has auto implementation activated
+		val autoImplementation = annotatedClass.hasAnnotation(ImplementDefault)
+		var willGetAutoImplementation = false
+
+		// collect priority envelope methods that must be considered in this class
+		val priorityEnvelopeMethodsAll = annotatedClass.getAppliedPriorityEnvelopeMethodsClosure(true, typeMap, context)
+
+		// ... and unify results
+		val priorityEnvelopeMethodsAllUnique = priorityEnvelopeMethodsAll.unifyMethodDeclarations(
+			TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
+			covariantReturnType.curry(context).curry(typeMap), false, typeMap, context)
+
+		// create map of priority and a (sorted) priority envelope method list for each priority envelope method
+		val priorityEnvelopeMethodsMapAll = new HashMap<MethodDeclaration, Map<Integer, MethodDeclaration>>
+
+		for (priorityEnvelopeMethodAllUnique : priorityEnvelopeMethodsAllUnique) {
+
+			val priorityEnvelopeMethodSortedList = new TreeMap<Integer, MethodDeclaration>(
+				ProcessUtils.IntegerDescendantComparator::INTEGER_DESCENDANT_COMPARATOR)
+			priorityEnvelopeMethodsMapAll.put(priorityEnvelopeMethodAllUnique, priorityEnvelopeMethodSortedList)
+			for (priorityEnvelopeMethodAll : priorityEnvelopeMethodsAll) {
+
+				if (priorityEnvelopeMethodAllUnique.methodEquals(priorityEnvelopeMethodAll,
+					TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITED,
+					false, typeMap, context)) {
+
+					// retrieve priority and add to priority-sorted list
+					val priority = priorityEnvelopeMethodAll.getPriorityEnvelopeMethodInfo(context).priority
+
+					// error if priority already used
+					if (priorityEnvelopeMethodSortedList.get(priority) !== null)
+						xtendClass.
+							addError('''Method with priority «priority» is already contained in priority method call list (added from trait classes "«priorityEnvelopeMethodSortedList.get(priority).declaringType.simpleName»" and "«annotatedClass.simpleName»")''')
+
+					// retrieve priority and add to priority-sorted list
+					priorityEnvelopeMethodSortedList.put(priority, priorityEnvelopeMethodAll)
+
+				}
+
+			}
+
+		}
+
+		// go through all priority envelope methods and generate code
+		for (currentPriorityEnvelopeMethodSignature : priorityEnvelopeMethodsAllUnique) {
+
+			// retrieve some signature data from priority envelope method
+			val isVoid = currentPriorityEnvelopeMethodSignature.returnType === null ||
+				currentPriorityEnvelopeMethodSignature.returnType.isVoid()
+
+			// retrieve implementation from current class and (first in) parent classes if there are any
+			val declaredPriorityEnvelopMethod = annotatedClass.getDeclaredPriorityEnvelopeMethod(
+				currentPriorityEnvelopeMethodSignature, typeMap, context) as MutableMethodDeclaration
+			val firstNonAbstractDeclaredPriorityEnvelopMethodInParent = annotatedClass.
+				getParentDeclaredPriorityEnvelopeMethod(currentPriorityEnvelopeMethodSignature, typeMap, context)
+
+			// check if there is any implementation in this class or any parent
+			val hasAnyImplementation = if (declaredPriorityEnvelopMethod !== null)
+					!declaredPriorityEnvelopMethod.abstract
+				else if (firstNonAbstractDeclaredPriorityEnvelopMethodInParent !== null)
+					true
+				else
+					false
+
+			// check if there is a redirection directive
+			val firstMatchingExecutable = annotatedClass.getMatchingExecutableInClass(
+				currentPriorityEnvelopeMethodSignature,
+				TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+				TypeMatchingStrategy.MATCH_INHERITED,
+				true,
+				false,
+				true,
+				true,
+				true,
+				typeMap,
+				context
+			) as MethodDeclaration
+			val hasRedirectionDirective = firstMatchingExecutable !== null &&
+				!firstMatchingExecutable.getTraitMethodRedirectionInfo(context).redirectedMethodName.nullOrEmpty
+
+			if (hasRedirectionDirective)
+				xtendClass.
+					addError('''Priority envelope methods do not allow trait method redirection (priority envelope method: "«currentPriorityEnvelopeMethodSignature.simpleName»")''')
+
+			// track of super call wrapper has been generated
+			var boolean superCallWrapperGenerated = false
+
+			// generate a method for performing the original functionality,
+			// if functionality is implemented in this class
+			if (declaredPriorityEnvelopMethod !== null) {
+
+				if (!declaredPriorityEnvelopMethod.abstract) {
+
+					// moving the body to a new method instead of renaming the original method avoids
+					// some problems with "override" and warnings
+					// (original method will be reused by delegation mechanism)
+					val implMethod = annotatedClass.copyMethod(declaredPriorityEnvelopMethod, true, false, false, false,
+						false, false, typeMap, context)
+
+					// rename old method
+					implMethod.simpleName = declaredPriorityEnvelopMethod.
+						getExtendedMethodImplNameAfterExtendedByPriorityEnvelope
+
+					// set visibility
+					implMethod.visibility = Visibility::PROTECTED
+
+					// move body
+					bodySetter.moveBody(implMethod, declaredPriorityEnvelopMethod, context)
+
+					// annotation for original functionality
+					implMethod.addAnnotation(ExtendedMethodImpl.newAnnotationReference)
+
+				}
+
+			} else {
+
+				// otherwise, generate a method calling functionality in super class if this is necessary
+				if (hasAnyImplementation) {
+
+					// not necessary if there already is an priority envelope caller in the parent
+					if (!annotatedClass.
+						hasImplementedPriorityEnvelopeCallerInAnyParent(currentPriorityEnvelopeMethodSignature,
+							priorityEnvelopeMethodsMapAll, typeMap, context)) {
+
+						superCallWrapperGenerated = true
+
+						// create new method via copy
+						val superCallWrapperMethod = copyMethod(annotatedClass,
+							firstNonAbstractDeclaredPriorityEnvelopMethodInParent, true, false, true, true, false, true,
+							typeMap, context)
+
+						// rename method
+						superCallWrapperMethod.simpleName = currentPriorityEnvelopeMethodSignature.
+							getExtendedMethodImplNameAfterExtendedByPriorityEnvelope
+
+						// set visibility
+						superCallWrapperMethod.visibility = Visibility::PROTECTED
+
+						// apply body
+						bodySetter.setBody(
+							superCallWrapperMethod, '''«IF !isVoid»return «ENDIF»super.«currentPriorityEnvelopeMethodSignature.simpleName»(«superCallWrapperMethod.parameterNames.join(", ")»);''',
+							context)
+
+						// put corresponding annotation on generated method
+						superCallWrapperMethod.addAnnotation(GeneratedSuperCallMethod.newAnnotationReference)
+
+					}
+
+				} else {
+
+					val requiringTraitClass = currentPriorityEnvelopeMethodSignature.
+						getRequiringTraitClassForPriorityEnvelopeMethod(priorityEnvelopeMethodsMapAll, context)
+
+					if (requiringTraitClass !== null) {
+
+						// method is not available in class, but required...
+						if (autoImplementation) {
+
+							willGetAutoImplementation = true
+
+							// ensure that abstract method exists (with suffix) in order to demand implementation in derived class
+							var MutableMethodDeclaration implMethodAbstract = annotatedClass.copyMethod(
+								currentPriorityEnvelopeMethodSignature, true, false, false, false, false, false,
+								typeMap, context)
+							implMethodAbstract.abstract = true
+
+							// rename method
+							implMethodAbstract.simpleName = currentPriorityEnvelopeMethodSignature.
+								getExtendedMethodImplNameAfterExtendedByPriorityEnvelope
+
+							// set visibility
+							implMethodAbstract.visibility = Visibility::PROTECTED
+
+							// annotation for original functionality
+							implMethodAbstract.addAnnotation(ExtendedMethodImpl.newAnnotationReference)
+
+						} else if (!annotatedClass.abstract) {
+
+							xtendClass.
+								addError('''Trait class "«requiringTraitClass.qualifiedName»" requires method "«currentPriorityEnvelopeMethodSignature.getMethodAsString(false, context)»" to be implemented with a lower priority''')
+
+						}
+
+					}
+
+				}
+
+			}
+
+			// generate delegation method to "priority envelope caller" method
+			var MutableMethodDeclaration priorityEnvelopeCallerDelegationMethod
+
+			{
+
+				// copy method
+				priorityEnvelopeCallerDelegationMethod = if (declaredPriorityEnvelopMethod !== null)
+					declaredPriorityEnvelopMethod
+				else
+					copyMethod(annotatedClass, currentPriorityEnvelopeMethodSignature, true, false, true, true,
+						false, true, typeMap, context)
+
+				// method must not be abstract
+				priorityEnvelopeCallerDelegationMethod.abstract = false
+
+				// calculate visibility
+				val visibilities = new ArrayList<Visibility>
+				visibilities.add(declaredPriorityEnvelopMethod?.visibility)
+				visibilities.add(firstNonAbstractDeclaredPriorityEnvelopMethodInParent?.visibility)
+
+				for (priorityEnvelopeMethodSignature : priorityEnvelopeMethodsMapAll.get(
+					currentPriorityEnvelopeMethodSignature).values)
+					visibilities.add(priorityEnvelopeMethodSignature.visibility)
+
+				priorityEnvelopeCallerDelegationMethod.visibility = getMaximalVisibility(visibilities)
+
+				// calculate return type ...
+				val returnTypeReferences = new ArrayList<TypeReference>
+				returnTypeReferences.add(declaredPriorityEnvelopMethod?.returnType)
+				returnTypeReferences.add(firstNonAbstractDeclaredPriorityEnvelopMethodInParent?.returnType)
+
+				// ... also consider possible concrete type in parent even if not implemented explicitly (important for type adaption)
+				returnTypeReferences.add(
+					(getMatchingExecutableInClass(
+						(annotatedClass.primaryGeneratedJavaElement as ClassDeclaration).extendedClass?.
+							type as ClassDeclaration,
+						priorityEnvelopeCallerDelegationMethod,
+						TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+						TypeMatchingStrategy.MATCH_INHERITED,
+						false,
+						false,
+						true,
+						true,
+						true,
+						typeMap,
+						context
+					) as MethodDeclaration)?.returnType
+				)
+
+				for (priorityEnvelopeMethodSignature : priorityEnvelopeMethodsMapAll.get(
+					currentPriorityEnvelopeMethodSignature).values)
+					returnTypeReferences.add(priorityEnvelopeMethodSignature.returnType)
+
+				val errors = new ArrayList<String>
+				val targetReturnType = getMostConcreteType(returnTypeReferences, errors, typeMap, context)
+				if (xtendClass.reportErrors(errors, context))
+					return;
+
+				priorityEnvelopeCallerDelegationMethod.returnType = targetReturnType.copyTypeReference(typeMap, context)
+
+				// do not delegate, but call original target if called via "super"
+				val callSuperTargetCode = if (hasAnyImplementation)
+						TraitClassProcessor.generateSuperCallRedirectionCode(annotatedClass,
+							priorityEnvelopeCallerDelegationMethod, if (superCallWrapperGenerated)
+								null
+							else
+								priorityEnvelopeCallerDelegationMethod.
+									getExtendedMethodImplNameAfterExtendedByPriorityEnvelope, context)
+					else
+						'''assert this.getClass() == «annotatedClass.qualifiedName».class : String.format(org.eclipse.xtend.lib.annotation.etai.ApplyRulesProcessor.SUPER_CALL_NOT_AVAILABLE_ERROR, "«currentPriorityEnvelopeMethodSignature.getMethodAsString(false, context)»", "«annotatedClass.qualifiedName»");'''
+
+				// implement call
+				bodySetter.setBody(priorityEnvelopeCallerDelegationMethod, '''«callSuperTargetCode»
+						«IF !isVoid»return («priorityEnvelopeCallerDelegationMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«priorityEnvelopeCallerDelegationMethod.simpleName + ExtendedByProcessor.EXTENDED_METHOD_PRIORITY_ENVELOPE_CALLER_SUFFIX»(«priorityEnvelopeCallerDelegationMethod.parameterNames.join(", ")»«IF priorityEnvelopeCallerDelegationMethod.parameters.size > 0», «ENDIF»java.lang.Integer.MAX_VALUE«IF !isVoid», null«ENDIF»);''',
+					context)
+
+				// consider the created method as delegation method caused by extension
+				if (!priorityEnvelopeCallerDelegationMethod.hasAnnotation(DelegationMethodForTraitMethod))
+					priorityEnvelopeCallerDelegationMethod.addAnnotation(
+						DelegationMethodForTraitMethod.newAnnotationReference)
+				priorityEnvelopeCallerDelegationMethod.addAnnotation(
+					DelegationPriorityEnvelopeCaller.newAnnotationReference)
+
+			}
+
+			// generate "priority envelope caller" method
+			if (annotatedClass.hasImplementedPriorityEnvelopeCaller(currentPriorityEnvelopeMethodSignature,
+				priorityEnvelopeMethodsMapAll, typeMap, context)) {
+
+				// copy and rename method
+				val priorityEnvelopeCallerMethod = copyMethod(annotatedClass,
+					priorityEnvelopeCallerDelegationMethod, true, false, true, true, false, true, typeMap, context)
+
+				// rename method
+				priorityEnvelopeCallerMethod.simpleName = priorityEnvelopeCallerMethod.
+					getExtendedMethodPriorityQueueCallName
+
+				// adjust visibility
+				priorityEnvelopeCallerMethod.visibility = Visibility::PROTECTED
+
+				// put corresponding annotation on generated method
+				priorityEnvelopeCallerMethod.addAnnotation(ExtendedPriorityEnvelopeCallerMethod.newAnnotationReference)
+
+				// add parameter for retrieving priority
+				priorityEnvelopeCallerMethod.addParameter("$currentPriority", newTypeReference(Integer))
+
+				// add parameter passing default value				
+				if (!isVoid)
+					priorityEnvelopeCallerMethod.addParameter("$defaultValueProvider",
+						newTypeReference(Class,
+							newWildcardTypeReference(newTypeReference(DefaultValueProvider, newWildcardTypeReference))))
+
+				var String methodBody = ""
+
+				// sort list of envelope methods
+				for (priorityEnvelopeMethodToIncludeEntry : priorityEnvelopeMethodsMapAll.get(
+					currentPriorityEnvelopeMethodSignature).entrySet) {
+
+					methodBody += '''if ($currentPriority > «priorityEnvelopeMethodToIncludeEntry.key») {
+							«IF !isVoid»return («priorityEnvelopeCallerMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«priorityEnvelopeMethodToIncludeEntry.value.getTraitClassDeclaringTraitMethod(annotatedClass, typeMap, context).delegateObjectName».«currentPriorityEnvelopeMethodSignature.getTraitMethodImplName»(«priorityEnvelopeCallerDelegationMethod.parameterNames.join(", ")»);
+							«IF isVoid»return;«ENDIF»
+						}
+						'''
+
+				}
+
+				if (hasAnyImplementation || willGetAutoImplementation) {
+
+					// call existing method in current class if existing or required...
+					methodBody +=
+						'''«IF !isVoid»return («priorityEnvelopeCallerMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«currentPriorityEnvelopeMethodSignature.getExtendedMethodImplNameAfterExtendedByPriorityEnvelope»(«priorityEnvelopeCallerDelegationMethod.parameterNames.join(", ")»);
+						'''
+
+				} else if (!isVoid) {
+
+					// ... otherwise use default value provider if return value is needed
+					methodBody += '''try {
+							return («priorityEnvelopeCallerMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true, context)») $defaultValueProvider.newInstance().getDefaultValue();
+						} catch (java.lang.InstantiationException | java.lang.IllegalAccessException $exception) {
+							throw org.eclipse.xtext.xbase.lib.Exceptions.sneakyThrow($exception);
+						}
+						'''
+
+				}
+
+				// apply body
+				bodySetter.setBody(priorityEnvelopeCallerMethod, methodBody, context)
+
+			}
+
+		}
+
+	}
+
 	private def void doTransformConstructorsFactoryMethods(
 		MutableClassDeclaration annotatedClass,
 		Map<String, String> variableMap,
@@ -2065,7 +2550,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		factoryClass.addAnnotation(GeneratedFactoryClass.newAnnotationReference)
 
 		// hide factory class by default
-		factoryClass.visibility = Visibility.PRIVATE
+		factoryClass.visibility = Visibility::PRIVATE
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
@@ -2079,11 +2564,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		val useFactoryClass = factoryMethodRuleInfo !== null && !factoryMethodRuleInfo.factoryInstance.nullOrEmpty
 		val useFactoryClassInheritance = useFactoryClass && factoryMethodRuleInfo.factoryClassDerived
 
-		// do not generate factory methods, if class is abstract
+		// do not generate factory methods if class is abstract
 		if (annotatedClass.abstract && !useFactoryClassInheritance)
 			return;
 
-		// construct factory method, if method name has been set
+		// construct factory method if method name has been set
 		if (factoryMethodRuleInfo !== null && !factoryMethodRuleInfo.factoryMethod.nullOrEmpty) {
 
 			// prepare factory class (inner class)
@@ -2091,11 +2576,11 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (useFactoryClass) {
 
 				// factory class is used
-				factoryClass.visibility = Visibility.PUBLIC
+				factoryClass.visibility = Visibility::PUBLIC
 				factoryClass.static = true
 				factoryClass.abstract = annotatedClass.abstract
 
-				// extend factory from first parent class, which has a factory (if applicable)
+				// extend factory from first parent class that has a factory (if applicable)
 				var ClassDeclaration factoryClassParent = null
 				if (useFactoryClassInheritance) {
 
@@ -2111,18 +2596,18 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				}
 
-				// use interface for factory, if specified
+				// use interface for factory if specified
 				if (factoryMethodRuleInfo.factoryInterface !== null &&
 					factoryMethodRuleInfo.factoryInterface.qualifiedName != Object.canonicalName) {
 
-					// only add interface, if there is no parent (factory) class
+					// only add interface if there is no parent (factory) class
 					if (factoryClassParent === null)
 						factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
 							#[factoryMethodRuleInfo.factoryInterface.newTypeReference]
 
 				}
 
-				// use interface for factory (set via variable), if specified
+				// use interface for factory (set via variable) if specified
 				if (!factoryMethodRuleInfo.factoryInterfaceVariable.nullOrEmpty) {
 
 					// resolve variable and create type reference
@@ -2146,9 +2631,10 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 									type as ClassDeclaration
 							}
 
-							// only add interface, if there is a change
+							// only add interface if there is a change
 							if (firstImplementedInterfaceParent === null ||
-								firstImplementedInterfaceParent.type != factoryInterfaceReference.type)
+								!typeReferenceEquals(firstImplementedInterfaceParent, factoryInterfaceReference, null,
+									false, typeMap))
 								factoryClass.implementedInterfaces = factoryClass.implementedInterfaces +
 									#[factoryInterfaceReference]
 
@@ -2164,7 +2650,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					val instanceField = annotatedClass.addField(factoryMethodRuleInfo.factoryInstance) [
 						it.static = true
 						it.final = factoryMethodRuleInfo.factoryInstanceFinal
-						it.visibility = Visibility.PUBLIC
+						it.visibility = Visibility::PUBLIC
 						it.type = factoryClass.newTypeReference
 						it.initializer = '''new «factoryClass.qualifiedName»()'''
 					]
@@ -2193,7 +2679,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			// track all factory methods
 			val newFactoryMethodList = new ArrayList<MutableMethodDeclaration>
 
-			// track all constructor parameters for each trait class, which shall be constructed automatically
+			// track all constructor parameters for each trait class that shall be constructed automatically
 			val constructorParamsPerTraitClass = new ArrayList<List<List<ParameterDeclaration>>>
 			for (traitClassToConstruct : traitClassesToConstructEnabled) {
 
@@ -2210,20 +2696,20 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				}
 
-				// only add constructor parameters, if any have been found
+				// only add constructor parameters if any have been found
 				if (!constructorsAndParams.isEmpty)
 					constructorParamsPerTraitClass.add(constructorsAndParams)
 
 			}
 
-			// create injection combinations (add empty list, if no combination)
+			// create injection combinations (add empty list if no combination)
 			val injectConstructorParameters = constructorParamsPerTraitClass.cartesianProduct
 			if (injectConstructorParameters.size == 0)
 				injectConstructorParameters.add(new ArrayList<ParameterDeclaration>)
 
 			// create factory method for each public constructor and ...
 			for (constructor : annotatedClass.declaredConstructors.filter [
-				it.visibility == Visibility.PUBLIC
+				it.visibility == Visibility::PUBLIC
 			]) {
 
 				// ... injected constructor parameter list 
@@ -2243,7 +2729,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					]
 
-					// additional refactoring of factory method, if class provides type parameters
+					// additional refactoring of factory method if class provides type parameters
 					var TypeMap usedTypeMap
 
 					val newMethodTypeArguments = new ArrayList<TypeReference>
@@ -2260,7 +2746,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 								typeParameter.upperBounds)
 							val newTypeArgument = newTypeParamDeclaration.newSelfTypeReference
 							newMethodTypeArguments.add(newTypeArgument)
-							usedTypeMap.putClone(typeParameter, newTypeArgument, context)
+							usedTypeMap.putTypeClone(typeParameter, newTypeArgument)
 
 						}
 
@@ -2273,7 +2759,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					// set return type (consider type arguments)
 					newFactoryMethod.returnType = annotatedClass.newTypeReference(newMethodTypeArguments)
 
-					// apply return type adaption rule, if available
+					// apply return type adaption rule if available
 					if (!factoryMethodRuleInfo.returnTypeAdaptionRule.nullOrEmpty) {
 
 						val adaptedTypeReference = newFactoryMethod.applyTypeAdaptionRule(#[newFactoryMethod], null,
@@ -2363,7 +2849,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 							val originalType = newParameterList.get(parameter.simpleName)
 
 							// ensure that parameter types match (in xtend type parameters for constructors are not allowed)
-							if (!originalType.typeReferenceEquals(newType, null, true, usedTypeMap, null)) {
+							if (!originalType.typeReferenceEquals(newType, null, true, usedTypeMap)) {
 								xtendClass.
 									addError('''Injection of constructor parameters from trait class «traitClass.simpleName» cannot be performed because of a type mismatch of parameter "«parameter.simpleName»" («newType» != «originalType»)''')
 								return
@@ -2373,7 +2859,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					}
 
-					// add parameters, which have been processed so far
+					// add parameters that have been processed so far
 					for (parameterEntry : newParameterList.entrySet)
 						newFactoryMethod.addParameter(parameterEntry.key, parameterEntry.value)
 
@@ -2441,7 +2927,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 					newFactoryMethod.addAnnotation(GeneratedFactoryMethod.newAnnotationReference)
 
 					// retrieve parameter names
-					val paramNameList = constructor.parametersNames
+					val paramNameList = constructor.parameterNames
 
 					// store type argument string
 					val typeArgumentString = '''«IF (annotatedClass.typeParameters.size > 0)»<«newFactoryMethod.typeParameters.map[it.simpleName].join(", ")»>«ENDIF»'''
@@ -2470,7 +2956,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// hide constructor
 				constructor.addAnnotation(ConstructorHiddenForFactoryMethod.newAnnotationReference)
-				constructor.visibility = Visibility.PROTECTED
+				constructor.visibility = Visibility::PROTECTED
 
 			}
 
@@ -2488,7 +2974,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 			if ((annotatedClass.extendedClass?.type as ClassDeclaration)?.getFactoryMethodRuleInfo(null, context) ===
 				null) {
 
-				// process existing constructors (do not extend constructors, which already start with a dummy parameter)
+				// process existing constructors (do not extend constructors that already start with a dummy parameter)
 				for (constructor : annotatedClass.declaredConstructors.filter [
 					it.parameters.size() == 0 ||
 						!it.parameters.get(0).simpleName.startsWith(IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)
@@ -2505,7 +2991,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		// check that annotation is used consistently (only necessary in root)
 		if (annotatedClass.isApplyRulesRoot) {
 
-			// process existing constructors (do not extend constructors, which already start with a dummy parameter)
+			// process existing constructors (do not extend constructors that already start with a dummy parameter)
 			for (constructor : annotatedClass.declaredConstructors.filter [
 				it.parameters.size() == 0 ||
 					!it.parameters.get(0).simpleName.startsWith(IConstructorParamDummy.DUMMY_VARIABLE_NAME_PREFIX)

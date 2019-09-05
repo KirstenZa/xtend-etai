@@ -19,18 +19,19 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.services.TypeReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtendedByProcessor.*
-import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 class TypeMap {
 
 	// mapping data for type map
 	Map<String, TypeReference> hierarchyMapping = new HashMap<String, TypeReference>
-	Map<Type, TypeReference> cloneMapping = new HashMap<Type, TypeReference>
+	Map<Type, TypeReference> typeCloneMapping = new HashMap<Type, TypeReference>
+	Map<ExecutableDeclaration, ExecutableDeclaration> executableCloneMapping = new HashMap<ExecutableDeclaration, ExecutableDeclaration>
 
 	/**
-	 * Retrieves a unique name for a given type (which might be a type parameter declaration).
+	 * <p>Retrieves a unique name for a given type (which might be a type parameter declaration).</p>
 	 */
 	static private def String getUniqueTypeName(Type type) {
 
@@ -55,31 +56,57 @@ class TypeMap {
 	}
 
 	/**
-	 * <p>Adds mapping information, if a type of a supertype shall be replaced by an actual type reference of the subclass.</p>
+	 * <p>Returns another reference to the given type if it has been cloned before.</p>
+	 * 
+	 * @see #putClone
 	 */
-	def void putHierarchyRelation(Type parameterTypeOfSuperType, TypeReference actualTypeReferenceOfSubType) {
+	def TypeReference getTypeClone(Type originalType) {
+
+		return typeCloneMapping.get(originalType)
+
+	}
+
+	/**
+	 * <p>Adds mapping information if a type of a supertype shall be replaced by an actual type reference of the subclass.</p>
+	 */
+	def void putTypeHierarchyRelation(Type parameterTypeOfSuperType, TypeReference actualTypeReferenceOfSubType) {
+
+		val existingMapping = hierarchyMapping.get(parameterTypeOfSuperType.uniqueTypeName)
+
+		if (existingMapping !== null) {
+
+			if (!existingMapping.typeReferenceEquals(actualTypeReferenceOfSubType, null, true, this))
+				throw new IllegalArgumentException('''Type "«parameterTypeOfSuperType.uniqueTypeName»" has already stored hierarchy information.''')
+			return;
+
+		}
 
 		hierarchyMapping.put(parameterTypeOfSuperType.uniqueTypeName, actualTypeReferenceOfSubType)
 
 	}
 
 	/**
-	 * <p>Adds mapping information, if a structure has been cloned and also a related type (parameter) has been cloned as well.</p>
+	 * <p>Adds mapping information if a structure has been cloned and also a related type (parameter) has been cloned as well.</p>
 	 */
-	def void putClone(Type originalType, TypeReference newTypeReference, extension TypeReferenceProvider context) {
+	def void putTypeClone(Type originalType, TypeReference newTypeReference) {
 
-		cloneMapping.put(originalType, newTypeReference)
+		if (typeCloneMapping.get(originalType) !== null)
+			throw new IllegalArgumentException('''Type "«originalType.simpleName»" has already stored information about a clone in type map.''')
+
+		typeCloneMapping.put(originalType, newTypeReference)
 
 	}
 
 	/**
-	 * <p>Returns another reference to the given type, if it has been cloned before.</p>
-	 * 
-	 * @see #putClone
+	 * <p>Adds mapping information, that the second executable is a clone of the first one.</p>
 	 */
-	def TypeReference getClone(Type originalType) {
+	def void putExecutableClone(ExecutableDeclaration executableDeclarationFrom,
+		ExecutableDeclaration executableDeclarationTo) {
 
-		return cloneMapping.get(originalType)
+		if (executableCloneMapping.get(executableDeclarationTo) !== null)
+			throw new IllegalArgumentException('''Method "«executableDeclarationTo.simpleName»" has already stored information about a clone in type map.''')
+
+		executableCloneMapping.put(executableDeclarationTo, executableDeclarationFrom)
 
 	}
 
@@ -124,7 +151,7 @@ class TypeMap {
 				cycleProtectionTypeReference.put(currentTypeReference, null)
 				while (currentTypeReference !== null) {
 
-					currentTypeReference = typeMap.cloneMapping.get(currentTypeReference.type)
+					currentTypeReference = typeMap.typeCloneMapping.get(currentTypeReference.type)
 
 					// protect from cycles
 					if (cycleProtectionTypeReference.containsKey(currentTypeReference))
@@ -152,8 +179,39 @@ class TypeMap {
 
 		val newTypeMap = new TypeMap
 		newTypeMap.hierarchyMapping = new HashMap<String, TypeReference>(hierarchyMapping)
-		newTypeMap.cloneMapping = new HashMap<Type, TypeReference>(cloneMapping)
+		newTypeMap.typeCloneMapping = new HashMap<Type, TypeReference>(typeCloneMapping)
+		newTypeMap.executableCloneMapping = new HashMap<ExecutableDeclaration, ExecutableDeclaration>(
+			executableCloneMapping)
 		return newTypeMap
+
+	}
+
+	/**
+	 * <p>This method retrieves the type parameter mapping that exists in the context of the type map if the second
+	 * provided executable is considered a clone of the first one.</p>
+	 * 
+	 * @see #clone
+	 */
+	static def Map<TypeParameterDeclaration, TypeParameterDeclaration> getExecutableTypeParameterMapping(
+		TypeMap typeMap, ExecutableDeclaration executableTo) {
+
+		if (typeMap === null || executableTo === null)
+			return null
+
+		val executableFrom = typeMap.executableCloneMapping.get(executableTo)
+
+		// no mapping if there is no clone
+		if (executableFrom === null)
+			return null
+
+		// go through type parameters and fill map
+		val result = new HashMap<TypeParameterDeclaration, TypeParameterDeclaration>
+		val typeParamToIterator = executableTo.typeParameters.iterator
+		for (typeParamFrom : executableFrom.typeParameters) {
+			val typeParamTo = typeParamToIterator.next
+			result.put(typeParamFrom, typeParamTo)
+		}
+		return result
 
 	}
 
@@ -182,8 +240,8 @@ class TypeMap {
 				if (traitClassRefs !== null)
 					for (traitClassRef : traitClassRefs) {
 						fillTypeMapFromTypeHierarchy(typeMap, traitClassRef.type, processedTypesVar,
-							(traitClassRef.type as ClassDeclaration).typeParameters,
-							traitClassRef.actualTypeArguments, context)
+							(traitClassRef.type as ClassDeclaration).typeParameters, traitClassRef.actualTypeArguments,
+							context)
 					}
 			}
 
@@ -193,8 +251,8 @@ class TypeMap {
 				if (traitClassRefs !== null)
 					for (traitClassRef : traitClassRefs) {
 						fillTypeMapFromTypeHierarchy(typeMap, traitClassRef.type, processedTypesVar,
-							(traitClassRef.type as ClassDeclaration).typeParameters,
-							traitClassRef.actualTypeArguments, context)
+							(traitClassRef.type as ClassDeclaration).typeParameters, traitClassRef.actualTypeArguments,
+							context)
 					}
 			}
 
@@ -213,7 +271,7 @@ class TypeMap {
 						interfaceReference.actualTypeArguments, context)
 			}
 
-			// process interface, which is not extracted, yet
+			// process interface that has not been extracted, yet
 			if (classDeclaration.qualifiedName.isUnprocessedClassExtraction) {
 
 				val mirrorInterface = findTypeGlobally(classDeclaration.getMirrorInterfaceName)
@@ -263,17 +321,17 @@ class TypeMap {
 		val typeParameterIterator = typeParamDecls.iterator
 		for (typeArgument : typeArgs) {
 			val typeParameter = typeParameterIterator.next
-			typeMap.putHierarchyRelation(typeParameter, typeArgument)
+			typeMap.putTypeHierarchyRelation(typeParameter, typeArgument)
 			typeArgumentCount++
 		}
 
 		// fill left-over map, where no type argument is given explicitly
 		while (typeArgumentCount < typeParamDecls.size) {
 			if (typeParamDecls.get(typeArgumentCount).upperBounds.size > 0)
-				typeMap.putHierarchyRelation(typeParamDecls.get(typeArgumentCount),
+				typeMap.putTypeHierarchyRelation(typeParamDecls.get(typeArgumentCount),
 					typeParamDecls.get(typeArgumentCount).upperBounds.get(0))
 			else
-				typeMap.putHierarchyRelation(typeParamDecls.get(typeArgumentCount), object)
+				typeMap.putTypeHierarchyRelation(typeParamDecls.get(typeArgumentCount), object)
 			typeArgumentCount++
 		}
 
@@ -357,7 +415,7 @@ class TypeMap {
 		for (typeParameter : src.typeParameters) {
 			val newTypeParameter = dest.addTypeParameter(typeParameter.simpleName)
 			if (typeMap !== null)
-				typeMap.putClone(typeParameter, newTypeParameter.newTypeReference, context)
+				typeMap.putTypeClone(typeParameter, newTypeParameter.newTypeReference)
 		}
 
 	}
@@ -366,7 +424,7 @@ class TypeMap {
 	 * <p>Clones type parameters from source object to destination object and also updates the given type map
 	 * by mappings to newly created type parameters.</p>
 	 * 
-	 * <p>This method just refines upper bounds, i.e. it considers that the type parameters have already
+	 * <p>This method just refines upper bounds, i.e., it considers that the type parameters have already
 	 * been cloned before {@link #cloneTypeParametersWithoutUpperBounds}.</p>
 	 */
 	static def cloneTypeParametersRefineUpperBounds(TypeParameterDeclarator src, MutableTypeParameterDeclarator dest,
@@ -378,7 +436,7 @@ class TypeMap {
 
 			if (typeParameter.upperBounds.size > 0) {
 
-				val newTypeParameter = typeMap.getClone(typeParameter).type as MutableTypeParameterDeclaration
+				val newTypeParameter = typeMap.getTypeClone(typeParameter).type as MutableTypeParameterDeclaration
 				val newUpperBounds = new ArrayList<TypeReference>
 				for (upperBound : typeParameter.upperBounds)
 					newUpperBounds.add(copyTypeReference(upperBound, typeMap, context))

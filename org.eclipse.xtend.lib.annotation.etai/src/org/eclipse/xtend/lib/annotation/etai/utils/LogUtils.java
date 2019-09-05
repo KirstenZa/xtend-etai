@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import org.eclipse.xtend.lib.macro.services.Problem.Severity;
 
 /**
- * Utility class providing logging support.
+ * <p>Utility class providing logging support.</p>
  */
 public class LogUtils {
 
@@ -29,14 +29,14 @@ public class LogUtils {
 	static Date LAST_LOG = new Date();
 
 	/**
-	 * Returns the session if of the current logging.
+	 * <p>Returns the session if of the current logging.</p>
 	 */
 	protected static String getSessionID() {
 		return String.valueOf(System.identityHashCode(OPEN_FILE_WRITERS));
 	}
 
 	/**
-	 * Returns the session if of the current logging.
+	 * <p>Returns the session if of the current logging.</p>
 	 */
 	protected static String getLoggingPreamble() {
 
@@ -51,7 +51,7 @@ public class LogUtils {
 	}
 
 	/**
-	 * Changes the indentation for the logging.
+	 * <p>Changes the indentation for the logging.</p>
 	 */
 	public static void changeIndentation(int delta) {
 
@@ -63,7 +63,7 @@ public class LogUtils {
 	}
 
 	/**
-	 * Returns the current indentation.
+	 * <p>Returns the current indentation.</p>
 	 */
 	public static int getCurrentIndentation() {
 
@@ -72,8 +72,8 @@ public class LogUtils {
 	}
 
 	/**
-	 * Appends the given log message to the given file, which is specified by the
-	 * fully qualified name.
+	 * <p>Appends the given log message to the given file which is specified by the
+	 * fully qualified name.</p>
 	 */
 	public static void logToFile(String filename, Severity logLevel, String message) {
 
@@ -99,7 +99,7 @@ public class LogUtils {
 
 							synchronized (OPEN_FILE_WRITERS) {
 
-								// stop logging, if nothing has been logged for
+								// stop logging if nothing has been logged for
 								// a longer time
 								if ((new Date()).getTime() - LAST_LOG.getTime() >= FILE_CLOSER_WAIT_TIME_MS) {
 
@@ -142,7 +142,7 @@ public class LogUtils {
 
 			}
 
-			// check, if there is already a writer in the cache
+			// check if there is already a writer in the cache
 			Writer fileWriter = OPEN_FILE_WRITERS.get(filename);
 
 			try {
@@ -181,8 +181,8 @@ public class LogUtils {
 	}
 
 	/**
-	 * Appends the given log message to the standard log file. This method will do
-	 * not log anything, if no standard file has been configured.
+	 * <p>Appends the given log message to the standard log file. This method will do
+	 * not log anything if no standard file has been configured.</p>
 	 */
 	public static void log(Severity logLevel, String message) {
 		if (STANDARD_LOG_FILE != null && !STANDARD_LOG_FILE.isEmpty())

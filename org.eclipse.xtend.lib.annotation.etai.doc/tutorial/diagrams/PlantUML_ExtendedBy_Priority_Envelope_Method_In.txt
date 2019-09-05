@@ -1,0 +1,34 @@
+@startuml
+
+'Style
+hide circle
+skinparam handwritten true
+skinparam DefaultFontName "Segoe Print"
+skinparam classAttributeIconSize 0
+
+
+'Class Diagram
+abstract class "XMethodLogged\n&#123;abstract&#125;" as XMethodLogged <<TraitClass>> {
+	<<PriorityEnvelopeMethod(90)>> &#009; +getString():String
+} 
+
+abstract class "XMethodCached\n&#123;abstract&#125;" as XMethodCached <<TraitClass>> {
+    -getStringResult:String
+	<<PriorityEnvelopeMethod(10)>> &#009; +getString():String
+}
+
+class MethodImplementation {
+    +getString():String
+}
+
+class MethodImplementationCached {
+    +getString():String
+}
+
+MethodImplementation .up-|> XMethodLogged : <<ExtendedByAuto>>
+MethodImplementationCached .up-|> XMethodCached : <<ExtendedByAuto>>
+
+XMethodLogged -left[hidden]-> XMethodCached
+MethodImplementationCached -up-|> MethodImplementation
+
+@enduml

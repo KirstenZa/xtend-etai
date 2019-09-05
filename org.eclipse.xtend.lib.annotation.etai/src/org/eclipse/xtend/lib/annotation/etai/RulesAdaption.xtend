@@ -20,30 +20,31 @@ import org.eclipse.xtend.lib.macro.declaration.MutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableExecutableDeclaration
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
+import org.eclipse.xtend.lib.macro.services.AnnotationReferenceProvider
 
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
- * <p>Methods in a supertype which are annotated with {@link TypeAdaptionRule},
+ * <p>Methods which are annotated with {@link TypeAdaptionRule},
  * will be generated and adapted automatically in a derived class,
  * if the derived class is annotated with {@link ApplyRules}.
- * The same applies to constructors, which are annotated by {@link CopyConstructorRule}.</p>
+ * The same applies to constructors that are annotated by {@link CopyConstructorRule}.</p>
  * 
  * <p>This generation process will also be triggered,
- * if any parameter of the method/constructor, i.e. not the method/constructor itself,
+ * if any parameter of the method/constructor, i.e., not the method/constructor itself,
  * is annotated with {@link TypeAdaptionRule}. In case of a constructor annotated
  * parameter, the constructor is adapted as if annotated by {@link CopyConstructorRule}.</p>
  * 
  * <p>The generated method/constructor will simply call the method/constructor
- * of the supertype. In case of a method, if there is no type change at all, the method
+ * of the supertype. In case of a method if there is no type change at all, the method
  * will not be generated.</p>
  * 
  * <p>An adaption rule of a superclass can be "deactivated" for a method in context of further
- * subclasses, if the method is overridden, and the {@link AdaptedMethod}
+ * subclasses if the method is overridden, and the {@link AdaptedMethod}
  * annotation is NOT used.</p>
  * 
  * <p>An adaption rule of a superclass can be "deactivated" for a constructor in context of 
- * further subclasses, if any constructor is implemented.</p>
+ * further subclasses if any constructor is implemented.</p>
  * 
  * <p>In order to control the type adaption a string for {@link TypeAdaptionRule} must be specified.
  * This string must contain one or multiple type adaption function calls separated by ";". The
@@ -54,7 +55,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * 		
  * <p>Each type adaption function will modify the previously assumed type name to use. Originally,
  * exactly the type of the annotated type is assumed. If the type adaption function leads to a string
- * of a type, which cannot be found, the type of the super class's executable will
+ * of a type that cannot be found, the type of the super class's executable will
  * be applied.</p>
  * 
  * <p>The parameters of a type adaption function is usually interpreted as a string (without the necessity
@@ -124,11 +125,11 @@ annotation TypeAdaptionRule {
  * be implemented, however, and call the supertype's constructor.</p>
  * 
  * <p>An adaption rule of a superclass can be "deactivated" for a method in context of further
- * subclasses, if the method is overridden, and the {@link AdaptedMethod}
+ * subclasses if the method is overridden, and the {@link AdaptedMethod}
  * annotation is NOT used.</p>
  * 
  * <p>An adaption rule of a superclass can be "deactivated" for a constructor in context of 
- * further subclasses, if any constructor is implemented.</p>
+ * further subclasses if any constructor is implemented.</p>
  * 
  * @see ApplyRules
  * @see AdaptedMethod
@@ -163,11 +164,11 @@ annotation CopyConstructorRule {
  * However, if also inherited via interfaces or trait classes, it must
  * be ensured that variables are not set ambiguously.</p>
  * 
- * <p>There are also some variables, which are set automatically for the current
+ * <p>There are also some variables that are set automatically for the current
  * context and should not be set manually (see {@link TypeAdaptionRule}).</p>
  * 
  * <p>The variable can be accessed by {@link TypeAdaptionRule}. In its context,
- * there are also some predefined variables, which are set automatically and
+ * there are also some predefined variables that are set automatically and
  * should not be set manually.</p>
  * 
  * @see TypeAdaptionRule
@@ -178,7 +179,7 @@ annotation SetAdaptionVariable {
 }
 
 /**
- * Active Annotation Processor for {@link TypeAdaptionRule}
+ * <p>Active Annotation Processor for {@link TypeAdaptionRule}.</p>
  * 
  * @see TypeAdaptionRule
  */
@@ -196,7 +197,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 	}
 
 	/**
-	 * Returns true if method has any specific adaption rule.
+	 * <p>Returns <code>true</code> if method has any specific adaption rule.</p>
 	 */
 	static def hasTypeAdaptionRule(MethodDeclaration methodDeclaration) {
 		return methodDeclaration.hasAnnotation(TypeAdaptionRule) || methodDeclaration.parameters.exists [
@@ -205,11 +206,11 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 	}
 
 	/**
-	 * Copies the type adaption annotation (if existent) from the given source including
-	 * all attributes and returns a new annotation reference.
+	 * <p>Copies the type adaption annotation (if existent) from the given source including
+	 * all attributes and returns a new annotation reference.</p>
 	 */
 	static def AnnotationReference copyAnnotation(AnnotationTarget annotationTarget,
-		extension TransformationContext context) {
+		extension AnnotationReferenceProvider context) {
 
 		val annotationTypeAdaptionRule = annotationTarget.getAnnotation(TypeAdaptionRule)
 
@@ -223,18 +224,18 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 	}
 
 	/**
-	 * Copies the type adaption rule annotation (if existent) from the given source including
-	 * all attributes and returns a new annotation reference.
+	 * <p>Copies the type adaption rule annotation (if existent) from the given source including
+	 * all attributes and returns a new annotation reference.</p>
 	 * 
-	 * This version does not copy the complete type adaption rule, but performs a transformation
-	 * on it.
+	 * <p>This version does not copy the complete type adaption rule, but performs a transformation
+	 * on it.</p>
 	 * 
-	 * The parameter <code>expectedTypeParameterRules</code> specifies how many (add) type paramter rules
+	 * <p>The parameter <code>expectedTypeParameterRules</code> specifies how many (add) type paramter rules
 	 * are expected within the complete rule. If this count is not found (exactly), the annotation is
-	 * actually not copied.
+	 * actually not copied.</p>
 	 * 
-	 * The given <code>ruleModifier</code> is then responsible for generating the rule for the copied
-	 * annotation.
+	 * <p>The given <code>ruleModifier</code> is then responsible for generating the rule for the copied
+	 * annotation.</p>
 	 */
 	static def AnnotationReference copyAnnotationAndTransform(AnnotationTarget annotationTarget,
 		int expectedTypeParameterRules, (String[])=>String ruleModifier, extension TransformationContext context) {
@@ -248,7 +249,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 		val adaptionFunctions = AdaptionFunctions.createFunctions(typeAdaptionRule, null)
 		val typeParamFunctionStrings = adaptionFunctions.filter[it instanceof AddTypeParam].map[it.print(true)]
 
-		// do not copy annotation, if there is no adaption of the required type parameter
+		// do not copy annotation if there is no adaption of the required type parameter
 		if (typeParamFunctionStrings.size != expectedTypeParameterRules)
 			return null
 
@@ -282,7 +283,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 
 			declarationForShowingError = xtendExecutableDeclaration
 
-			// must not be used on static method, if it does not use implementation adaption as well
+			// must not be used on static method if it does not use implementation adaption as well
 			if (executableInContext instanceof MethodDeclaration)
 				if (executableInContext.static && !executableInContext.hasAnnotation(ImplAdaptionRule))
 					declarationForShowingError.
@@ -293,7 +294,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 			if (!annotatedDeclaration.hasAnnotation(GetterRule) && !annotatedDeclaration.hasAnnotation(SetterRule) &&
 				!annotatedDeclaration.hasAnnotation(AdderRule) && !annotatedDeclaration.hasAnnotation(RemoverRule))
 				declarationForShowingError.
-					addError('''Annotation @«getProcessedAnnotationType.simpleName» cannot be applied to a field, which is not annotated by @GetterRule, @SetterRule, @AdderRule or @RemoverRule''')
+					addError('''Annotation @«getProcessedAnnotationType.simpleName» cannot be applied to a field that is not annotated by @GetterRule, @SetterRule, @AdderRule or @RemoverRule''')
 
 		} else {
 
@@ -310,7 +311,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 		val adaptionFunctions = AdaptionFunctions.createFunctions(ruleParam, errors)
 		declarationForShowingError.reportErrors(errors, context)
 
-		// type adaption rules with alternatives are not supported, if annotated on a field with @AdderRule or @RemoverRule,
+		// type adaption rules with alternatives are not supported if annotated on a field with @AdderRule or @RemoverRule,
 		// because the type adaption rule reduced (for content type) and then be applied to adder/remover method as well 
 		if (annotatedDeclaration.hasAnnotation(AdderRule) || annotatedDeclaration.hasAnnotation(RemoverRule))
 			for (adaptionFunction : adaptionFunctions)
@@ -323,7 +324,7 @@ class TypeAdaptionRuleProcessor extends RuleProcessor<Declaration, MutableDeclar
 }
 
 /**
- * Active Annotation Processor for {@link ImplAdaptionRule}
+ * <p>Active Annotation Processor for {@link ImplAdaptionRule}.</p>
  * 
  * @see ImplAdaptionRule
  */
@@ -338,7 +339,7 @@ class ImplAdaptionRuleProcessor extends RuleProcessor<ExecutableDeclaration, Mut
 	}
 
 	/**
-	 * Returns true if method has any specific adaption rule.
+	 * <p>Returns <code>true</code> if method has any specific adaption rule.</p>
 	 */
 	static def hasImplAdaptionRule(MethodDeclaration methodDeclaration) {
 		return methodDeclaration.hasAnnotation(ImplAdaptionRule)
@@ -364,7 +365,7 @@ class ImplAdaptionRuleProcessor extends RuleProcessor<ExecutableDeclaration, Mut
 }
 
 /**
- * Active Annotation Processor for {@link CopyConstructorRule}
+ * <p>Active Annotation Processor for {@link CopyConstructorRule}.</p>
  * 
  * @see CopyConstructorRule
  */

@@ -1,0 +1,10 @@
+@TraitClass
+@ApplyRules
+abstract class XNamed {
+
+	@ExclusiveMethod
+	@GetterRule
+	@SetterRule
+    String name
+
+}

@@ -31,7 +31,7 @@ abstract class TraitClassSecondBranch {
 
 	@ExclusiveMethod
 	override void methodBase5() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 }
@@ -41,7 +41,7 @@ abstract class TraitClassThirdBranch {
 
 	@ExclusiveMethod
 	override void methodBase6() {
-		TraitTestsBase.TEST_BUFFER += "4"
+		TraitTestsBase::TEST_BUFFER += "4"
 	}
 
 }
@@ -51,7 +51,7 @@ abstract class TraitClassMultipleBase1 implements ITraitClassSecondBranch {
 
 	@ExclusiveMethod
 	override void methodBase3() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 	}
 
 }
@@ -61,7 +61,7 @@ abstract class TraitClassMultipleBase2 extends TraitClassMultipleBase1 {
 
 	@ExclusiveMethod
 	override void methodBase1() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 		methodBase5
 	}
 
@@ -72,7 +72,7 @@ abstract class TraitClassMultipleBase3 implements ITraitClassThirdBranch, ITrait
 
 	@ProcessedMethod(processor=IntegerCombinatorAddPre)
 	override int methodBase2() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 		return 8
 	}
 

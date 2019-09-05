@@ -18,7 +18,7 @@ class ExtendedResultPostContainer {
 
 		@ProcessedMethod(processor=EPExtendedResultPost)
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			10
 		}
 
@@ -28,7 +28,7 @@ class ExtendedResultPostContainer {
 	static class ExtendedClassExtendedResultPost implements ITraitClassExtendedResultPost {
 
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			20
 		}
 
@@ -43,7 +43,7 @@ class ExtendedResultPreContainer {
 
 		@ProcessedMethod(processor=EPExtendedResultPre)
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			10
 		}
 
@@ -53,7 +53,7 @@ class ExtendedResultPreContainer {
 	static class ExtendedClassExtendedResultPre implements ITraitClassExtendedResultPre {
 
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			20
 		}
 
@@ -68,7 +68,7 @@ class TraitClassResultPostContainer {
 
 		@ProcessedMethod(processor=EPTraitClassResultPost)
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			10
 		}
 
@@ -78,7 +78,7 @@ class TraitClassResultPostContainer {
 	static class ExtendedClassTraitClassResultPost implements ITraitClassTraitClassResultPost {
 
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			20
 		}
 
@@ -93,7 +93,7 @@ class TraitClassResultPreContainer {
 
 		@ProcessedMethod(processor=EPTraitClassResultPre)
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "A"
+			TraitTestsBase::TEST_BUFFER += "A"
 			10
 		}
 
@@ -103,7 +103,7 @@ class TraitClassResultPreContainer {
 	static class ExtendedClassTraitClassResultPre implements ITraitClassTraitClassResultPre {
 
 		override int method() {
-			TraitTestsBase.TEST_BUFFER += "B"
+			TraitTestsBase::TEST_BUFFER += "B"
 			20
 		}
 

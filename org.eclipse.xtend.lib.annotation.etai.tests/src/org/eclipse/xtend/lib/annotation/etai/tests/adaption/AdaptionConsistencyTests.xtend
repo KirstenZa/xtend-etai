@@ -1,10 +1,10 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.INotAutoAdaptedExtension
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.ConstructorDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
@@ -61,7 +61,7 @@ class AdaptionConsistencyTests {
 	}
 
 	@Test
-	def void testTypeAdaptionRuleErrors() {
+	def void testAutoAdaptionNotMissingInHierarchyInBetweenErrors() {
 
 		'''
 
@@ -89,6 +89,58 @@ class C extends B {}
 			assertEquals(1, problemsClass1.size)
 			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
 			assertTrue(problemsClass1.get(0).message.contains("but the closer supertype"))
+
+		]
+
+	}
+
+	@Test
+	def void testAutoAdaptionNotAppliedForExtendedClassError() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.TraitClass
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ExtendedBy
+
+import virtual.intf.IAutoAdaptedTraitClass
+
+@TraitClass
+@ApplyRules
+abstract class AutoAdaptedTraitClass {
+}
+
+@ExtendedByAuto
+class NotAutoAdaptedExtendedClass1 implements IAutoAdaptedTraitClass {
+}
+
+@ExtendedBy(value=#[AutoAdaptedTraitClass])
+class NotAutoAdaptedExtendedClass2 implements IAutoAdaptedTraitClass {
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz1 = findClass('virtual.NotAutoAdaptedExtendedClass1')
+			val clazz2 = findClass('virtual.NotAutoAdaptedExtendedClass2')
+
+			val problemsClass1 = (clazz1.primarySourceElement as ClassDeclaration).problems
+			val problemsClass2 = (clazz2.primarySourceElement as ClassDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsClass1.size)
+			assertEquals(Severity.ERROR, problemsClass1.get(0).severity)
+			assertTrue(problemsClass1.get(0).message.contains("class must apply"))
+
+			assertEquals(1, problemsClass2.size)
+			assertEquals(Severity.ERROR, problemsClass2.get(0).severity)
+			assertTrue(problemsClass2.get(0).message.contains("class must apply"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 
@@ -172,6 +224,8 @@ class TestClass3 {
 			assertEquals(1, problemsMethod3.size)
 			assertEquals(Severity.ERROR, problemsMethod3.get(0).severity)
 			assertTrue(problemsMethod3.get(0).message.contains("in context of"))
+
+			assertEquals(5, allProblems.size)
 
 		]
 

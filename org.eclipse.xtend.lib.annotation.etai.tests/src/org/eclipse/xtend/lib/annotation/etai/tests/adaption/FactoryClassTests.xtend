@@ -744,7 +744,7 @@ class UsingFactoryClassInterface {
 			it.parameters.get(0).type === IComponentFeature && synthetic == false
 		].size)
 
-		// check also if declared in another file		
+		// check also if declared in another file
 		assertEquals(3, ClassWithFactoryClassAdaptedTwiceConcreteOtherFile.FACTORY.class.declaredMethods.size)
 		assertEquals(1, ClassWithFactoryClassAdaptedTwiceConcrete.FACTORY.class.declaredMethods.filter [
 			it.parameters.get(0).type === IControllerAttributeStringConcrete1 && synthetic == false

@@ -24,12 +24,12 @@ abstract class TraitClassAlwaysMain {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=EPVoidPost)
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 }
@@ -39,19 +39,19 @@ abstract class TraitClassAlwaysMain {
 class ExtendedMainClass implements ITraitClassAlwaysMain {
 
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "C"
+		TraitTestsBase::TEST_BUFFER += "C"
 	}
 
 	override void method3() {
-		TraitTestsBase.TEST_BUFFER += "D"
+		TraitTestsBase::TEST_BUFFER += "D"
 	}
 
 }
 
-class TraitsAwaysCallMainTests extends TraitTestsBase {
+class TraitsAlwaysCallMainTests extends TraitTestsBase {
 
 	@Test
-	def void testExtensionAwaysCallMain() {
+	def void testExtensionAlwaysCallMain() {
 
 		val obj = new ExtendedMainClass()
 		obj.method1

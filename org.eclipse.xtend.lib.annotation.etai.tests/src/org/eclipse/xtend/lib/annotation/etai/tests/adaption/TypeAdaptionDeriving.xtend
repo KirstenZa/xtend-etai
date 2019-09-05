@@ -1,17 +1,18 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
-import org.eclipse.xtend.lib.annotation.etai.ConstructRuleAuto
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.ConstructRuleAuto
 import org.eclipse.xtend.lib.annotation.etai.ConstructorMethod
 import org.eclipse.xtend.lib.annotation.etai.EPOverride
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.ExtractInterface
 import org.eclipse.xtend.lib.annotation.etai.FactoryMethodRule
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerAttribute
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerAttributeString
@@ -19,7 +20,6 @@ import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerA
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.complex1.ControllerBase
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.ITraitClassTypeAdaptionDerivedA1
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.ITraitClassTypeAdaptionDerivedA2
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -148,14 +148,14 @@ class ExtendedClassAttributeStringBase {
 class ExtendedClass_A1_AttributeString implements ITraitClassTypeAdaptionDerivedA1 {
 
 	// this way, adaption is not applied (would have return type: ControllerAttributeString);
-	// this is a current design decision, because adaption could not be stopped otherwise
+	// this is a current design decision because adaption could not be stopped otherwise
 	@AdaptedMethod
 	override ControllerAttribute method2() {
 		return method1
 	}
 
 	// this way, adaption is not applied (would have return type: ControllerAttributeString);
-	// this is a current design decision, because adaption could not be stopped otherwise
+	// this is a current design decision because adaption could not be stopped otherwise
 	override ControllerAttribute method3() {
 		return method1
 	}
@@ -188,334 +188,317 @@ class TypeAdaptionDerivingTests {
 	def void testExtendedClassTypeAdaptions() {
 
 		// check constructors
-		assertEquals(2, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(2, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			parameterCount == 0 && synthetic == false
 		].filter[name == "create"].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			parameterCount == 1 && name == "create" && synthetic == false
 		].get(0).parameters.get(0).type)
 
-		assertEquals(2, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(2, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			parameterCount == 0 && synthetic == false
 		].filter[name == "create"].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
-				parameterCount == 1 && synthetic == false
-			].filter[name == "create"].get(0).parameters.get(0).type)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
+			parameterCount == 1 && synthetic == false
+		].filter[name == "create"].get(0).parameters.get(0).type)
 
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].get(0).parameters.get(0).type)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].get(0).parameters.get(0).type)
 
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeString.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].get(0).parameters.get(0).type)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
 			name == "create" && synthetic == false
 		].get(0).parameters.get(0).type)
 
 		// check regular method (1)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method1" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
-			name == "method1" && synthetic == false
-		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(0, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].size)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method1" && synthetic == false
-		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(0, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(0, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method1" && synthetic == false
+		].size)
+
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method1" && synthetic == false
+		].size)
+		assertSame(ControllerAttribute, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method1" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(0, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method1" && synthetic == false
 		].size)
 
 		// check regular method (2)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method2" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
-			name == "method2" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method2" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method2" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method2" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method2" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method2" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method2" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method2" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method2" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method2" && synthetic == false
+		].get(0).returnType)
 
 		// check regular method (3)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].size)
-		assertSame(ControllerAttribute, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttribute, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(0, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(0, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].size)
 
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method3" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method3" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
 			name == "method3" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method3" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method3" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method3" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method3" && synthetic == false
+		].get(0).returnType)
 
 		// check regular method (4)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method4" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
-			name == "method4" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method4" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method4" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method4" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method4" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method4" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method4" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method4" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method4" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method4" && synthetic == false
+		].get(0).returnType)
 
 		// check regular method (5)
-		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].size)
-		assertSame(ControllerBase, ExtendedClass_A1_AttributeString.declaredMethods.filter[
+		assertSame(ControllerBase, ExtendedClass_A1_AttributeString.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method5" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
-			name == "method5" && synthetic == false
-		].size)
-		assertSame(ControllerBase, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A1_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method5" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method5" && synthetic == false
-		].size)
-		assertSame(ControllerBase, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerBase, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method5" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method5" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method5" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method5" && synthetic == false
+		].size)
+		assertSame(ControllerBase, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method5" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method5" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method5" && synthetic == false
+		].get(0).returnType)
 
 		// check regular method (6)
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method6" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method6" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method6" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method6" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method6" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method6" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
 			name == "method6" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method6" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method6" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method6" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method6" && synthetic == false
+		].get(0).returnType)
 
 		// check regular method (7)
-		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method7" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeString, ExtendedClass_A2_AttributeString.declaredMethods.filter [
 			name == "method7" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method7" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method7" && synthetic == false
-			].get(0).returnType)
-
-		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter[
-			name == "method7" && synthetic == false
-		].size)
-		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter[
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A2_AttributeStringConcrete1.declaredMethods.filter [
 			name == "method7" && synthetic == false
 		].get(0).returnType)
 
-		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
+		assertEquals(1, ExtendedClass_A3_AttributeString.declaredMethods.filter [
 			name == "method7" && synthetic == false
 		].size)
-		assertSame(ControllerAttributeStringConcrete1,
-			ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter[
-				name == "method7" && synthetic == false
-			].get(0).returnType)
+		assertSame(ControllerAttributeString, ExtendedClass_A3_AttributeString.declaredMethods.filter [
+			name == "method7" && synthetic == false
+		].get(0).returnType)
+
+		assertEquals(1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method7" && synthetic == false
+		].size)
+		assertSame(ControllerAttributeStringConcrete1, ExtendedClass_A3_AttributeStringConcrete1.declaredMethods.filter [
+			name == "method7" && synthetic == false
+		].get(0).returnType)
 
 		// use code
 		val controllerAttributeStringConcrete1 = new ControllerAttributeStringConcrete1(null)
@@ -787,11 +770,11 @@ class ExtendedClassWithTypeAdaptionRule extends ExtendedClassWithTypeAdaptionRul
 			// do assertions
 			assertEquals(3, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
-			assertTrue(problemsClass.get(0).message.contains("specifies another type adaption rule"))
+			assertTrue(problemsClass.get(0).message.contains("specifies another adaption rule"))
 			assertEquals(Severity.ERROR, problemsClass.get(1).severity)
-			assertTrue(problemsClass.get(1).message.contains("specifies another type adaption rule"))
+			assertTrue(problemsClass.get(1).message.contains("specifies another adaption rule"))
 			assertEquals(Severity.ERROR, problemsClass.get(2).severity)
-			assertTrue(problemsClass.get(2).message.contains("specifies another type adaption rule"))
+			assertTrue(problemsClass.get(2).message.contains("specifies another adaption rule"))
 
 			assertEquals(3, allProblems.size)
 

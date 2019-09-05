@@ -1534,10 +1534,10 @@ class ClassWithRemoverAdder {
 	@AdderRule(single=false, multiple=false)
 	java.util.List<Integer> dataAdderBothFalse
 
-	@RemoverRule(visibility=Visibility.PRIVATE)
+	@RemoverRule(visibility=Visibility::PRIVATE)
 	java.util.List<Integer> dataRemoverGeneratePrivate
 
-	@AdderRule(visibility=Visibility.PRIVATE)
+	@AdderRule(visibility=Visibility::PRIVATE)
 	java.util.List<Integer> dataAdderGeneratePrivate
 
 	@AdderRule

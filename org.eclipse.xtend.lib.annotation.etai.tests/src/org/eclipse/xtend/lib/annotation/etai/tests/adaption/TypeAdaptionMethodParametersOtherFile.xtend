@@ -1,5 +1,5 @@
 /**
- * Classes in this file should be separated, because this way potential problems can be detected.
+ * Classes in this file should be separated because this way potential problems can be detected.
  */
 
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption

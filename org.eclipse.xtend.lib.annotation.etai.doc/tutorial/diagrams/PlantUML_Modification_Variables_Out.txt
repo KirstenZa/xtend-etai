@@ -25,23 +25,23 @@ class AnimalTiger {
 AnimalCat <|-down- AnimalLion
 AnimalCat <|-down- AnimalTiger
 
-note right of AnimalCat::getFemaleName
+note right of AnimalCat::getFemaleName()
   return "Queen";
 end note
 
-note left of AnimalLion::getFemaleName
+note left of AnimalLion::getFemaleName()
   return "Lioness";
 end note
 
-note left of AnimalLion::isStriped
+note left of AnimalLion::isStriped()
   return false;
 end note
 
-note right of AnimalTiger::getFemaleName
+note right of AnimalTiger::getFemaleName()
   return "Tigress";
 end note
 
-note right of AnimalTiger::isStriped
+note right of AnimalTiger::isStriped()
   return true;
 end note
 

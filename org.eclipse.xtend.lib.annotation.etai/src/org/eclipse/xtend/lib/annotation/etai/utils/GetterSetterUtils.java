@@ -1,6 +1,5 @@
 package org.eclipse.xtend.lib.annotation.etai.utils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +23,7 @@ import org.eclipse.xtend.lib.annotation.etai.utils.CollectionUtils.StraightIndex
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 /**
- * Utility class for implementing getters/setters/adders/removers.
+ * <p>Utility class for implementing getters/setters/adders/removers.</p>
  */
 public class GetterSetterUtils {
 
@@ -36,14 +35,6 @@ public class GetterSetterUtils {
 	// generated getter/setter/adder/remover calls
 	final static NamedSynchronizationLock NAMED_SYNCHRONIZATION_LOCK = new NamedSynchronizationLock();
 
-	/**
-	 * Method for realizing sneaky throws.
-	 */
-	@SuppressWarnings("unchecked")
-	public static <E extends Throwable> void sneakyThrow(Throwable e) throws E {
-		throw (E) e;
-	}
-
 	public static void addOppositeReference(Object obj, String fieldName, Object connectedObj) {
 
 		// check for opposite methods
@@ -52,20 +43,8 @@ public class GetterSetterUtils {
 		if (addMethod == null)
 			addMethod = ReflectUtils.getPrivateMethod(obj.getClass(), "set" + StringExtensions.toFirstUpper(fieldName));
 
-		try {
-
-			// call opposite method
-			ReflectUtils.callPrivateMethod(obj, addMethod, new Object[] { connectedObj });
-
-		} catch (IllegalAccessException | IllegalArgumentException e) {
-
-			GetterSetterUtils.<RuntimeException>sneakyThrow(e);
-
-		} catch (InvocationTargetException e) {
-
-			GetterSetterUtils.<RuntimeException>sneakyThrow(e.getTargetException());
-
-		}
+		// call opposite method
+		ReflectUtils.callPrivateMethod(obj, addMethod, new Object[] { connectedObj });
 
 	}
 
@@ -79,109 +58,97 @@ public class GetterSetterUtils {
 			connectedObj = null;
 		}
 
-		try {
-
-			// call opposite method
-			ReflectUtils.callPrivateMethod(obj, addMethod, new Object[] { connectedObj });
-
-		} catch (IllegalAccessException | IllegalArgumentException e) {
-
-			GetterSetterUtils.<RuntimeException>sneakyThrow(e);
-
-		} catch (InvocationTargetException e) {
-
-			GetterSetterUtils.<RuntimeException>sneakyThrow(e.getTargetException());
-
-		}
+		// call opposite method
+		ReflectUtils.callPrivateMethod(obj, addMethod, new Object[] { connectedObj });
 
 	}
 
 	/**
-	 * Interface for calling a method: no return type
+	 * <p>Interface for calling a method: no return type.</p>
 	 */
 	public static interface MethodCallVoid {
 		void call();
 	}
 
 	/**
-	 * Interface for calling a method: return type <code>boolean</code>
+	 * <p>Interface for calling a method: return type <code>boolean</code>.</p>
 	 */
 	public static interface MethodCallBoolean {
 		boolean call();
 	}
 
 	/**
-	 * Interface for calling value/reference change method: return type
-	 * <code>void</code>
+	 * <p>Interface for calling value/reference change method: return type
+	 * <code>void</code>.</p>
 	 */
 	public static interface MethodCallValueChangeVoid<E> {
 		void call(E oldValue, E newValue);
 	}
 
 	/**
-	 * Interface for calling value/reference change method: return type
-	 * <code>boolean</code>
+	 * <p>Interface for calling value/reference change method: return type
+	 * <code>boolean</code>.</p>
 	 */
 	public static interface MethodCallValueChangeBoolean<E> {
 		boolean call(E oldValue, E newValue);
 	}
 
 	/**
-	 * Interface for calling collection change method: multiple elements, indices
-	 * and return type <code>boolean</code>
+	 * <p>Interface for calling collection change method: multiple elements, indices
+	 * and return type <code>boolean</code>.</p>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexBoolean<E> {
 		boolean call(List<E> elements, List<Integer> indices, List<E> oldElements);
 	}
 
 	/**
-	 * Interface for calling collection change method: single element, index and
-	 * return type <code>boolean</code>
+	 * <p>Interface for calling collection change method: single element, index and
+	 * return type <code>boolean</code>.</p>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexBoolean<E> {
 		boolean call(E element, int index, List<E> oldElements);
 	}
 
 	/**
-	 * Interface for calling collection change method: multiple elements, indices
-	 * and return type <code>void</code>
+	 * <p>Interface for calling collection change method: multiple elements, indices
+	 * and return type <code>void</code>.</p>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexVoid<E> {
 		void call(List<E> elements, List<Integer> indices, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
-	 * Interface for calling collection change method: single element, index and
-	 * return type <code>void</code>
+	 * <p>Interface for calling collection change method: single element, index and
+	 * return type <code>void</code>.</p>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexVoid<E> {
 		void call(E element, int index, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
-	 * Interface for calling bidirectional set/add method
+	 * <p>Interface for calling bidirectional set/add method.</p>
 	 */
 	public static interface MethodCallBidirectional<E, F> {
 		void call(E obj, F value);
 	}
 
 	/**
-	 * This class allows the tracking of fields (in context of an object and the
+	 * <p>This class allows the tracking of fields (in context of an object and the
 	 * current thread) which are currently modified. This way, it is possible to
-	 * avoid the concurrent modification of a field (in the same thread).
+	 * avoid the concurrent modification of a field (in the same thread).</p>
 	 */
 	static class ConcurrentModificationLock {
 
 		private Map<Thread, Map<String, Map<Object, Integer>>> locks = new HashMap<Thread, Map<String, Map<Object, Integer>>>();
 
 		/**
-		 * After calling this method, given field of the given object will not be
+		 * <p>After calling this method, given field of the given object will not be
 		 * changed by calling generated setter/adder/remover methods any more until the
 		 * unlock method has been called. If such generated methods are called, they
-		 * will return <code>false</code>.
+		 * will return <code>false</code>.</p>
 		 * 
-		 * The method can be called multiple times, i.e. also the unlock field must be
-		 * called the same amount of times in order to unlock.
+		 * <p>The method can be called multiple times, i.e., also the unlock field must be
+		 * called the same amount of times in order to unlock.</p>
 		 * 
 		 * @see #unlockField
 		 */
@@ -209,8 +176,8 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * After calling this method, given field of the given object can be changed
-		 * again (if called as often as the lock method).
+		 * <p>After calling this method, given field of the given object can be changed
+		 * again (if called as often as the lock method).</p>
 		 * 
 		 * @see #lockField
 		 */
@@ -236,7 +203,7 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * Returns if the given field of the given object is currently locked.
+		 * <p>Returns if the given field of the given object is currently locked.</p>
 		 */
 		synchronized public boolean isFieldLocked(Object obj, String fieldName) {
 
@@ -260,15 +227,15 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This class allows to lock the getter/setter/adder/remover operations based on
-	 * a given name.
+	 * <p>This class allows to lock the getter/setter/adder/remover operations based on
+	 * a given name.</p>
 	 */
 	static class NamedSynchronizationLock {
 
 		private Map<String, ReentrantReadWriteLock> locks = new HashMap<String, ReentrantReadWriteLock>();
 
 		/**
-		 * Retrieves the lock with the given name.
+		 * <p>Retrieves the lock with the given name.</p>
 		 */
 		synchronized protected ReentrantReadWriteLock getLock(String lockName) {
 
@@ -284,9 +251,9 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * Locks the given name until unlocked (write).
+		 * <p>Locks the given name until unlocked (write).</p>
 		 * 
-		 * Internally, a fair reentrant read/write lock is used.
+		 * <p>Internally, a fair reentrant read/write lock is used.</p>
 		 * 
 		 * @see #writeUnlockField
 		 */
@@ -301,9 +268,9 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * Locks the given name until unlocked (read).
+		 * <p>Locks the given name until unlocked (read).</p>
 		 * 
-		 * Internally, a fair reentrant read/write lock is used.
+		 * <p>Internally, a fair reentrant read/write lock is used.</p>
 		 * 
 		 * @see #readUnlockField
 		 */
@@ -318,7 +285,7 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * Unlocks the given name until unlocked (write).
+		 * <p>Unlocks the given name until unlocked (write).</p>
 		 * 
 		 * @see #writeLockField
 		 */
@@ -333,7 +300,7 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * Unlocks the given name until unlocked (read).
+		 * <p>Unlocks the given name until unlocked (read).</p>
 		 * 
 		 * @see #readLockField
 		 */
@@ -350,10 +317,10 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of getter methods.
+	 * <p>This method can be used for the implementation of getter methods.</p>
 	 * 
-	 * It will return the value/reference of the given field considering all given
-	 * features (e.g. "not null", collection policy etc.).
+	 * <p>It will return the value/reference of the given field considering all given
+	 * features (e.g. "not null", collection policy etc.).</p>
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <E> E getValue(E value, CollectionGetterPolicy collectionGetterPolicy, String fieldName,
@@ -429,11 +396,11 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of setter methods.
+	 * <p>This method can be used for the implementation of setter methods.</p>
 	 * 
-	 * It will change the value/reference of the given field considering all given
+	 * <p>It will change the value/reference of the given field considering all given
 	 * features (e.g. "not null", calling methods on changes etc.). It will return,
-	 * if there has been a change.
+	 * if there has been a change.</p>
 	 */
 	public static <E> boolean setValue(E oldValue, E newValue, MethodCallBoolean compareValues, MethodCallVoid doSet,
 			MethodCallValueChangeBoolean<E> beforeChange, MethodCallValueChangeVoid<E> afterChange, String fieldName,
@@ -457,7 +424,7 @@ public class GetterSetterUtils {
 				assert !notNullSelf || newValue != null : String.format(
 						org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.VALUE_NULL_SETTER_ERROR, fieldName);
 
-				// do nothing, if value/reference would not be changed
+				// do nothing if value/reference would not be changed
 				if (!compareValues.call())
 					return false;
 
@@ -504,8 +471,8 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of adder methods for lists
-	 * (adding to its end).
+	 * <p>This method can be used for the implementation of adder methods for lists
+	 * (adding to its end).</p>
 	 * 
 	 * @see #addToCollection
 	 */
@@ -534,12 +501,12 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of adder methods for
-	 * collections.
+	 * <p>This method can be used for the implementation of adder methods for
+	 * collections.</p>
 	 * 
-	 * It will add the given list of elements to the given collection considering
+	 * <p>It will add the given list of elements to the given collection considering
 	 * all given features (e.g. "not null", calling methods on changes etc.). It
-	 * will return, if there has been a change.
+	 * will return if there has been a change.</p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> boolean addToCollection(Collection<? extends E> collection, Collection<? extends E> elements,
@@ -588,7 +555,7 @@ public class GetterSetterUtils {
 
 				}
 
-				// go through each element, call "before element add" method and check, if it
+				// go through each element, call "before element add" method and check if it
 				// will be added
 				if (beforeElementAdd != null) {
 
@@ -615,7 +582,7 @@ public class GetterSetterUtils {
 				// create list of indices
 				List<Integer> indicesToBeAdded = new StraightIndexList(startIndex, objsToBeAdded.size());
 
-				// call "before add" method for whole change package and check, if it will be
+				// call "before add" method for whole change package and check if it will be
 				// added
 				if (beforeAdd != null) {
 					if (!beforeAdd.call(objsToBeAdded, indicesToBeAdded, oldElements))
@@ -675,7 +642,7 @@ public class GetterSetterUtils {
 				// copy of new elements
 				List<E> newElements = Collections.unmodifiableList(new ArrayList<E>(collection));
 
-				// go through each element, which has been added, and call "after element add"
+				// go through each element which has been added, and call "after element add"
 				// method
 				if (afterElementAdd != null) {
 
@@ -687,7 +654,7 @@ public class GetterSetterUtils {
 
 				}
 
-				// call "after add" method for whole change package, which has been added
+				// call "after add" method for whole change package which has been added
 				if (afterAdd != null) {
 					afterAdd.call(objsAdded, indicesToBeAdded, oldElements, newElements);
 				}
@@ -711,14 +678,14 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of remover methods for
-	 * collections.
+	 * <p>This method can be used for the implementation of remover methods for
+	 * collections.</p>
 	 * 
-	 * Either it will remove the given list of elements from the given collection
+	 * <p>Either it will remove the given list of elements from the given collection
 	 * (<code>elements != null</code>), or it will remove the element with the given
 	 * index from the given list (<code>index != null</code>) considering all given
 	 * features (e.g. "not null", calling methods on changes etc.). It will return,
-	 * if there has been a change.
+	 * if there has been a change.</p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> boolean removeFromCollection(Collection<? extends E> collection, Collection<? extends E> elements,
@@ -898,7 +865,7 @@ public class GetterSetterUtils {
 				// copy of new elements
 				List<E> newElements = Collections.unmodifiableList(new ArrayList<E>(collection));
 
-				// go through each element, which has been removed,
+				// go through each element which has been removed,
 				// and call "after element remove" method
 				if (afterElementRemove != null) {
 
@@ -914,7 +881,7 @@ public class GetterSetterUtils {
 
 				}
 
-				// call "after remove" method for whole change package, which has been removed
+				// call "after remove" method for whole change package which has been removed
 				if (afterRemove != null) {
 					afterRemove.call(objsRemoved, indicesToBeRemoved, oldElements, newElements);
 				}
@@ -938,10 +905,10 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of adder methods for maps.
+	 * <p>This method can be used for the implementation of adder methods for maps.</p>
 	 * 
-	 * It will put the given key/value entries to the map considering all given
-	 * features (e.g. "not null" etc.).
+	 * <p>It will put the given key/value entries to the map considering all given
+	 * features (e.g. "not null" etc.).</p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K, V> V putToMap(Map<? extends K, ? extends V> map, Map<? extends K, ? extends V> elements,
@@ -984,10 +951,10 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of remover methods for maps.
+	 * <p>This method can be used for the implementation of remover methods for maps.</p>
 	 * 
-	 * It will remove the given key from the given map. It will return the
-	 * associated value (or null, if there was no entry).
+	 * <p>It will remove the given key from the given map. It will return the
+	 * associated value (or null if there was no entry).</p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K, V> V removeFromMap(Map<? extends K, ? extends V> map, K key, String fieldName,
@@ -1011,11 +978,11 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * This method can be used for the implementation of remover methods for maps
-	 * (clear).
+	 * <p>This method can be used for the implementation of remover methods for maps
+	 * (clear).</p>
 	 * 
-	 * It will remove all elements from the map. It will return, if there has been a
-	 * change.
+	 * <p>It will remove all elements from the map. It will return if there has been a
+	 * change.</p>
 	 */
 
 	public static <K, V> boolean clearMap(Map<? extends K, ? extends V> map, String fieldName, Object currentObject,

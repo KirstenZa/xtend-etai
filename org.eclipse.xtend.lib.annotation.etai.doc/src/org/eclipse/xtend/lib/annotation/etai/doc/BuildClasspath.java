@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builds concrete classpath by given prefixes (no concrete version) and saves
- * it in a properties file for usage in further ANT processing.
+ * <p>Builds concrete classpath by given prefixes (no concrete version) and saves
+ * it in a properties file for usage in further ANT processing.</p>
  * 
- * It searches for JAR files in a given directory using the given prefixes.
+ * <p>It searches for JAR files in a given directory using the given prefixes.</p>
  */
 public class BuildClasspath {
 

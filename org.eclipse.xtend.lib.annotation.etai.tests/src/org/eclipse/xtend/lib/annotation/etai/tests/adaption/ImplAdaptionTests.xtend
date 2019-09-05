@@ -1,17 +1,21 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.AdaptedMethod
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.CopyConstructorRule
 import org.eclipse.xtend.lib.annotation.etai.EPDefault
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.TypeAdaptionRule
 import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionTrait
-import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionTraitExtended
+import org.eclipse.xtend.lib.annotation.etai.tests.adaption.intf.IReturnAdaptionTraitExtended1
+import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -54,11 +58,22 @@ abstract class ReturnAdaptionTrait {
 		return ""
 	}
 
+	@PriorityEnvelopeMethod(10)
+	override int returnNumber() {
+		return 100 + returnNumber$extended
+	}
+
+	@ImplAdaptionRule(value="applyVariable(var.class.qualified);replaceAll(.*([0-9]),$1);prepend(return );append(;);replaceAll(return 1;,return 200 + returnNumber\\$extended();)")
+	@PriorityEnvelopeMethod(10)
+	override int returnNumberImplFromTrait() {
+		return 100 + returnNumber$extended
+	}
+
 }
 
 @TraitClassAutoUsing
 @ApplyRules
-abstract class ReturnAdaptionTraitExtended extends ReturnAdaptionTrait {
+abstract class ReturnAdaptionTraitExtended1 extends ReturnAdaptionTrait {
 }
 
 @ApplyRules
@@ -96,6 +111,9 @@ abstract class ReturnAdaptionType1 {
 	@ImplAdaptionRule("")
 	abstract def void methodToBeImplemented()
 
+	@ImplAdaptionRule(value="applyVariable(var.class.qualified);replaceAll(.*([0-9]),$1);prepend(return );append(;)")
+	abstract def int returnNumber()
+
 }
 
 @ApplyRules
@@ -127,7 +145,7 @@ class ReturnAdaptionType6 extends ReturnAdaptionType5 {
 
 @ApplyRules
 @ExtendedByAuto
-class ReturnAdaptionType7 extends ReturnAdaptionType2 implements IReturnAdaptionTraitExtended {
+class ReturnAdaptionType7 extends ReturnAdaptionType2 implements IReturnAdaptionTraitExtended1 {
 }
 
 @ApplyRules
@@ -135,6 +153,8 @@ class ReturnAdaptionType8 extends ReturnAdaptionType7 {
 }
 
 class ImplAdaptionTests {
+
+	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
 	@Test
 	def void testImplAdaptionConstructors() {
@@ -160,23 +180,23 @@ class ImplAdaptionTests {
 		val obj6 = new ReturnAdaptionType6("")
 
 		assertEquals(1, ReturnAdaptionType2.declaredMethods.filter[name == "method" && synthetic == false].size)
-		assertSame(ReturnAdaptionType2Return, ReturnAdaptionType2.declaredMethods.filter[
+		assertSame(ReturnAdaptionType2Return, ReturnAdaptionType2.declaredMethods.filter [
 			name == "method" && synthetic == false
 		].get(0).returnType)
 		assertEquals(1, ReturnAdaptionType3.declaredMethods.filter[name == "method" && synthetic == false].size)
-		assertSame(ReturnAdaptionType3Return, ReturnAdaptionType3.declaredMethods.filter[
+		assertSame(ReturnAdaptionType3Return, ReturnAdaptionType3.declaredMethods.filter [
 			name == "method" && synthetic == false
 		].get(0).returnType)
 		assertEquals(1, ReturnAdaptionType4.declaredMethods.filter[name == "method" && synthetic == false].size)
-		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType4.declaredMethods.filter[
+		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType4.declaredMethods.filter [
 			name == "method" && synthetic == false
 		].get(0).returnType)
 		assertEquals(1, ReturnAdaptionType5.declaredMethods.filter[name == "method" && synthetic == false].size)
-		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType5.declaredMethods.filter[
+		assertSame(ReturnAdaptionType4Return, ReturnAdaptionType5.declaredMethods.filter [
 			name == "method" && synthetic == false
 		].get(0).returnType)
 		assertEquals(1, ReturnAdaptionType6.declaredMethods.filter[name == "method" && synthetic == false].size)
-		assertSame(ReturnAdaptionType6Return, ReturnAdaptionType6.declaredMethods.filter[
+		assertSame(ReturnAdaptionType6Return, ReturnAdaptionType6.declaredMethods.filter [
 			name == "method" && synthetic == false
 		].get(0).returnType)
 
@@ -194,6 +214,12 @@ class ImplAdaptionTests {
 		assertEquals(12, obj4.countNonAbstract)
 		assertEquals(13, obj5.countNonAbstract)
 		assertEquals(14, obj6.countNonAbstract)
+
+		// test with priority envelope methods
+		assertEquals(2, obj2.returnNumber)
+		assertEquals(104, obj4.returnNumber)
+		assertEquals(105, obj5.returnNumber)
+		assertEquals(106, obj6.returnNumber)
 
 	}
 
@@ -233,6 +259,76 @@ class ImplAdaptionTests {
 			obj7.qualifiedTypeNameAlternative)
 		assertEquals("org.eclipse.xtend.lib.annotation.etai.tests.adaption.ReturnAdaptionType8",
 			obj8.qualifiedTypeNameAlternative)
+
+		assertEquals(104, obj4.returnNumberImplFromTrait)
+		assertEquals(207, obj7.returnNumberImplFromTrait)
+		assertEquals(208, obj8.returnNumberImplFromTrait)
+
+	}
+
+	@Test
+	def void testImplAdaptionFromExtensionNotForImplemented() {
+
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.ImplAdaptionRule
+import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.EPDefault
+
+import virtual.intf.IReturnAdaptionTrait
+import virtual.intf.IReturnAdaptionTraitAlt
+
+@TraitClassAutoUsing
+@ApplyRules
+abstract class ReturnAdaptionTrait {
+
+	@ProcessedMethod(processor=EPDefault)
+	@ImplAdaptionRule("apply(return \");appendVariable(var.class.qualified);append(\";)")
+	override String getQualifiedTypeNameAlternative() {
+		return ""
+	}
+
+}
+
+@TraitClassAutoUsing
+@ApplyRules
+abstract class ReturnAdaptionTraitAlt {
+
+	@ProcessedMethod(processor=EPDefault)
+	@ImplAdaptionRule("apply(return \");appendVariable(var.class.qualified);append(_xxx\";)")
+	override String getQualifiedTypeNameAlternative() {
+		return ""
+	}
+
+
+}
+
+@ApplyRules
+@ExtendedByAuto
+abstract class ReturnAdaptionType3 implements IReturnAdaptionTrait, IReturnAdaptionTraitAlt {
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass("virtual.ReturnAdaptionType3")
+
+			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsClass.size)
+			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
+			assertTrue(problemsClass.get(0).message.contains("another adaption rule"))
+
+			assertEquals(1, allProblems.size)
+
+		]
 
 	}
 

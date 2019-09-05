@@ -20,25 +20,25 @@ abstract class TraitClassBooleanProcessorTest {
 	 */
 	@ProcessedMethod(processor=EPBooleanPostAnd)
 	override boolean methodBooleanPostAnd(int varX) {
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 		return varX >= 10
 	}
 
 	@ProcessedMethod(processor=EPBooleanPreAnd)
 	override boolean methodBooleanPreAnd(int varX) {
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 		return varX >= 10
 	}
 
 	@ProcessedMethod(processor=EPBooleanPostOr)
-	override boolean methodBooleanPostOr(int varX) {
-		TraitTestsBase.TEST_BUFFER += "X"
-		return varX >= 10
+	override boolean methodBooleanPostOr(int anotherParameterName) {
+		TraitTestsBase::TEST_BUFFER += "X"
+		return anotherParameterName >= 10
 	}
 
 	@ProcessedMethod(processor=EPBooleanPreOr)
 	override boolean methodBooleanPreOr(int varX) {
-		TraitTestsBase.TEST_BUFFER += "X"
+		TraitTestsBase::TEST_BUFFER += "X"
 		return varX >= 10
 	}
 
@@ -51,22 +51,22 @@ class ExtendedClassBooleanProcessorTest implements ITraitClassBooleanProcessorTe
 	 * This is the method description in ExtendedClassBooleanProcessorTest.
 	 */
 	override boolean methodBooleanPostAnd(int varX) {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 		return varX >= 7
 	}
 
 	override boolean methodBooleanPreAnd(int varX) {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 		return varX >= 7
 	}
 
 	override boolean methodBooleanPostOr(int varX) {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 		return varX >= 7
 	}
 
 	override boolean methodBooleanPreOr(int varX) {
-		TraitTestsBase.TEST_BUFFER += "Y"
+		TraitTestsBase::TEST_BUFFER += "Y"
 		return varX >= 7
 	}
 

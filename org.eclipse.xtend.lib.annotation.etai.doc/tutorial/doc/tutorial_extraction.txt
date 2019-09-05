@@ -4,9 +4,9 @@
 
 Interface Extraction is a small, but very useful feature of the ETAI library. It can **automatically extract an interface** (also called **mirror interface** in this context) for a given class. For this, the class just has to be annotated by ***@ExtractInterface***. Of course, the interface extraction supports some options to adjust the concrete behavior.
 
-Defining and working with interfaces is very important in modern software development. The separation of implementation and interface will help to manage software complexity and especially offer flexibility in later project stages. Algorithms shall rather work on basis of abstract objects with a defined interface instead of concrete ones.
+Defining and working with interfaces is very important in modern software development. The separation of implementation and interface will help to manage software complexity and especially offer flexibility in later project stages. Algorithms shall rather work on basis of abstract classes with a defined interface instead of concrete ones.
 
-For many types of software components it is very hard to define interfaces in early phases and prototyping. Such interfaces will not be stable during the development process. This results in work overhead, because both implementation and interface must be maintained. Therefore, a meaningful usage of interfaces is even omitted at this point in time, so creating and using interfaces will cause work in refactoring phases.
+For many types of software components it is very hard to define interfaces in early phases and prototyping. Such interfaces will not be stable during the development process. This results in work overhead because both implementation and interface must be maintained. Therefore, a meaningful usage of interfaces is even omitted at this point in time, so creating and using interfaces will cause work in refactoring phases.
 
 Extracting interfaces automatically in early project stages will solve this problem. If necessary, interface and implementation can be decoupled in later phases by writing the interface manually. There is no real overhead for the programmer until then.
 
@@ -16,7 +16,7 @@ Interface Extraction is already available as an example of Xtend's Active Annota
 
 In the following example a simple interface extraction is used. The annotation ***@ExtractInterface*** is applied to a class called *Lion*. Therefore, a mirror interface *ILion* is generated automatically. By default, this interface is located in a sub package called *intf*. The name of the interface or sub package can be influenced by options as shown in the latter examples (see [Adapt Interface Extration](#adapt-interface-extraction)).
 
-The generated mirror interface *ILion* gets all ***public*** methods (abstract and non-abstract) of *Lion* by default. Also Javadoc comments of the methods in *Lion* will be copied to the interface. Non-public methods will not show up in the interface. Finally, the class *Lion* will be adapted in order to implement the interface *ILion*.
+The generated mirror interface *ILion* gets all ***public*** methods (*abstract* and non-*abstract*) of *Lion* by default. Also, Javadoc comments of the methods in *Lion* will be copied to the interface. Non-public methods will not show up in the interface. Finally, the class *Lion* will be adapted in order to implement the interface *ILion*.
 
 ##### Input (Code)
 
@@ -32,13 +32,13 @@ The generated mirror interface *ILion* gets all ***public*** methods (abstract a
 
 ##### Important
 
-> Please note, that methods which shall be extracted must already be declared with ***override*** not *def*, even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
+> Please note, that methods which shall be extracted must already be declared with ***override*** not *def* even if they do not show up in any base class or another interface. This is due to the fact that the generated mirror interface which contains the method must already be assumed.
 
 ##### Limitation
 
 > A class using *@ExtractInterface* must **not be placed in the default package**.
 >
-> It is also necessary to explicitly define all types for methods, because **types cannot be inferred for the extraction process**.
+> It is also necessary to explicitly define all types for methods because **types cannot be inferred for the extraction process**.
 
 ### Adapt Interface Extraction
 
@@ -72,11 +72,11 @@ The following example shows how both the usage of *@NoInterfaceExtract* and sett
 
 ##### Hint
 
-*@NoInterfaceExtract* can also be used for fields, if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
+> *@NoInterfaceExtract* can also be used for fields if they also apply annotations for generating methods, e.g. *@GetterRule* (see [Generate Getter and Setter Methods](#generate-getter-and-setter-methods)).
 
 ##### Limitation
 
-*@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
+> *@NoInterfaceExtract* cannot be used within trait classes, for which also an interface is extracted (cp. [Basic Usage of Trait Classes](#basic-usage-of-trait-classes)).
 
 ### Behavior of Interface Extraction in Hierarchies
 
@@ -84,9 +84,9 @@ The extraction of mirror interfaces also takes the **type hierarchy** of the cla
 
 In addition, **methods of parent classes and their implemented interfaces** are processed as if they were in the annotated class. A recursive algorithm takes care that also elements in parents are extracted. It can stop, however, if another parent class with *@ExtractInterface* annotation is found.
 
-The example below shows this. The extracted mirror interface *IMammal* extends *IAnimal*, because this has been defined for *Mammal*. Another showcase is the mirror interface *ILion*. In this case, *Lion* does not directly define implemented interfaces. However, its base class *BigCat* does implement *ILargeAnimal*, which is why *ILion* is extending this interface. In addition, *ILion* is extending *ICat*, because *Cat* is a parent class of *Lion*. Because *ICat* itself is a mirror interface, *ILion* can rely on extraction mechanisms and does not need to extend another interface deeper in the class hierarchy.
+The example below shows this. The extracted mirror interface *IMammal* extends *IAnimal* because this has been defined for *Mammal*. Another showcase is the mirror interface *ILion*. In this case, *Lion* does not directly define implemented interfaces. However, its base class *BigCat* does implement *ILargeAnimal*, which is why *ILion* is extending this interface. In addition, *ILion* is extending *ICat* because *Cat* is a parent class of *Lion*. Because *ICat* itself is a mirror interface, *ILion* can rely on extraction mechanisms and does not need to extend another interface deeper in the class hierarchy.
 
-In a similar way, the class structure is analyzed for defining methods in the mirror interfaces. For example, *ILion* contains method *hintInPack*, because it is defined within *Lion*. It also contains method *roar*, because it is defined in its parent class *BigCat*. On the other side, it does not contain method *getHome*, because it is already contained in mirror interface *IAnimal*. The same applies for method *feed*, which is in mirror interface *IMammal*.
+In a similar way, the class structure is analyzed for defining methods in the mirror interfaces. For example, *ILion* contains method *hintInPack* because it is defined within *Lion*. It also contains method *roar* because it is defined in its parent class *BigCat*. On the other side, it does not contain method *getHome* because it is already contained in mirror interface *IAnimal*. The same applies for method *feed*, which is in mirror interface *IMammal*.
 
 ##### Input (Code)
 

@@ -25,14 +25,14 @@ import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcesso
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
- * This annotation can be used in order to generate a factory method for constructing an
+ * <p>This annotation can be used in order to generate a factory method for constructing an
  * object of the annotated class. It must be used in order to generate an
  * object. All public (or default) constructors of the class will become protected.
  * The factory method will be generated for all subclasses
- * annotated by {@link ApplyRules}.
+ * annotated by {@link ApplyRules}.</p>
  * 
- * The annotation can only be used once in the type hierarchy, i.e. also specified names cannot
- * be changed then.
+ * <p>The annotation can only be used once in the type hierarchy, i.e., also specified names cannot
+ * be changed then.</p>
  * 
  * @see ApplyRules
  * @see GeneratedFactoryMethod
@@ -93,8 +93,8 @@ annotation FactoryMethodRule {
 	boolean factoryClassDerived = false
 
 	/**
-	 * If a factory is used, which is determined by the setting of <code>factoryInstance</code>,
-	 * this setting specifies, if the generated factory class shall implement the given interface.
+	 * <p>If a factory is used, which is determined by the setting of <code>factoryInstance</code>,
+	 * this setting specifies if the generated factory class shall implement the given interface.</p>
 	 * 
 	 * @see GeneratedFactoryClass
 	 * @see GeneratedFactoryInstance
@@ -104,7 +104,7 @@ annotation FactoryMethodRule {
 
 	/**
 	 * <p>This attribute has the same purpose as <code>factoryInterface</code>. However, it
-	 * supports the usage of an adaption variable, which is resolved during the generation
+	 * supports the usage of an adaption variable that is resolved during the generation
 	 * of the factory class. The variable can be set via {@link SetAdaptionVariable}.</p>
 	 * 
 	 * <p>If the variable is not set, no interface will be used.</p>
@@ -142,7 +142,7 @@ annotation FactoryMethodRule {
  * contained multiple times, which is determined by its simple name, it will only be injected once and
  * used internally multiple times for each construction.</p>
  * 
- * <p>The list can only be used, if also a factory method is generated, i.e.
+ * <p>The list can only be used if also a factory method is generated, i.e.,
  * {@link FactoryMethodRule} is used. In addition to that, only trait classes which extend the
  * annotated class can be specified.</p>
  * 
@@ -160,7 +160,7 @@ annotation ConstructRule {
 
 /**
  * <p>Works like {@link ConstructRule}. However, if this annotation is used,
- * all classes, which are extending the currently annotated class, are chosen for being created
+ * all classes that are extending the currently annotated class are chosen for being created
  * automatically.</p>
  * 
  * @see ConstructRule
@@ -173,7 +173,7 @@ annotation ConstructRuleAuto {
 /**
  * <p>With this annotation the automatic construction setting specified by {@link ConstructRule}
  * or {@link ConstructRuleAuto} can be disabled for the annotated class and all subclasses. This
- * implies that only trait classes can be specified, which have also been specified by an
+ * implies that only trait classes can be specified that have also been specified by an
  * according auto construction rule ({@link ConstructRule}) in a superclass before.</p>
  * 
  * <p>If the automatic construction has been disabled for a trait class, it is necessary to
@@ -192,7 +192,7 @@ annotation ConstructRuleDisable {
 }
 
 /**
- * Active Annotation Processor for {@link FactoryMethodRule}
+ * <p>Active Annotation Processor for {@link FactoryMethodRule}.</p>
  * 
  * @see FactoryMethodRule
  */
@@ -203,13 +203,13 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	final static public String CHECK_OBJECT_CONSTRUCTION_ERROR = "Internal error: the construction of an object without factory method has been detected"
 
 	/**
-	 * This structure shall store at runtime, if factory method are used for the construction of objects
+	 * <p>This structure shall store at runtime if factory method are used for the construction of objects.</p>
 	 */
 	static final protected Map<Thread, List<Object>> MAP_OBJECT_CONSTRUCTION_VIA_FACTORY_METHOD_REGISTRY = new HashMap<Thread, List<Object>>
 
 	/**
-	 * This method must be called by a factory method in order to be allowed to construct
-	 * the next object, which would requires a factory method in order to be constructed.
+	 * <p>This method must be called by a factory method in order to be allowed to construct
+	 * the next object that would requires a factory method in order to be constructed.</p>
 	 */
 	static synchronized def boolean registerObjectConstructionViaFactory() {
 
@@ -227,18 +227,18 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	}
 
 	/**
-	 * This method can be called by constructor in order to check, if it has been called from
-	 * within a factory method.
+	 * <p>This method can be called by constructor in order to check if it has been called from
+	 * within a factory method.</p>
 	 * 
-	 * The method checks, if any registration has been request before
+	 * <p>The method checks if any registration has been request before
 	 * via {@link #registerObjectConstructionViaFactory}. This method then requires either a <code>null</code>
 	 * in the list of the current thread or the currently constructed object (which will be put to
-	 * the end of the list in case of <code>null</code>).
+	 * the end of the list in case of <code>null</code>).</p>
 	 * 
-	 * Please note, that a sophisticated check is not possible with the applied schema.
+	 * <p>Please note, that a sophisticated check is not possible with the applied schema.
 	 * If there are internal calls of other constructors, the detection will
-	 * trigger an error. However, it might be detected for the outside construction, because all
-	 * construction checks will be performed after calling the regular constructor.
+	 * trigger an error. However, it might be detected for the outside construction because all
+	 * construction checks will be performed after calling the regular constructor.</p>
 	 */
 	static synchronized def boolean checkObjectConstructionViaFactory(Object checkObject) {
 
@@ -260,7 +260,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	}
 
 	/**
-	 * This method must be called by a factory method after an object has been constructed.
+	 * <p>This method must be called by a factory method after an object has been constructed.</p>
 	 */
 	static synchronized def boolean unregisterObjectConstructionViaFactory() {
 
@@ -280,7 +280,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	}
 
 	/** 
-	 * Helper class for storing information about auto adaption.
+	 * <p>Helper class for storing information about auto adaption.</p>
 	 */
 	static class FactoryMethodRuleInfo {
 
@@ -304,7 +304,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	}
 
 	/**
-	 * The method will return the annotation's information from the current class.
+	 * <p>The method will return the annotation's information from the current class.</p>
 	 */
 	static private def FactoryMethodRuleInfo createFactoryMethodRuleInfo(ClassDeclaration classDeclaration) {
 
@@ -347,9 +347,9 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 	}
 
 	/**
-	 * Returns the information about specified factory method settings for the current class. 
-	 * The method will search recursively through supertypes and gather information, if applicable.
-	 * If no specification is found, null is returned.
+	 * <p>Returns the information about specified factory method settings for the current class. 
+	 * The method will search recursively through supertypes and gather information if applicable.
+	 * If no specification is found, null is returned.</p>
 	 */
 	static def <T extends TypeLookup & TypeReferenceProvider> FactoryMethodRuleInfo getFactoryMethodRuleInfo(
 		ClassDeclaration classDeclaration, List<String> errors, extension T context) {
@@ -432,7 +432,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 			factoryMethodRuleInfo.factoryInterface.qualifiedName != Object.canonicalName) ||
 			!factoryMethodRuleInfo.factoryInterfaceVariable.nullOrEmpty) {
 
-			// factory interface must only be set, if also instance is specified
+			// factory interface must only be set if also instance is specified
 			if (factoryMethodRuleInfo.factoryInstance.nullOrEmpty)
 				xtendClass.
 					addError('''If a factory interface is specified, also the factory instance name must be specified''')
@@ -441,10 +441,10 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 
 		if (!factoryMethodRuleInfo.initMethod.nullOrEmpty) {
 
-			// factory interface must only be set, if also instance is specified
-			if (!annotatedClass.getMethodClosure(null, null, true, false, false, true, context).exists [
+			// factory interface must only be set if also instance is specified
+			if (!annotatedClass.getMethodClosure(null, null, true, false, false, true, false, context).exists [
 				it.simpleName == factoryMethodRuleInfo.initMethod && it.parameters.size == 0 && it.returnType.isVoid &&
-					(it.visibility == Visibility.PUBLIC || it.visibility == Visibility.PROTECTED)
+					(it.visibility == Visibility::PUBLIC || it.visibility == Visibility::PROTECTED)
 			])
 				xtendClass.
 					addError('''A non-static init method named "«factoryMethodRuleInfo.initMethod»" without parameters and void return type must be declared and visible within this class.''')
@@ -456,7 +456,7 @@ class FactoryMethodRuleProcessor extends RuleProcessor<ClassDeclaration, Mutable
 }
 
 /**
- * Active Annotation Processor for {@link ConstructRule}
+ * <p>Active Annotation Processor for {@link ConstructRule}.</p>
  * 
  * @see ConstructRule
  */
@@ -471,10 +471,10 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 	}
 
 	/**
-	 * Retrieves the trait classes which shall be constructed automatically inside the factory method
-	 * of the given and derived classes.
+	 * <p>Retrieves the trait classes which shall be constructed automatically inside the factory method
+	 * of the given and derived classes.</p>
 	 * 
-	 * If the <code>recursive</code> flag is set, also settings from superclasses will be collected. 
+	 * <p>If the <code>recursive</code> flag is set, also settings from superclasses will be collected.</p> 
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<ClassDeclaration> getTraitClassesAutoConstruct(
 		ClassDeclaration annotatedClass,
@@ -536,7 +536,7 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 	}
 
 	/**
-	 * Returns true, if the class is annotated by {@link ConstructRuleAuto}.
+	 * <p>Returns <code>true</code> if the class is annotated by {@link ConstructRuleAuto}.</p>
 	 * 
 	 * @see ConstructRuleAuto
 	 */
@@ -575,7 +575,7 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 
 		val traitClassCurrentClassTypes = new ArrayList<ClassDeclaration>
 		for (traitClassCurrentClassRef : traitClassCurrentClassRefs)
-			traitClassCurrentClassTypes += traitClassCurrentClassRef?.type as ClassDeclaration
+			traitClassCurrentClassTypes.add(traitClassCurrentClassRef?.type as ClassDeclaration)
 
 		for (traitClassAutoConstructRef : traitClassAutoConstructRefs) {
 
@@ -614,7 +614,7 @@ class ConstructRuleProcessor extends RuleProcessor<ClassDeclaration, MutableClas
 }
 
 /**
- * Active Annotation Processor for {@link ConstructRule}
+ * <p>Active Annotation Processor for {@link ConstructRule}.</p>
  * 
  * @see ConstructRuleAuto
  */
@@ -631,7 +631,7 @@ class ConstructRuleAutoProcessor extends ConstructRuleProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link ConstructRuleDisable}
+ * <p>Active Annotation Processor for {@link ConstructRuleDisable}.</p>
  * 
  * @see ConstructRuleDisable
  */
@@ -646,10 +646,10 @@ class ConstructRuleDisableProcessor extends RuleProcessor<ClassDeclaration, Muta
 	}
 
 	/**
-	 * Retrieves the trait classes which shall be not be constructed automatically even though a rule for
-	 * automatic construction has been set for.
+	 * <p>Retrieves the trait classes which shall be not be constructed automatically even though a rule for
+	 * automatic construction has been set for.</p>
 	 * 
-	 * If the <code>recursive</code> flag is set, also settings from superclasses will be collected.
+	 * <p>If the <code>recursive</code> flag is set, also settings from superclasses will be collected.</p>
 	 * 
 	 * @see ConstructRule
 	 */
@@ -722,7 +722,7 @@ class ConstructRuleDisableProcessor extends RuleProcessor<ClassDeclaration, Muta
 				return
 			}
 
-			// disabling is only possible, if supertype contains an auto construct rule for the according class
+			// disabling is only possible if supertype contains an auto construct rule for the according class
 			if (!traitClassAutoConstruct.contains(traitClassAutoConstructDisabledRef.type)) {
 				xtendClass.
 					addError('''Auto construction for class "«traitClassAutoConstructDisabledRef.type.qualifiedName»" cannot be disabled because it is not found in list of automatically constructed trait classes (starting from the supertype of this class)''')

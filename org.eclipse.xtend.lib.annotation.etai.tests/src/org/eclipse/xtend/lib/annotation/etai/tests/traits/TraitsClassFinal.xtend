@@ -2,13 +2,19 @@ package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
 import java.lang.reflect.Modifier
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.EPVoidPost
 import org.eclipse.xtend.lib.annotation.etai.EPVoidPre
 import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinal
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinalPriorityEnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinalTraitMethod1
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassFinalTraitMethod2
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -42,18 +48,57 @@ abstract class TraitClassFinal {
 }
 
 @TraitClassAutoUsing
-abstract class TraitClassFinalTraitMethod {
+abstract class TraitClassFinalPriorityEnvelopeMethod {
 
-	@ExclusiveMethod
+	@PriorityEnvelopeMethod(value=10)
+	override void method2() {}
+
+	@PriorityEnvelopeMethod(value=10)
+	override void method4() {}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassFinalTraitMethod1 {
+
+	@ProcessedMethod(processor=EPVoidPost)
 	final override void method() {}
 
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassFinalTraitMethod2 {
+
+	@ProcessedMethod(processor=EPVoidPost)
+	override void method() {}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassFinalTraitMethod1Derived extends TraitClassFinalTraitMethod1 {
 }
 
 @ExtendedByAuto
 final class ExtendedClassFinal implements ITraitClassFinal {
 
-	// trait classes applied for this class, can address even methods, which are set final locally
+	// trait classes applied for this class, can address even methods that are set final locally
 	final override void method7() {}
+
+}
+
+@ExtendedByAuto
+@ApplyRules
+final class ExtendedClassFinalExtendedByPriorityMethod implements ITraitClassFinal, ITraitClassFinalPriorityEnvelopeMethod {
+
+	final override void method4() {}
+
+}
+
+@ExtendedByAuto
+final class ExtendedClassFinalExtendedTwice implements ITraitClassFinalTraitMethod1, ITraitClassFinalTraitMethod2 {
+
+	// trait classes applied for this class, can address even methods that are set final locally (apply trait method even twice)
+	final override void method() {}
 
 }
 
@@ -86,16 +131,26 @@ class TraitsFinalTests extends TraitTestsBase {
 	}
 
 	@Test
+	def void testPriorityEnvelopeMethod() {
+
+		assertTrue(!Modifier.isFinal(ExtendedClassFinalExtendedByPriorityMethod.getDeclaredMethod("method2").modifiers))
+		assertTrue(Modifier.isFinal(ExtendedClassFinalExtendedByPriorityMethod.getDeclaredMethod("method4").modifiers))
+
+	}
+
+	@Test
 	def void testApplyExtensionToFinal() {
 
 		assertTrue(Modifier.isFinal(ExtendedClassFinal.getDeclaredMethod("method7").modifiers))
 
+		assertTrue(Modifier.isFinal(ExtendedClassFinalExtendedTwice.getDeclaredMethod("method").modifiers))
+
 	}
-	
+
 	@Test
 	def void testFinalTraitMethod() {
 
-		assertTrue(Modifier.isFinal(TraitClassFinalTraitMethod.getDeclaredMethod("method").modifiers))
+		assertTrue(Modifier.isFinal(TraitClassFinalTraitMethod1.getDeclaredMethod("method$impl").modifiers))
 
 	}
 
@@ -106,15 +161,18 @@ class TraitsFinalTests extends TraitTestsBase {
 
 package virtual
 
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.EPVoidPre
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 import org.eclipse.xtend.lib.annotation.etai.ProcessedMethod
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
 
 import virtual.intf.ITraitClassProcessed1
 import virtual.intf.ITraitClassProcessed2
 import virtual.intf.ITraitClassProcessed3
 import virtual.intf.ITraitClassProcessed4
+import virtual.intf.ITraitClassProcessed5
 
 @TraitClassAutoUsing
 abstract class TraitClassProcessed1 {
@@ -140,6 +198,13 @@ abstract class TraitClassProcessed4 {
 	override void method2() {}
 }
 
+
+@TraitClassAutoUsing
+abstract class TraitClassProcessed5 {
+	@PriorityEnvelopeMethod(10)
+	override void method2() {}
+}
+
 @ExtendedByAuto
 class ExtendedClassWithFinalBase implements ITraitClassProcessed1, ITraitClassProcessed3 {
 	final override void method1() {}
@@ -153,6 +218,11 @@ class ExtendedClassWithFinalDerived1 extends ExtendedClassWithFinalBase implemen
 class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implements ITraitClassProcessed4 {
 }
 
+@ExtendedByAuto
+@ApplyRules
+class ExtendedClassWithFinalDerived3 extends ExtendedClassWithFinalBase implements ITraitClassProcessed5 {
+}
+
 		'''.compile [
 
 			val extension ctx = transformationContext
@@ -160,10 +230,12 @@ class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implemen
 			val clazzBase = findClass("virtual.ExtendedClassWithFinalBase")
 			val clazzDerived1 = findClass("virtual.ExtendedClassWithFinalDerived1")
 			val clazzDerived2 = findClass("virtual.ExtendedClassWithFinalDerived2")
+			val clazzDerived3 = findClass("virtual.ExtendedClassWithFinalDerived3")
 
 			val localProblemsBase = (clazzBase.primarySourceElement as ClassDeclaration).problems
 			val localProblemsDerived1 = (clazzDerived1.primarySourceElement as ClassDeclaration).problems
 			val localProblemsDerived2 = (clazzDerived2.primarySourceElement as ClassDeclaration).problems
+			val localProblemsDerived3 = (clazzDerived3.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
 			assertEquals(0, localProblemsBase.size)
@@ -176,7 +248,11 @@ class ExtendedClassWithFinalDerived2 extends ExtendedClassWithFinalBase implemen
 			assertEquals(Severity.ERROR, localProblemsDerived2.get(0).severity)
 			assertTrue(localProblemsDerived2.get(0).message.contains("final"))
 
-			assertEquals(2, allProblems.size)
+			assertEquals(1, localProblemsDerived3.size)
+			assertEquals(Severity.ERROR, localProblemsDerived3.get(0).severity)
+			assertTrue(localProblemsDerived3.get(0).message.contains("final"))
+
+			assertEquals(3, allProblems.size)
 
 		]
 

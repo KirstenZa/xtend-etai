@@ -27,12 +27,12 @@ class Dog {
 	+setName(name:String)
 }
 
-note right of Dog::setName(name:String)
-  this.name = name;
-end note
-
 note right of Dog::getName()
   return name;
+end note
+
+note right of Dog::setName(name:String)
+  this.name = name;
 end note
 
 Dog .up-|> IXNamed

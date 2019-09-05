@@ -25,7 +25,7 @@ class Mole {
     #moveInternal()
 }
 
-note right of Animal::move
+note right of Animal::move()
   <u>Output (for concrete class <i>Mole</i>):</u>
     start moving...
     moving...

@@ -17,9 +17,9 @@ abstract class TraitMethodRedirectionDisableRedirection {
 
 	@EnvelopeMethod(setFinal=true, disableRedirection=true)
 	override void envelope() {
-		TraitTestsBase.TEST_BUFFER += "E1"
+		TraitTestsBase::TEST_BUFFER += "E1"
 		envelope$extended
-		TraitTestsBase.TEST_BUFFER += "E2"
+		TraitTestsBase::TEST_BUFFER += "E2"
 	}
 
 }
@@ -29,7 +29,7 @@ abstract class TraitMethodRedirectionDisableRedirectionChecker {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void envelope() {
-		TraitTestsBase.TEST_BUFFER += "e"
+		TraitTestsBase::TEST_BUFFER += "e"
 	}
 
 }

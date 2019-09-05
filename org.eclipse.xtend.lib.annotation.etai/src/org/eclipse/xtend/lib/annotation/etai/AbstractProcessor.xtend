@@ -17,7 +17,7 @@ import org.eclipse.xtend.lib.macro.declaration.MutableNamedElement
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
 
 /**
- * Base class for activate ETAI annotation processors.
+ * <p>Base class for activate ETAI annotation processors.</p>
  */
 abstract class AbstractProcessor<T extends NamedElement, U extends MutableNamedElement> implements RegisterGlobalsParticipant<T>, TransformationParticipant<U>, ValidationParticipant<T> {
 
@@ -62,19 +62,19 @@ abstract class AbstractProcessor<T extends NamedElement, U extends MutableNamedE
 	def void doValidate(T annotatedNamedElement, extension ValidationContext context) {}
 
 	/**
-	 * Returns true if type of annotated element is supported.
+	 * <p>Returns <code>true</code> if type of annotated element is supported.</p>
 	 */
 	abstract def boolean annotatedNamedElementSupported(NamedElement annotatedNamedElement)
 
 	/**
-	 * Retrieves the processed annotation type.
+	 * <p>Retrieves the processed annotation type.</p>
 	 */
 	abstract protected def Class<?> getProcessedAnnotationType()
 
 }
 
 /**
- * Base class for activate annotation processors for classes.
+ * <p>Base class for activate annotation processors for classes.</p>
  */
 abstract class AbstractClassProcessor extends AbstractProcessor<ClassDeclaration, MutableClassDeclaration> {
 
@@ -85,7 +85,7 @@ abstract class AbstractClassProcessor extends AbstractProcessor<ClassDeclaration
 }
 
 /**
- * Base class for activate annotation processors for methods.
+ * <p>Base class for activate annotation processors for methods.</p>
  */
 abstract class AbstractMethodProcessor extends AbstractProcessor<MethodDeclaration, MutableMethodDeclaration> {
 
@@ -96,7 +96,7 @@ abstract class AbstractMethodProcessor extends AbstractProcessor<MethodDeclarati
 }
 
 /**
- * Base class for activate annotation processors for members.
+ * <p>Base class for activate annotation processors for members.</p>
  */
 abstract class AbstractMemberProcessor extends AbstractProcessor<MemberDeclaration, MutableMemberDeclaration> {
 

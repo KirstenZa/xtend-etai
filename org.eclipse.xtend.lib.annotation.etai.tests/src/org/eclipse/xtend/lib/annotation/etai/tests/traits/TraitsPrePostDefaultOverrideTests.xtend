@@ -50,7 +50,7 @@ abstract class TraitClassPre1 {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=StringCombinatorPre)
@@ -60,7 +60,7 @@ abstract class TraitClassPre1 {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "K"
+		TraitTestsBase::TEST_BUFFER += "K"
 	}
 
 }
@@ -70,7 +70,7 @@ abstract class TraitClassPre2 {
 
 	@ProcessedMethod(processor=EPVoidPre)
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "Z"
+		TraitTestsBase::TEST_BUFFER += "Z"
 	}
 
 }
@@ -78,7 +78,7 @@ abstract class TraitClassPre2 {
 class ExtendedClassPreBase {
 
 	def void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "L"
+		TraitTestsBase::TEST_BUFFER += "L"
 	}
 
 }
@@ -87,7 +87,7 @@ class ExtendedClassPreBase {
 class ExtendedClassPre extends ExtendedClassPreBase implements ITraitClassPre1, ITraitClassPre2 {
 
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	override String methodReturn() {
@@ -104,7 +104,7 @@ abstract class TraitClassPost {
 	 */
 	@ProcessedMethod(processor=EPVoidPost)
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	/**
@@ -117,7 +117,7 @@ abstract class TraitClassPost {
 
 	@ProcessedMethod(processor=EPVoidPost)
 	override void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "K"
+		TraitTestsBase::TEST_BUFFER += "K"
 	}
 
 }
@@ -125,7 +125,7 @@ abstract class TraitClassPost {
 class ExtendedClassPostBase {
 
 	def void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "L"
+		TraitTestsBase::TEST_BUFFER += "L"
 	}
 
 }
@@ -137,7 +137,7 @@ class ExtendedClassPost extends ExtendedClassPostBase implements ITraitClassPost
 	 * This is the description of the method in ExtendedClassPost.
 	 */
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	/**
@@ -157,7 +157,7 @@ abstract class TraitClassDefault {
 	 */
 	@ProcessedMethod(processor=EPDefault)
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	/**
@@ -178,7 +178,7 @@ abstract class TraitClassDefault {
 
 	@ProcessedMethod(processor=EPDefault)
 	override void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "K"
+		TraitTestsBase::TEST_BUFFER += "K"
 	}
 
 	@ProcessedMethod(processor=EPDefault)
@@ -193,12 +193,22 @@ abstract class TraitClassDefault {
 	override void methodSetFinalCheck() {
 	}
 
+	@ProcessedMethod(processor=EPDefault)
+	override int methodReturnDefaultUseWithAbstract1() {
+		return 74
+	}
+
+	@ProcessedMethod(processor=EPDefault)
+	override int methodReturnDefaultUseWithAbstract2() {
+		return 75
+	}
+
 }
 
-class ExtendedClassDefaultBase {
+abstract class ExtendedClassDefaultBase {
 
 	def void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "L"
+		TraitTestsBase::TEST_BUFFER += "L"
 	}
 
 	protected def void methodVisibilityCheckBase() {
@@ -207,13 +217,15 @@ class ExtendedClassDefaultBase {
 	def void methodSetFinalCheck() {
 	}
 
+	abstract def int methodReturnDefaultUseWithAbstract1()
+
 }
 
 @ExtendedByAuto
-class ExtendedClassDefault extends ExtendedClassDefaultBase implements ITraitClassDefault {
+abstract class ExtendedClassDefaultAbstract extends ExtendedClassDefaultBase implements ITraitClassDefault {
 
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	/**
@@ -226,6 +238,11 @@ class ExtendedClassDefault extends ExtendedClassDefaultBase implements ITraitCla
 	protected override void methodVisibilityCheck() {
 	}
 
+	abstract override int methodReturnDefaultUseWithAbstract2()
+
+}
+
+class ExtendedClassDefault extends ExtendedClassDefaultAbstract {
 }
 
 @TraitClassAutoUsing
@@ -233,7 +250,7 @@ abstract class TraitClassOverride {
 
 	@ProcessedMethod(processor=EPOverride)
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 	}
 
 	@ProcessedMethod(processor=EPOverride)
@@ -248,7 +265,7 @@ abstract class TraitClassOverride {
 
 	@ProcessedMethod(processor=EPOverride)
 	override void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "K"
+		TraitTestsBase::TEST_BUFFER += "K"
 	}
 
 	@ProcessedMethod(processor=EPDefault)
@@ -264,7 +281,7 @@ abstract class TraitClassOverride {
 class ExtendedClassOverrideBase {
 
 	def void methodBase() {
-		TraitTestsBase.TEST_BUFFER += "L"
+		TraitTestsBase::TEST_BUFFER += "L"
 	}
 
 	protected def void methodVisibilityCheckBase() {
@@ -276,7 +293,7 @@ class ExtendedClassOverrideBase {
 class ExtendedClassOverride extends ExtendedClassOverrideBase implements ITraitClassOverride {
 
 	override void method() {
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 	}
 
 	override int methodReturn() {
@@ -294,7 +311,7 @@ abstract class TraitClassFinally {
 	@ProcessedMethod(processor=EPVoidFinally)
 	override void secureMethod() {
 
-		TraitTestsBase.TEST_BUFFER += "Z"
+		TraitTestsBase::TEST_BUFFER += "Z"
 
 	}
 
@@ -305,13 +322,13 @@ class ExtendedClassFinally implements ITraitClassFinally {
 
 	override void secureMethod() {
 
-		TraitTestsBase.TEST_BUFFER += "A"
+		TraitTestsBase::TEST_BUFFER += "A"
 
 		// should be always true
-		if (TraitTestsBase.TEST_BUFFER.charAt(0) != 'X')
+		if (TraitTestsBase::TEST_BUFFER.charAt(0) != 'X')
 			throw new RuntimeException();
 
-		TraitTestsBase.TEST_BUFFER += "B"
+		TraitTestsBase::TEST_BUFFER += "B"
 
 	}
 
@@ -393,6 +410,16 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	}
 
 	@Test
+	def void testExtensionDefaultWithAbstract() {
+
+		val obj = new ExtendedClassDefault()
+
+		assertEquals(74, obj.methodReturnDefaultUseWithAbstract1)
+		assertEquals(75, obj.methodReturnDefaultUseWithAbstract2)
+
+	}
+
+	@Test
 	def void testExtensionDefaultResult() {
 
 		val obj = new ExtendedClassDefault()
@@ -431,12 +458,12 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionDefaultVisibilityCheck() {
 
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+			Modifier.isPublic(ExtendedClassDefaultAbstract.declaredMethods.findFirst [
 				name == "methodVisibilityCheck" && synthetic == false
 			].modifiers)
 		)
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+			Modifier.isPublic(ExtendedClassDefaultAbstract.declaredMethods.findFirst [
 				name == "methodVisibilityCheckBase" && synthetic == false
 			].modifiers)
 		)
@@ -447,7 +474,7 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionDefaultSetFinalCheck() {
 
 		assertTrue(
-			Modifier.isFinal(ExtendedClassDefault.declaredMethods.findFirst [
+			Modifier.isFinal(ExtendedClassDefaultAbstract.declaredMethods.findFirst [
 				name == "methodSetFinalCheck" && synthetic == false
 			].modifiers)
 		)
@@ -492,12 +519,12 @@ class TraitsPrePostDefaultOverrideTests extends TraitTestsBase {
 	def void testExtensionOverrideVisibilityCheck() {
 
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+			Modifier.isPublic(ExtendedClassDefaultAbstract.declaredMethods.findFirst [
 				name == "methodVisibilityCheck" && synthetic == false
 			].modifiers)
 		)
 		assertTrue(
-			Modifier.isPublic(ExtendedClassDefault.declaredMethods.findFirst [
+			Modifier.isPublic(ExtendedClassDefaultAbstract.declaredMethods.findFirst [
 				name == "methodVisibilityCheckBase" && synthetic == false
 			].modifiers)
 		)

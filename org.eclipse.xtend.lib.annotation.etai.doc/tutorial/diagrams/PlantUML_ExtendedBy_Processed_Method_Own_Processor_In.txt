@@ -37,15 +37,15 @@ Parrot .-|> XFlying : <<ExtendedByAuto>>
 Parrot .-|> XTalking : <<ExtendedByAuto>>
 Parrot .-|> XColorful : <<ExtendedByAuto>>
 
-note left of XFlying::getCharacteristics
+note left of XFlying::getCharacteristics()
   return "flying";
 end note
 
-note left of XTalking::getCharacteristics
+note left of XTalking::getCharacteristics()
   return "talking";
 end note
 
-note left of XColorful::getCharacteristics
+note left of XColorful::getCharacteristics()
   return "colorful";
 end note
 

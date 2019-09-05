@@ -18,7 +18,7 @@ class Frog {
 
 Frog .up-|> IXEater
 
-note right of Frog::eat
+note right of Frog::eat(prey:String)
   <u>Output (prey: "fly"):</u>
     LOG: start eating: fly
     LOG: stop eating: fly

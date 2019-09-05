@@ -24,7 +24,7 @@ class TextDuplicator {
 }
 
 
-note right of Text::getParagraphs
+note right of Text::getParagraphs()
   return Collections.unmodifiableList(
     new ArrayList(paragraphs));
 end note
@@ -50,7 +50,7 @@ note right of Text::removeFromParagraphs($index:int)
   return true;
 end note
 
-note right of Text::removeAllFromParagraphs
+note right of Text::removeAllFromParagraphs()
   int size = paragraphs.size();
   paragraphs.removeAll($c);
   return size != paragraphs.size();

@@ -28,7 +28,7 @@ Parrot .right-|> IXFlying
 Parrot .right-|> IXTalking
 Parrot .right-|> IXColorful
 
-note left of Parrot::getCharacteristics
+note left of Parrot::getCharacteristics()
   return "flying,talking,colorful";
 end note
 

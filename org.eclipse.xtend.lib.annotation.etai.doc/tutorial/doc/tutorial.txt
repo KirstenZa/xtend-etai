@@ -1,6 +1,8 @@
-{toc.placeholder}
-
 # ETAI Library - Tutorial
+
+[![Build Status](https://travis-ci.org/KirstenZa/xtend-etai.svg?branch=master)](https://travis-ci.org/KirstenZa/xtend-etai)
+
+{toc.placeholder}
 
 [!include tutorial_introduction.txt]
 

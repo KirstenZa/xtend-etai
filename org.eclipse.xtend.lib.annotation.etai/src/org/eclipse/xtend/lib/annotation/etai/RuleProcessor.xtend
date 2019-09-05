@@ -10,7 +10,7 @@ import org.eclipse.xtend.lib.macro.declaration.ParameterDeclaration
 import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils.*
 
 /**
- * Base class for activate annotation class processors (for auto adaption rules annotated on classes).
+ * <p>Base class for activate annotation class processors (for auto adaption rules annotated on classes).</p>
  */
 abstract class RuleProcessor<T extends NamedElement, U extends MutableNamedElement> extends AbstractProcessor<T, U> {
 

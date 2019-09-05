@@ -13,6 +13,7 @@ import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
 
 import static org.junit.Assert.*
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassEnvelopeNoRequire
 
 class SimpleDefaultValueProvider20 implements DefaultValueProvider<Integer> {
 
@@ -30,53 +31,61 @@ class SimpleDefaultValueProvider40 implements DefaultValueProvider<Integer> {
 
 }
 
+class SimpleDefaultValueProvider5000 implements DefaultValueProvider<Integer> {
+
+	override Integer getDefaultValue() {
+		return 5000
+	}
+
+}
+
 @TraitClassAutoUsing
 abstract class TraitClassEnvelopeBase {
 
 	@EnvelopeMethod(required=false)
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 		method1$extended
 		method1$extended
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method1(boolean p1, String x) {
-		TraitTestsBase.TEST_BUFFER += (if(p1) "T" else "F") + x + "1"
+		TraitTestsBase::TEST_BUFFER += (if(p1) "T" else "F") + x + "1"
 		method1$extended(p1, x + "B")
 		method1$extended(p1, x + "B")
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "1"
+		TraitTestsBase::TEST_BUFFER += "1"
 		method2$extended
 		method2$extended
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method2(boolean p1, String x) {
-		TraitTestsBase.TEST_BUFFER += (if(p1) "T" else "F") + x + "1"
+		TraitTestsBase::TEST_BUFFER += (if(p1) "T" else "F") + x + "1"
 		method2$extended(p1, x + "B")
 		method2$extended(p1, x + "B")
 	}
 
 	@EnvelopeMethod(required=true, setFinal=false)
-	override int method3(String x) {
-		TraitTestsBase.TEST_BUFFER += x + "1"
-		return method3$extended(x + "B")
+	override int method3(String anotherParameterName) {
+		TraitTestsBase::TEST_BUFFER += anotherParameterName + "1"
+		return method3$extended(anotherParameterName + "B")
 	}
 
 	@EnvelopeMethod(required=false, defaultValueProvider=SimpleDefaultValueProvider20)
 	override int method4(String x) {
-		TraitTestsBase.TEST_BUFFER += x + "1"
+		TraitTestsBase::TEST_BUFFER += x + "1"
 		return method4$extended(x + "B")
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method5(int ... args) {
 		for (arg : args)
-			TraitTestsBase.TEST_BUFFER += arg
+			TraitTestsBase::TEST_BUFFER += arg
 		method5$extended(5, 6, 7)
 	}
 
@@ -90,20 +99,20 @@ abstract class TraitClassEnvelopeDerived extends TraitClassEnvelopeBase {
 
 	@EnvelopeMethod(setFinal=false)
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "9"
+		TraitTestsBase::TEST_BUFFER += "9"
 		super.method1
 	}
 
 	@EnvelopeMethod(required=false, defaultValueProvider=SimpleDefaultValueProvider40)
 	override int method4(String x) {
-		TraitTestsBase.TEST_BUFFER += "9"
+		TraitTestsBase::TEST_BUFFER += "9"
 		return super.method4(x)
 	}
 
 	@EnvelopeMethod(required=false)
 	override void method5(int ... args) {
 		super.method5(args)
-		TraitTestsBase.TEST_BUFFER += "Z"
+		TraitTestsBase::TEST_BUFFER += "Z"
 	}
 
 	@EnvelopeMethod(required=false)
@@ -115,21 +124,21 @@ abstract class TraitClassEnvelopeDerived extends TraitClassEnvelopeBase {
 class ExtendedByEnvelopeBase implements ITraitClassEnvelopeBase {
 
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 	override void method1(boolean p1, String x) {
-		TraitTestsBase.TEST_BUFFER += (if(p1) "T" else "F") + x + "3"
+		TraitTestsBase::TEST_BUFFER += (if(p1) "T" else "F") + x + "3"
 	}
 
 	override int method3(String x) {
-		TraitTestsBase.TEST_BUFFER += x + "2"
+		TraitTestsBase::TEST_BUFFER += x + "2"
 		return 10
 	}
 
 	override void method5(int ... args) {
 		for (arg : args)
-			TraitTestsBase.TEST_BUFFER += arg
+			TraitTestsBase::TEST_BUFFER += arg
 	}
 
 	override void methodChangeRequired() {}
@@ -140,11 +149,11 @@ class ExtendedByEnvelopeBase implements ITraitClassEnvelopeBase {
 class ExtendedByEnvelopeDerived implements ITraitClassEnvelopeDerived {
 
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 	override int method3(String x) {
-		TraitTestsBase.TEST_BUFFER += x + "2"
+		TraitTestsBase::TEST_BUFFER += x + "2"
 		return 10
 	}
 
@@ -153,13 +162,13 @@ class ExtendedByEnvelopeDerived implements ITraitClassEnvelopeDerived {
 class ExtendedByEnvelopeDerivedThenDerived extends ExtendedByEnvelopeDerived {
 
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 	override int method3(String x) {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 		val y = super.method3(x)
-		TraitTestsBase.TEST_BUFFER += "4"
+		TraitTestsBase::TEST_BUFFER += "4"
 		return 99 + y
 	}
 
@@ -168,15 +177,15 @@ class ExtendedByEnvelopeDerivedThenDerived extends ExtendedByEnvelopeDerived {
 class ClassBE {
 
 	def void method1() {
-		TraitTestsBase.TEST_BUFFER += "2"
+		TraitTestsBase::TEST_BUFFER += "2"
 	}
 
 	def void method1(boolean p1, String x) {
-		TraitTestsBase.TEST_BUFFER += (if(p1) "T" else "F") + x + "3"
+		TraitTestsBase::TEST_BUFFER += (if(p1) "T" else "F") + x + "3"
 	}
 
 	def int method3(String x) {
-		TraitTestsBase.TEST_BUFFER += x + "2"
+		TraitTestsBase::TEST_BUFFER += x + "2"
 		return 10
 	}
 
@@ -191,6 +200,43 @@ class ExtendedByEnvelopeBaseMethodFromClassBE extends ClassBE implements ITraitC
 
 @ExtendedByAuto
 class ExtendedByEnvelopeDerivedMethodFromClassBE extends ClassBE implements ITraitClassEnvelopeDerived {
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassEnvelopeNoRequire {
+
+	@EnvelopeMethod(required=false)
+	override void method1() {
+		TraitTestsBase::TEST_BUFFER += "1"
+		method1$extended
+		method1$extended
+	}
+
+}
+
+class ExtendedClassEnvelopePrivateBase {
+
+	private def void method1() {
+		TraitTestsBase::TEST_BUFFER += "NOT_USE"
+	}
+
+	def void useMethods() {
+		method1
+	}
+
+}
+
+@ExtendedByAuto
+class ExtendedClassEnvelopePrivateDerived1 extends ExtendedClassEnvelopePrivateBase implements ITraitClassEnvelopeNoRequire {
+}
+
+@ExtendedByAuto
+class ExtendedClassEnvelopePrivateDerived2 extends ExtendedClassEnvelopePrivateBase implements ITraitClassEnvelopeNoRequire {
+
+	protected override void method1() {
+		TraitTestsBase::TEST_BUFFER += "X"
+	}
+
 }
 
 class TraitsEnvelopeTests extends TraitTestsBase {
@@ -225,7 +271,7 @@ class TraitsEnvelopeTests extends TraitTestsBase {
 	}
 
 	@Test
-	def void testEnvelopeWithParameterMethodNotAvailableInExtendedClass() {
+	def void testEnvelopeWithParameterMethodNotAvailableInExtendedClassNoDefaultValueProvider() {
 
 		val obj = new ExtendedByEnvelopeBase()
 		obj.method2(true, "A")
@@ -234,7 +280,7 @@ class TraitsEnvelopeTests extends TraitTestsBase {
 	}
 
 	@Test
-	def void testEnvelopeWithReturnType() {
+	def void testEnvelopeWithReturnValue() {
 
 		val obj = new ExtendedByEnvelopeBase()
 		assertEquals(10, obj.method3("A"))
@@ -243,7 +289,7 @@ class TraitsEnvelopeTests extends TraitTestsBase {
 	}
 
 	@Test
-	def void testEnvelopeWithReturnTypeMethodNotAvailableInExtendedClass() {
+	def void testEnvelopeWithReturnValueMethodNotAvailableInExtendedClassHasDefaultValueProvider() {
 
 		val obj = new ExtendedByEnvelopeBase()
 		assertEquals(20, obj.method4("A"))
@@ -346,6 +392,22 @@ class TraitsEnvelopeTests extends TraitTestsBase {
 
 	}
 
+	def void testEnvelopeDoesNotApplyPrivateInBase() {
+
+		val obj1 = new ExtendedClassEnvelopePrivateDerived1
+
+		TEST_BUFFER = "";
+		obj1.method1
+		assertEquals("1", TEST_BUFFER)
+
+		val obj2 = new ExtendedClassEnvelopePrivateDerived2
+
+		TEST_BUFFER = "";
+		obj2.method1
+		assertEquals("1XX", TEST_BUFFER)
+
+	}
+
 	@Test
 	def void testRequiredFlagMismatch() {
 		'''
@@ -378,6 +440,8 @@ abstract class TraitClassEnvelope {
 			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
 			assertTrue(problemsMethod.get(0).message.contains("either set the required flag"))
 
+			assertEquals(1, allProblems.size)
+
 		]
 
 	}
@@ -400,7 +464,7 @@ class SimpleValueProvider implements DefaultValueProvider<Integer>
 @TraitClassAutoUsing
 abstract class TraitClassEnvelope {
 
-	@EnvelopeMethod(defaultValueProvider=SimpleValueProvider)
+	@EnvelopeMethod(required=false, defaultValueProvider=SimpleValueProvider)
 	override void method() {}
 
 }
@@ -418,6 +482,50 @@ abstract class TraitClassEnvelope {
 			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
 			assertTrue(problemsMethod.get(0).message.contains("specify a default value provider"))
 
+			assertEquals(1, allProblems.size)
+
+		]
+
+	}
+
+	@Test
+	def void testDefaultValueProviderWrongInterface() {
+		'''
+
+package virtual
+
+import org.eclipse.xtend.lib.annotation.etai.DefaultValueProvider
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+
+class SimpleValueProvider implements DefaultValueProvider<Integer>
+{	
+	override getDefaultValue() {}
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassEnvelope {
+
+	@EnvelopeMethod(required=false, defaultValueProvider=java::lang::Integer)
+	override int method() { return 1; }
+
+}
+
+		'''.compile [
+
+			val extension ctx = transformationContext
+
+			val clazz = findClass("virtual.TraitClassEnvelope")
+
+			val problemsMethod = (clazz.findDeclaredMethod("method").primarySourceElement as MethodDeclaration).problems
+
+			// do assertions
+			assertEquals(1, problemsMethod.size)
+			assertEquals(Severity.ERROR, problemsMethod.get(0).severity)
+			assertTrue(problemsMethod.get(0).message.contains("DefaultValueProvider interface"))
+
+			assertEquals(1, allProblems.size)
+
 		]
 
 	}
@@ -429,6 +537,7 @@ abstract class TraitClassEnvelope {
 package virtual
 
 import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 
@@ -436,7 +545,10 @@ import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
 abstract class TraitClassEnvelope {
 
 	@EnvelopeMethod
-	override void method() {}
+	override void method1() {}
+
+	@EnvelopeMethod
+	override void method2() {}
 
 }
 
@@ -444,7 +556,10 @@ abstract class TraitClassEnvelope {
 abstract class TraitClassEnvelopeDerived extends TraitClassEnvelope {
 
 	@ExclusiveMethod
-	override void method() {}
+	override void method1() {}
+
+	@PriorityEnvelopeMethod(value=400)
+	override void method2() {}
 
 }
 
@@ -457,9 +572,13 @@ abstract class TraitClassEnvelopeDerived extends TraitClassEnvelope {
 			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
 
 			// do assertions
-			assertEquals(1, problemsClass.size)
+			assertEquals(2, problemsClass.size)
 			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
-			assertTrue(problemsClass.get(0).message.contains("this type must be used here"))
+			assertTrue(problemsClass.get(0).message.contains("must also be used here"))
+			assertEquals(Severity.ERROR, problemsClass.get(1).severity)
+			assertTrue(problemsClass.get(1).message.contains("must also be used here"))
+
+			assertEquals(2, allProblems.size)
 
 		]
 

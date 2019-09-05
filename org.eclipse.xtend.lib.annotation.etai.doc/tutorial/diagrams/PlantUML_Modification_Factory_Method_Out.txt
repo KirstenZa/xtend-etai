@@ -17,7 +17,7 @@ class Animal {
 	&#009; &#009; &#009; &#009; &#009; &#009; +init() 
 }
 
-note right of Animal::createAnimal
+note right of Animal::createAnimal()
   Animal newObject = new Animal();
   newObject.init();
   return newObject;

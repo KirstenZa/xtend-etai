@@ -114,8 +114,8 @@ abstract class ExtendedClassConstructBase {
 	}
 
 	@CopyConstructorRule
-	new(int value) {
-		this(value, null)
+	new(int anotherParameterName) {
+		this(anotherParameterName, null)
 	}
 
 	@CopyConstructorRule

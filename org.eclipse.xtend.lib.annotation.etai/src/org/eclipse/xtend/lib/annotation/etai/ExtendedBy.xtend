@@ -3,7 +3,6 @@ package org.eclipse.xtend.lib.annotation.etai
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
 import java.util.ArrayList
-import java.util.HashMap
 import java.util.HashSet
 import java.util.List
 import java.util.Set
@@ -24,7 +23,6 @@ import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Type
 import org.eclipse.xtend.lib.macro.declaration.TypeDeclaration
-import org.eclipse.xtend.lib.macro.declaration.TypeParameterDeclaration
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.Visibility
 import org.eclipse.xtend.lib.macro.file.FileLocations
@@ -39,6 +37,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.ConstructRuleProce
 import static extension org.eclipse.xtend.lib.annotation.etai.EnvelopeMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExclusiveMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ExtractInterfaceProcessor.*
+import static extension org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.ProcessedMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.RequiredMethodProcessor.*
 import static extension org.eclipse.xtend.lib.annotation.etai.TraitClassProcessor.*
@@ -53,7 +52,7 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
  * {@link ExclusiveMethod}).</p>
  * 
  * <p>In addition to trait classes explicitly specified by this annotation, also other
- * trait classes, which are "used" by applied trait classes, will extend the 
+ * trait classes that are "used" by applied trait classes will extend the 
  * annotated class.</p>
  * 
  * <p>If a trait method already exists in the extended class, it is even
@@ -75,13 +74,13 @@ import static extension org.eclipse.xtend.lib.annotation.etai.utils.ProcessUtils
 annotation ExtendedBy {
 
 	/**
-	 * <p>The list of trait classes ({@link TraitClass}), which shall be applied.</p>
+	 * <p>The list of trait classes ({@link TraitClass}) that shall be applied.</p>
 	 * 
 	 * <p>The (extracted) mirror interfaces of the trait classes specified here must also
 	 * be added to the list of implemented interfaces of the annotated class.</p>
 	 * 
 	 * <p>The order of extension is exactly how the trait classes are listed in the list of corresponding
-	 * interfaces (implements). This might be important, if multiple trait classes contain the same trait
+	 * interfaces (implements). This might be important if multiple trait classes contain the same trait
 	 * methods ({@link ProcessedMethod}).</p>
 	 * 
 	 * @see TraitClass
@@ -99,7 +98,7 @@ annotation ExtendedBy {
  * this trait class will be applied.</p> 
  * 
  * <p>The order of extension is exactly how the list of interfaces is declared. This might be
- * important, if multiple trait classes contain the same trait methods
+ * important if multiple trait classes contain the same trait methods
  * ({@link ProcessedMethod}).</p>
  * 
  * @see ExtendedBy
@@ -110,27 +109,55 @@ annotation ExtendedByAuto {
 }
 
 /**
- * Annotation for an extended method, which is specified within the
- * trait class and therefore is renamed. It will get the body
- * of any previous method before applying a trait class.
+ * <p>Annotation for an extended method that is also specified within the
+ * trait class and therefore has been renamed. It will get the body
+ * of any previous method before applying a trait class.</p>
  */
 @Target(ElementType.METHOD)
 annotation ExtendedMethodImpl {
 }
 
 /**
- * This annotation is put onto methods within extended classes,
- * which have been generated for delegation purpose.
+ * <p>Annotation for an extended method that has been set to final by
+ * the trait method. This means that also further trait methods
+ * cannot be applied.</p>
  */
 @Target(ElementType.METHOD)
-annotation ExtendedDelegationMethod {
+annotation ExtendedMethodFinalByTraitMethod {
 }
 
 /**
- * This annotation is put onto methods within extended classes,
+ * <p>This annotation is put onto methods within extended classes,
+ * which have been generated for calling trait method functionality.</p>
+ */
+@Target(ElementType.METHOD)
+annotation DelegationMethodForTraitMethod {
+}
+
+/**
+ * <p>This annotation is put onto methods within extended classes,
+ * which have been generated for calling priority envelope method functionality.</p>
+ */
+@Target(ElementType.METHOD)
+annotation DelegationPriorityEnvelopeCaller {
+}
+
+/**
+ * <p>This annotation is put onto methods within extended classes,
+ * which have been generated for calling priority envelope methods
+ * in a sequence based on their priority.</p>
+ * 
+ * @see PriorityEnvelopeMethod
+ */
+@Target(ElementType.METHOD)
+annotation ExtendedPriorityEnvelopeCallerMethod {
+}
+
+/**
+ * <p>This annotation is put onto methods within extended classes,
  * which have been generated for constructing a trait class
  * object (with constructor method). Usually, when implementing
- * an constructor, a call to this method is expected.
+ * an constructor, a call to this method is expected.</p>
  * 
  * @see ConstructorMethod
  */
@@ -139,18 +166,87 @@ annotation ExtendedConstructionHelperMethod {
 }
 
 /**
- * This annotation is put onto constructors within extended classes,
+ * <p>This annotation is put onto constructors within extended classes,
  * which have been generated for delegation purpose. Thereby, the main purpose
  * of delegation is to include a check procedure. In constructors annotated
- * by this annotation, it is checked, if all delegation objects have been
- * constructed.
+ * by this annotation, it is checked if all delegation objects have been
+ * constructed.</p>
  */
 @Target(ElementType.CONSTRUCTOR)
 annotation ExtendedCheckerMethodDelegationConstructor {
 }
 
+/** 
+ * <p>This helper class considers another (simple) name for an existing method declaration.</p> 
+ */
+class MethodDeclarationRenamed implements MethodDeclaration {
+
+	MethodDeclaration originalMethodDeclaration
+	String newSimpleName
+	Visibility newVisibility
+
+	new(MethodDeclaration originalMethodDeclaration, String newSimpleName) {
+		this.originalMethodDeclaration = originalMethodDeclaration
+		this.newSimpleName = newSimpleName
+		this.newVisibility = originalMethodDeclaration.visibility
+	}
+
+	new(MethodDeclaration originalMethodDeclaration, String newSimpleName, Visibility newVisibility) {
+		this.originalMethodDeclaration = originalMethodDeclaration
+		this.newSimpleName = newSimpleName
+		this.newVisibility = newVisibility
+	}
+
+	override getReturnType() { return originalMethodDeclaration.returnType }
+
+	override isAbstract() { return originalMethodDeclaration.abstract }
+
+	override isDefault() { return originalMethodDeclaration.isDefault }
+
+	override isFinal() { return originalMethodDeclaration.isFinal }
+
+	override isNative() { return originalMethodDeclaration.isNative }
+
+	override isStatic() { return originalMethodDeclaration.isStatic }
+
+	override isStrictFloatingPoint() { return originalMethodDeclaration.isStrictFloatingPoint }
+
+	override isSynchronized() { return originalMethodDeclaration.isSynchronized }
+
+	override getBody() { return originalMethodDeclaration.getBody }
+
+	override getExceptions() { return originalMethodDeclaration.getExceptions }
+
+	override getParameters() { return originalMethodDeclaration.getParameters }
+
+	override isVarArgs() { return originalMethodDeclaration.isVarArgs }
+
+	override getTypeParameters() { return originalMethodDeclaration.getTypeParameters }
+
+	override getDeclaringType() { return originalMethodDeclaration.getDeclaringType }
+
+	override getDocComment() { return originalMethodDeclaration.getDocComment }
+
+	override getModifiers() { return originalMethodDeclaration.getModifiers }
+
+	override getVisibility() { return newVisibility }
+
+	override isDeprecated() { return originalMethodDeclaration.isDeprecated }
+
+	override findAnnotation(Type annotationType) { return originalMethodDeclaration.findAnnotation(annotationType) }
+
+	override getAnnotations() { return originalMethodDeclaration.getAnnotations }
+
+	override getCompilationUnit() { return originalMethodDeclaration.getCompilationUnit }
+
+	override getSimpleName() { return newSimpleName }
+
+	override toString() { return originalMethodDeclaration.toString }
+
+}
+
 /**
- * Active Annotation Processor for {@link ExtendedBy} and {@link ExtendedByAuto}
+ * <p>Active Annotation Processor for {@link ExtendedBy} and {@link ExtendedByAuto}.</p>
  * 
  * @see ExtendedBy
  */
@@ -166,92 +262,31 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	final static public String TRAIT_CLASS_CONSTRUCTOR_CALL_NAME_AUTO_PREFIX = "auto$new$"
 	final static public String TRAIT_CLASS_CONSTRUCTOR_CALL_NAME_PREFIX = "new$"
 	final static public String EXTENDED_METHOD_IMPL_NAME_SEPARATOR = "__$beforeExtended$__"
+	final static public String EXTENDED_METHOD_IMPL_NAME_ENVELOPE_METHOD_SUFFIX = "$impl"
+	final static public String EXTENDED_METHOD_PRIORITY_ENVELOPE_CALLER_SUFFIX = "$priorityEnvelopeCaller"
 
 	final static public Set<String> EXTENDED_CLASS_TO_BE_PROCESSED = new HashSet<String>
 
 	/**
-	 * Predicate for a flexible type comparison, which considers two types as equal, if they have a common super type (trait class).
+	 * <p>Predicate for a flexible type comparison that considers two types as equal if they have a common super type (which is a trait class).</p>
 	 */
-	static public (TypeLookup, Type, Type)=>Boolean flexibleTypeComparisonCommonSupertype = [
+	static public (TypeLookup, Type, Type)=>Boolean flexibleTypeComparisonCommonTraitClass = [
 		getFirstCommonSuperClass($1 as ClassDeclaration, $2 as ClassDeclaration).isTraitClass
 	]
-
-	/** 
-	 * This helper class considers another (simple) name for an existing method declaration 
-	 */
-	static class MethodDeclarationRenamed implements MethodDeclaration {
-
-		MethodDeclaration originalMethodDeclaration
-		String newSimpleName
-		Visibility newVisibility
-
-		new(MethodDeclaration originalMethodDeclaration, String newSimpleName, Visibility newVisibility) {
-			this.originalMethodDeclaration = originalMethodDeclaration
-			this.newSimpleName = newSimpleName
-			this.newVisibility = newVisibility
-		}
-
-		override getReturnType() { return originalMethodDeclaration.returnType }
-
-		override isAbstract() { return originalMethodDeclaration.abstract }
-
-		override isDefault() { return originalMethodDeclaration.isDefault }
-
-		override isFinal() { return originalMethodDeclaration.isFinal }
-
-		override isNative() { return originalMethodDeclaration.isNative }
-
-		override isStatic() { return originalMethodDeclaration.isStatic }
-
-		override isStrictFloatingPoint() { return originalMethodDeclaration.isStrictFloatingPoint }
-
-		override isSynchronized() { return originalMethodDeclaration.isSynchronized }
-
-		override getBody() { return originalMethodDeclaration.getBody }
-
-		override getExceptions() { return originalMethodDeclaration.getExceptions }
-
-		override getParameters() { return originalMethodDeclaration.getParameters }
-
-		override isVarArgs() { return originalMethodDeclaration.isVarArgs }
-
-		override getTypeParameters() { return originalMethodDeclaration.getTypeParameters }
-
-		override getDeclaringType() { return originalMethodDeclaration.getDeclaringType }
-
-		override getDocComment() { return originalMethodDeclaration.getDocComment }
-
-		override getModifiers() { return originalMethodDeclaration.getModifiers }
-
-		override getVisibility() { return newVisibility }
-
-		override isDeprecated() { return originalMethodDeclaration.isDeprecated }
-
-		override findAnnotation(Type annotationType) { return originalMethodDeclaration.findAnnotation(annotationType) }
-
-		override getAnnotations() { return originalMethodDeclaration.getAnnotations }
-
-		override getCompilationUnit() { return originalMethodDeclaration.getCompilationUnit }
-
-		override getSimpleName() { return newSimpleName }
-
-		override toString() { return originalMethodDeclaration.toString }
-
-	}
 
 	protected override Class<?> getProcessedAnnotationType() {
 		ExtendedBy
 	}
 
 	/**
-	 * Returns name of the delegate for the given trait class.
+	 * <p>Returns name of the delegate for the given trait class.</p>
 	 */
 	static def String getDelegateObjectName(ClassDeclaration traitClass) {
 		DELEGATION_OBJECT_NAME_PREFIX + traitClass.simpleName
 	}
 
 	/**
-	 * Returns name of the construction helper method for the given trait class.
+	 * <p>Returns name of the construction helper method for the given trait class.</p>
 	 */
 	static def String getConstructorMethodCallName(ClassDeclaration traitClass, boolean autoConstruct) {
 		(if(autoConstruct) TRAIT_CLASS_CONSTRUCTOR_CALL_NAME_AUTO_PREFIX else TRAIT_CLASS_CONSTRUCTOR_CALL_NAME_PREFIX) +
@@ -259,24 +294,40 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Returns the alternative method name for traits mechanisms.
+	 * <p>Returns the method name of the original functionality before extended by specified
+	 * trait class.</p>
 	 * 
-	 * Thereby, the trait class which causes the move to this function must be provided in addition
-	 * as its name will become part of the method name.
+	 * <p>Thereby, the trait class which causes the move to this function must be provided in addition
+	 * as its name will become part of the method name.</p>
 	 */
-	static def getExtendedMethodImplName(MethodDeclaration methodDeclaration, ClassDeclaration traitClass) {
+	static def String getExtendedMethodImplName(MethodDeclaration methodDeclaration, ClassDeclaration traitClass) {
 		methodDeclaration.simpleName + EXTENDED_METHOD_IMPL_NAME_SEPARATOR + traitClass.simpleName
 	}
 
 	/**
-	 * Check if class is an extended class (i.e. it directly applies traits).
+	 * <p>Returns the method name of the original functionality before extended by priority envelope
+	 * methods.</p>
+	 */
+	static def String getExtendedMethodImplNameAfterExtendedByPriorityEnvelope(MethodDeclaration methodDeclaration) {
+		methodDeclaration.simpleName + EXTENDED_METHOD_IMPL_NAME_ENVELOPE_METHOD_SUFFIX
+	}
+
+	/**
+	 * <p>Returns the method name for calling the (extended) functionality in an order sorted by priority.</p>
+	 */
+	static def String getExtendedMethodPriorityQueueCallName(MethodDeclaration methodDeclaration) {
+		methodDeclaration.simpleName + EXTENDED_METHOD_PRIORITY_ENVELOPE_CALLER_SUFFIX
+	}
+
+	/**
+	 * <p>Checks if class is an extended class (i.e. it directly applies traits).</p>
 	 */
 	static def boolean isExtendedClass(ClassDeclaration annotatedClass) {
 		annotatedClass.hasAnnotation(ExtendedBy) || annotatedClass.isExtendedClassAuto
 	}
 
 	/**
-	 * Returns true, if the class is annotated by {@link ExtendedByAuto}.
+	 * <p>Returns <code>true</code> if the class is annotated by {@link ExtendedByAuto}.</p>
 	 * 
 	 * @see ExtendedByAuto
 	 */
@@ -285,22 +336,22 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Returns <code>true</code>, if the extended class is still unprocessed.
+	 * <p>Returns <code>true</code> if the extended class is still unprocessed.
 	 * If it returns <code>true</code>, the type hierarchy is not complete, so checks must be
-	 * processed specifically. 
+	 * processed specifically.</p> 
 	 */
-	static def boolean isUnprocessedExtendedClass(String annotatedClass) {
+	static def boolean isUnprocessedExtendedClass(String qualifiedClassName) {
 
-		if (EXTENDED_CLASS_TO_BE_PROCESSED.contains(annotatedClass))
+		if (EXTENDED_CLASS_TO_BE_PROCESSED.contains(qualifiedClassName))
 			return true
 
 		return false
 
 	}
 
-	/** 
-	 * Adds type references (of trait classes) to list, if corresponding mirror interfaces are found for
-	 * the annotated class specification.
+	/**
+	 * <p>Adds type references (of trait classes) to list if corresponding mirror interfaces are found for
+	 * the annotated class specification.</p>
 	 */
 	static def <T extends TypeLookup & TypeReferenceProvider> void addTraitClassesOfMirrorInterfaces(
 		ClassDeclaration annotatedClass, List<String> errors, List<TypeReference> typeReferences,
@@ -320,7 +371,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 						// check that class is not already contained
 						if (!typeReferences.typeReferenceListContains(traitClass)) {
 
-							// do not add, if not in list of explicitly specified trait classes
+							// do not add if not in list of explicitly specified trait classes
 							if (specifiedTraitClassesNames === null ||
 								specifiedTraitClassesNames.contains(traitClass.qualifiedName)) {
 
@@ -331,7 +382,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 								// ensure that name is removed from list of specified trait classes
 								if (specifiedTraitClassesNames !== null) {
 
-									// put error, if the ordering is inconsistent
+									// put error if the ordering is inconsistent
 									if (specifiedTraitClassesNames.indexOf(traitClass.qualifiedName) != 0)
 										errors?.
 											add('''Specification of trait classes is not in the same order as in the list of implemented interfaces''')
@@ -406,7 +457,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 						specifiedTraitClassesNames.add(specifiedTraitClass.name)
 					else
 						errors?.
-							add('''Type "«specifiedTraitClass.name»" is not a trait class, i.e. it does not use @TraitClass or @TraitClassAutoUsing''')
+							add('''Type "«specifiedTraitClass.name»" is not a trait class, i.e., it does not use @TraitClass or @TraitClassAutoUsing''')
 
 				}
 
@@ -417,13 +468,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		// add type references based on used interfaces
 		addTraitClassesOfMirrorInterfaces(annotatedClass, errors, typeReferences, specifiedTraitClassesNames, context)
 
-		// report error, if there are specified trait classes, which are not specified as implemented interface
+		// report error if there are specified trait classes that are not specified as implemented interface
 		if (errors !== null && specifiedTraitClassesNames !== null)
 			if (specifiedTraitClassesNames.size > 0)
 				errors?.
 					add('''Trait class "«specifiedTraitClassesNames.get(0)»" specified, but not found in list of implemented interfaces''')
 
-		// add indirectly applied trait classes (i.e. trait classes, which are implemented by directly applied trait classes)
+		// add indirectly applied trait classes (i.e. trait classes that are implemented by directly applied trait classes)
 		if (includeIndirect) {
 
 			// add missing use info
@@ -473,14 +524,14 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		val result = new ArrayList<TypeReference>
 		for (currentClass : annotatedClass.getSuperClasses(true))
-			result += currentClass.getTraitClassesSpecifiedForExtended(errors, true, null, context)
+			result.addAll(currentClass.getTraitClassesSpecifiedForExtended(errors, true, null, context))
 		return result
 
 	}
 
 	/** 
 	 * <p>Retrieves the trait classes which must be applied to the given class, including all directly or
-	 * indirectly specified trait classes, but without the trait classes, which have already been applied
+	 * indirectly specified trait classes, but without the trait classes that have already been applied
 	 * to the parent.</p>
 	 * 
 	 * <p>The result is unified, so duplicates are removed.</p>
@@ -517,7 +568,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 					-1
 				else
 					alreadyAppliedTraitClasses.indexOfTypeReference(traitClassRef,
-						flexibleTypeComparisonCommonSupertype.curry(context), false, null)
+						flexibleTypeComparisonCommonTraitClass.curry(context), false, null)
 
 			// it is not necessary to check type arguments
 			// this is covered by Java interface restrictions
@@ -529,15 +580,15 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 						indexOfTypeReferenceInAlreadyAppliedList)
 					val classAlreadyApplied = typeReferenceAlreadyApplied.type as ClassDeclaration
 
-					// it is an error, if trait class shall be applied directly
+					// it is an error if trait class shall be applied directly
 					if (traitClassRefIsAppliedDirectly)
 						errors?.
-							add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«classAlreadyApplied.qualifiedName»") has already been applied to a super type''')
-					// otherwise (indirect trait class shall be applied) it is an error, if it is not a super type of an already applied trait class (so it is a more concrete or otherwise related type)
+							add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«classAlreadyApplied.qualifiedName»") has already been applied to a super type''')
+					// otherwise (indirect trait class shall be applied) it is an error if it is not a super type of an already applied trait class (so it is a more concrete or otherwise related type)
 					else if (!traitClassRef.type.isAssignableFromConsiderUnprocessed(typeReferenceAlreadyApplied.type,
 						context))
 						errors?.
-							add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«classAlreadyApplied.qualifiedName»"), which is not a derived from it, has already been applied to a super type of this class''')
+							add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«classAlreadyApplied.qualifiedName»") that is not a derived from it has already been applied to a super type of this class''')
 
 				}
 
@@ -545,13 +596,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// check if type reference is already in result list
 				val indexOfTypeReferenceInResult = result.indexOfTypeReference(traitClassRef,
-					flexibleTypeComparisonCommonSupertype.curry(context), false, null)
+					flexibleTypeComparisonCommonTraitClass.curry(context), false, null)
 
 				if (indexOfTypeReferenceInResult == -1) {
 
 					// add new trait classes to result list 
-					result += traitClassRef
-					resultIsAppliedDirectly += traitClassRefIsAppliedDirectly
+					result.addAll(traitClassRef)
+					resultIsAppliedDirectly.addAll(traitClassRefIsAppliedDirectly)
 
 				} else {
 
@@ -562,13 +613,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 						if (foundTypeReferenceIsAppliedDirectly) {
 
-							// it is an error, if two inconsistent trait classes shall be applied directly
+							// it is an error if two inconsistent trait classes shall be applied directly
 							errors?.
-								add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
+								add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
 
 						} else {
 
-							// it is not an error, if indirectly applied trait classes are more abstract than directly applied trait classes...
+							// it is not an error if indirectly applied trait classes are more abstract than directly applied trait classes...
 							if (foundTypeReference.type.
 								isAssignableFromConsiderUnprocessed(traitClassRef.type, context)) {
 
@@ -583,7 +634,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 								// otherwise, it is an error
 								errors?.
-									add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
+									add('''Cannot apply the trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
 
 							}
 						}
@@ -592,23 +643,23 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 						if (foundTypeReferenceIsAppliedDirectly) {
 
-							// it is an error, if the indirectly applied trait class is not equal or more abstract than the directly applied trait class
+							// it is an error if the indirectly applied trait class is not equal or more abstract than the directly applied trait class
 							if (!traitClassRef.type.
 								isAssignableFromConsiderUnprocessed(foundTypeReference.type, context))
 								errors?.
-									add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
+									add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied''')
 
 						} else {
 
-							// only further checking, if newly found, directly applied type is more abstract than indirectly applied type
+							// only further checking if newly found, directly applied type is more abstract than indirectly applied type
 							if (!traitClassRef.type.
 								isAssignableFromConsiderUnprocessed(foundTypeReference.type, context)) {
 
-								// it is an error, if it is also not a more concrete type
+								// it is an error if it is also not a more concrete type
 								if (!foundTypeReference.type.isAssignableFromConsiderUnprocessed(traitClassRef.type,
 									context))
 									errors?.
-										add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»", because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
+										add('''Cannot apply the (indirectly applied) trait class "«traitClassRef.type.qualifiedName»" because a type related to this trait class ("«foundTypeReference.type.qualifiedName»") has already been applied indirectly''')
 								else {
 
 									// otherwise, the more concrete type shall be used
@@ -637,8 +688,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/**
-	 * Retrieves the trait classes which shall be be constructed automatically (and for which this
-	 * feature is not disabled) inside the factory method of the given class.
+	 * <p>Retrieves the trait classes which shall be be constructed automatically (and for which this
+	 * feature is not disabled) inside the factory method of the given class.</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> Iterable<ClassDeclaration> getTraitClassesAutoConstructEnabled(
 		ClassDeclaration annotatedClass, extension T context) {
@@ -650,30 +701,90 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	}
 
 	/** 
-	 * <p>Search and return existing method in annotated class, which shall be extended.</p>
+	 * <p>Returns a list of priority envelope methods that must be applied to the given class because of new trait classes.</p>
+	 */
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getAppliedPriorityEnvelopeMethods(
+		ClassDeclaration classDeclaration,
+		TypeMap typeMap,
+		extension T context
+	) {
+
+		val result = new ArrayList<MethodDeclaration>
+
+		if (classDeclaration === null || !classDeclaration.hasAnnotation(ApplyRules) ||
+			!classDeclaration.isExtendedClass || classDeclaration.isTraitClass)
+			return result
+
+		val traitClassesNewlyAppliedRefs = classDeclaration.getTraitClassesAppliedToExtended(null, context)
+
+		// go through all priority methods found for applied trait classes
+		for (traitClassNewlyAppliedRef : traitClassesNewlyAppliedRefs) {
+
+			if (traitClassNewlyAppliedRef !== null && traitClassNewlyAppliedRef.type instanceof ClassDeclaration) {
+
+				for (traitMethod : (traitClassNewlyAppliedRef.type as ClassDeclaration).
+					getTraitMethodClosure(typeMap, context)) {
+
+					// add priority method to result
+					if (traitMethod.isPriorityEnvelopeMethod)
+						result.add(traitMethod)
+
+				}
+
+			}
+
+		}
+
+		return result
+
+	}
+
+	/** 
+	 * <p>Returns a list of priority envelope methods that have been applied to the given class (if flag
+	 * <code>includeSelf</code> is set to <code>true</code>) and parent classes.</p>
+	 */
+	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> List<MethodDeclaration> getAppliedPriorityEnvelopeMethodsClosure(
+		ClassDeclaration classDeclaration,
+		boolean includeSelf,
+		TypeMap typeMap,
+		extension T context
+	) {
+
+		val result = new ArrayList<MethodDeclaration>
+
+		for (superClass : classDeclaration.getSuperClasses(includeSelf))
+			result.addAll(superClass.getAppliedPriorityEnvelopeMethods(typeMap, context))
+
+		return result
+
+	}
+
+	/**
+	 * <p>Searches and returns an existing method in the annotated class that shall be extended by
+	 * the given trait method.</p>
 	 * 
-	 * <p>If no method has been found, the return value is null.</p>
+	 * <p>If no method has been found, the return value is <code>null</code>.</p>
 	 * 
 	 * <p>The method from the trait class must be passed via list (which has exactly the
-	 * method as element). The passed method might be altered (a name wrapper could be applied)
+	 * method as element). The passed list might be altered (a name wrapper could be applied)
 	 * because of trait method redirection. Therefore, the calling method must analyze the
 	 * list after the call and use the method inside later on as trait method.</p>
 	 */
-	static private def MethodDeclaration getExistingMethodForExtension(List<MethodDeclaration> methodClosureCache,
+	static protected def MethodDeclaration getExistingMethodForTraitMethod(List<MethodDeclaration> methodClosureCache,
 		MutableClassDeclaration annotatedClass, List<MethodDeclaration> traitClassMethodInList,
 		boolean enableRedirection, TypeMap typeMap, extension TransformationContext context) {
 
 		var MethodDeclaration methodDeclarationToAnalyze = traitClassMethodInList.get(0)
 		var MethodDeclaration foundMethod
 
-		val recursionProtection = new HashSet<String>
+		val recursionProtection = if(enableRedirection) new HashSet<String> else null
 
 		do {
 
 			foundMethod = methodClosureCache.getMatchingMethod(
 				methodDeclarationToAnalyze,
-				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
-				TypeMatchingStrategy.MATCH_INHERITANCE,
+				TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+				TypeMatchingStrategy.MATCH_INHERITED,
 				false,
 				typeMap,
 				context
@@ -684,23 +795,23 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				// retrieve name of method redirecting to
 				val extensionRedirectionInfo = foundMethod.getTraitMethodRedirectionInfo(context)
 
-				// do not follow redirection in case of cycles
-				if (!recursionProtection.add(extensionRedirectionInfo.redirectedMethodName)) {
-
-					annotatedClass.
-						addError('''Trait method redirection cycle detected (method: "«extensionRedirectionInfo.redirectedMethodName»")''')
-
-					return foundMethod
-
-				}
-
-				// return method, if either not redirected or found in annotated class already (will not follow encapsulation then, i.e. extension is directly applied)
+				// return method if either not redirected or found in annotated class already (will not follow encapsulation then, i.e., the extension is directly applied)
 				if (!enableRedirection || extensionRedirectionInfo.redirectedMethodName.nullOrEmpty) {
 
 					// method found (not redirected from any method)
 					return foundMethod
 
 				} else {
+
+					// do not follow redirection in case of cycles
+					if (!recursionProtection.add(extensionRedirectionInfo.redirectedMethodName)) {
+
+						annotatedClass.
+							addError('''Trait method redirection cycle detected (method: "«extensionRedirectionInfo.redirectedMethodName»")''')
+
+						return foundMethod
+
+					}
 
 					// continue search for method with another name (redirection)
 					methodDeclarationToAnalyze = new MethodDeclarationRenamed(methodDeclarationToAnalyze,
@@ -719,12 +830,44 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
+	/**
+	 * <p>Checks if method in implemented class or any super class. Thereby, implementations based on
+	 * priority envelope methods only are not considered.</p>
+	 */
+	def boolean isMethodImplemented(MethodDeclaration method, TypeMap typeMap,
+		extension TransformationContext context) {
+
+		// shortcut decision
+		if (method.abstract)
+			return false
+
+		// search for implementation in hierarchy (also consider implementation from priority envelope methods
+		// that are not valid implementations)
+		return method.getImplementedSuperMethods(true, typeMap, context).exists [
+			!it.abstract && !it.hasAnnotation(PriorityEnvelopeMethod) &&
+				(!it.hasAnnotation(DelegationPriorityEnvelopeCaller) ||
+					(it.declaringType as ClassDeclaration).getMatchingExecutableInClass(
+						new MethodDeclarationRenamed(it, it.getExtendedMethodImplNameAfterExtendedByPriorityEnvelope),
+						TypeMatchingStrategy.MATCH_INHERITED,
+						TypeMatchingStrategy.MATCH_INHERITED,
+						false,
+						false,
+						true,
+						true,
+						true,
+						typeMap,
+						context
+					) !== null)
+		]
+
+	}
+
 	override void doRegisterGlobals(ClassDeclaration annotatedClass, RegisterGlobalsContext context) {
 
 		super.doRegisterGlobals(annotatedClass, context)
 
 		// track if class (and interface) has already been processed,
-		// i.e. the type hierarchy has been set correctly and methods have been generated
+		// i.e., the type hierarchy has been set correctly and methods have been generated
 		EXTENDED_CLASS_TO_BE_PROCESSED.add(annotatedClass.qualifiedName)
 
 		// start processing of this element
@@ -745,7 +888,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 	override boolean doTransformQueued(int phase, MutableClassDeclaration annotatedClass, BodySetter bodySetter,
 		extension TransformationContext context) {
 
-		// postpone transformation, if supertype must still be processed
+		// postpone transformation if supertype must still be processed
 		for (superType : annotatedClass.getSuperClasses(false)) {
 
 			if (superType.hasAnnotation(ApplyRules) &&
@@ -755,32 +898,31 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		}
 
-		try {
+		// create type map from type hierarchy
+		val typeMap = new TypeMap
+		fillTypeMapFromTypeHierarchy(annotatedClass, typeMap, context)
 
-			doTransformQueuedExtended(phase, annotatedClass, bodySetter, context)
+		// stop tracking (hierarchy will be completed in thithe followings step, so do not influence algorithms any more)
+		EXTENDED_CLASS_TO_BE_PROCESSED.remove(annotatedClass.qualifiedName)
 
-		} finally {
+		doTransformQueuedExtended(phase, annotatedClass, typeMap, bodySetter, context)
 
-			// stop tracking (hierarchy is complete now)
-			EXTENDED_CLASS_TO_BE_PROCESSED.remove(annotatedClass)
-
+		// immediately start processing priority envelope methods (if annotated by apply rules as well)
+		if (annotatedClass.hasAnnotation(ApplyRules)) {
+			ApplyRulesProcessor.doTransformPriorityEnvelopeMethods(annotatedClass, typeMap, bodySetter, context)
 		}
 
 		return true
 
 	}
 
-	def void doTransformQueuedExtended(int phase, MutableClassDeclaration annotatedClass, BodySetter bodySetter,
-		extension TransformationContext context) {
+	def void doTransformQueuedExtended(int phase, MutableClassDeclaration annotatedClass, TypeMap typeMap,
+		BodySetter bodySetter, extension TransformationContext context) {
 
 		val xtendClass = annotatedClass.primarySourceElement as ClassDeclaration
 
 		// retrieve type references (errors will be reported during the validation step)
 		val traitClassRefs = annotatedClass.getTraitClassesAppliedToExtended(null, context)
-
-		// create type map from type hierarchy
-		val typeMap = new TypeMap
-		fillTypeMapFromTypeHierarchy(annotatedClass, typeMap, context)
 
 		// process basics for trait classes
 		val traitClasses = new ArrayList<ClassDeclaration>
@@ -794,7 +936,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			annotatedClass.addField(traitClass.delegateObjectName) [
 
 				static = false
-				visibility = Visibility.PRIVATE
+				visibility = Visibility::PROTECTED
 				type = traitClassRef.type.newTypeReference(traitClassRef.actualTypeArguments.map [
 					copyTypeReference(it, typeMap, context)
 				])
@@ -817,11 +959,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			// cache method closure (of non-abstract and implemented methods)
 			val methodClosureCache = annotatedClass.getMethodClosure(null, [
 				false
-			], true, false, false, true, context).unifyMethodDeclarations(
-				TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE, null,
-				false, typeMap, context)
+			], false, false, true, true, false, context).filter[!it.hasAnnotation(PriorityEnvelopeMethod)].
+				unifyMethodDeclarations(TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+					TypeMatchingStrategy.MATCH_INHERITED, null, false, typeMap, context)
 
-			// do specific transformations for each relevant trait method
+			// do specific transformations for each relevant trait method (except priority methods)
 			val traitClassMethods = traitClass.getTraitMethodClosure(typeMap, context)
 			for (traitClassMethod : traitClassMethods)
 				doTransformForTraitClassMethod(annotatedClass, traitClass, traitClassMethod, methodClosureCache,
@@ -829,18 +971,18 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		}
 
-		// retrieve trait classes, which need construction in general
+		// retrieve trait classes that need construction in general
 		val currentTraitClassesNeedingConstruction = traitClasses.filter [
 			it.hasNonEmptyConstructorMethod(context)
 		]
 
-		// retrieve trait classes, which shall be constructed manually (locally) and automatically (all)
+		// retrieve trait classes that shall be constructed manually (locally) and automatically (all)
 		val allTraitClassesWithAutoConstruction = annotatedClass.getTraitClassesAutoConstruct(true, context)
 		val currentTraitClassesManualConstruction = currentTraitClassesNeedingConstruction.filter [
 			!allTraitClassesWithAutoConstruction.contains(it)
 		]
 
-		// create construction helper methods for all trait classes, which need construction
+		// create construction helper methods for all trait classes that need construction
 		for (traitClass : currentTraitClassesNeedingConstruction) {
 
 			// go through all constructor methods of trait class
@@ -851,7 +993,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				// create method for creating delegate object
 				val methodName = traitClass.getConstructorMethodCallName(isAutoConstructed)
 				val constructionHelperMethod = annotatedClass.addMethod(methodName) [
-					visibility = Visibility.PROTECTED
+					visibility = Visibility::PROTECTED
 
 					abstract = false
 					returnType = primitiveVoid
@@ -865,7 +1007,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				constructionHelperMethod.addAnnotation(ExtendedConstructionHelperMethod.newAnnotationReference)
 
 				// add parameters
-				val paramNameList = constructorMethod.parametersNames
+				val paramNameList = constructorMethod.parameterNames
 				constructorMethod.copyParameters(constructionHelperMethod, 0, false, typeMap, context)
 
 				// call constructor and set delegation object of extended object
@@ -922,7 +1064,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// retrieve information from annotation
 		var TypeDeclaration processor = null
-		var boolean isRequired = false
+		var boolean isRequiredFlag = false
 		var boolean setFinal = false
 		var boolean disableRedirection = false
 		if (traitClassMethod.isExclusiveMethod) {
@@ -932,20 +1074,23 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		} else if (traitClassMethod.isProcessedMethod) {
 			val info = traitClassMethod.getProcessedMethodInfo(context)
 			processor = info.processor
-			isRequired = info.required
+			isRequiredFlag = info.required
 			setFinal = info.setFinal
 			disableRedirection = info.disableRedirection
 		} else if (traitClassMethod.isEnvelopeMethod) {
 			val info = traitClassMethod.getEnvelopeMethodInfo(context)
-			isRequired = info.required
+			isRequiredFlag = info.required
 			setFinal = info.setFinal
 			disableRedirection = info.disableRedirection
+		} else if (traitClassMethod.isPriorityEnvelopeMethod) {
+			val info = traitClassMethod.getPriorityEnvelopeMethodInfo(context)
+			isRequiredFlag = info.required
 		}
 
-		// retrieve method, which already exists
+		// retrieve method that already exists
 		val traitClassMethodInList = new ArrayList<MethodDeclaration>
 		traitClassMethodInList.add(traitClassMethod)
-		var MethodDeclaration existingMethod = methodClosureCache.getExistingMethodForExtension(annotatedClass,
+		var MethodDeclaration existingMethod = methodClosureCache.getExistingMethodForTraitMethod(annotatedClass,
 			traitClassMethodInList, !disableRedirection, typeMap, context)
 		var traitClassMethodRedirected = traitClassMethodInList.get(0)
 		val methodRedirected = (traitClassMethod.simpleName != traitClassMethodRedirected.simpleName)
@@ -954,17 +1099,12 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		// determine if this is a void method
 		val isVoid = traitClassMethodRedirected.returnType === null || traitClassMethodRedirected.returnType.isVoid()
 
-		// check if existing method is in this class
-		var existingMethodInCurrentClass = existingMethod !== null && !existingMethod.abstract &&
-			existingMethod.declaringType == annotatedClass
-		var existingMethodOnlyInSuperClass = existingMethod !== null && !existingMethod.abstract &&
-			!existingMethodInCurrentClass
-		var existingAbstractMethodInCurrentClass = existingMethod !== null && existingMethod.abstract &&
-			existingMethod.declaringType == annotatedClass
-
-		// private method, which is not in current class is not considered
-		if (existingMethod !== null && existingMethod.visibility == Visibility.PRIVATE && !existingMethodInCurrentClass)
-			existingMethod = null
+		// analyze existing method
+		val hasExistingImplementation = existingMethod !== null && existingMethod.isMethodImplemented(typeMap, context)
+		var existingMethodInCurrentClass = existingMethod !== null && existingMethod.declaringType == annotatedClass
+		var existingMethodInCurrentClassImplemented = existingMethodInCurrentClass && !existingMethod.abstract
+		var existingMethodInCurrentClassAbstract = existingMethodInCurrentClass && existingMethod.abstract
+		var existingMethodImplementationInSuperClassOnly = hasExistingImplementation && !existingMethodInCurrentClass
 
 		// error if found method has incompatible modifiers or type arguments
 		if (existingMethod !== null) {
@@ -976,13 +1116,13 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				return
 			}
 
-			// error if found method is final, i.e. no modification is allowed
+			// error if found method is final, i.e., no modification is allowed
 			if (existingMethod.final && !traitClassMethod.isRequiredMethod) {
-				if (!existingMethodInCurrentClass) {
+				if (!existingMethodInCurrentClassImplemented) {
 					xtendClass.
 						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as it has been declared final in a superclass''')
 					return
-				} else if (existingMethod.hasAnnotation(ExtendedDelegationMethod)) {
+				} else if (existingMethod.hasAnnotation(ExtendedMethodFinalByTraitMethod)) {
 					xtendClass.
 						addError('''Cannot extend method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» by the functionality in trait class "«traitClass.simpleName»" because it has been set to final by another trait class''')
 					return
@@ -1001,7 +1141,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			}
 
 			// error if private
-			if (existingMethod.visibility == Visibility.PRIVATE && existingMethodInCurrentClass) {
+			if (existingMethod.visibility == Visibility::PRIVATE && existingMethodInCurrentClassImplemented) {
 				if (traitClassMethod.isRequiredMethod)
 					xtendClass.
 						addError('''Method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» is required by trait class "«traitClass.simpleName»", but it is declared private''')
@@ -1011,54 +1151,55 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				return
 			}
 
-		}
+			// check if method has already been implemented and no further implementation is allowed
+			if (traitClassMethodRedirected.isExclusiveMethod && hasExistingImplementation) {
 
-		// check if method has already been implemented and no further implementation is allowed
-		if (existingMethod !== null && !existingMethod.abstract) {
-
-			// if claimed it might be an error that method exists in extended class
-			if (traitClassMethodRedirected.isExclusiveMethod) {
 				xtendClass.
 					addError('''Trait class "«traitClass.qualifiedName»" declares method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» as exclusive trait method, so it must not exist in the extended class ("«annotatedClass.qualifiedName»")''')
 				return
+
 			}
-
-		} else {
-
-			// error if the implementation of this method inside of extended class is required
-			if (isRequired && !autoImplementation)
-				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" requires method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» to be implemented in the extended class''')
 
 		}
 
-		// report error, if method is required, but not in current non-abstract class
-		// (interface mechanism is not sufficient, because required methods might be declared protected)
-		if (existingMethod === null && traitClassMethod.isRequiredMethod && !annotatedClass.abstract) {
+		// check if method has already been implemented and no further implementation is allowed
+		if (existingMethod === null || existingMethod.abstract) {
 
-			// if methods will be implemented via annotation, no further processor or error
-			if (!autoImplementation) {
+			if (!traitClassMethodRedirected.isPriorityEnvelopeMethod) {
 
-				xtendClass.
-					addError('''Trait class "«traitClass.qualifiedName»" requires method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» to be implemented in the non-abstract, extended class''')
-
-				return
+				// error if the implementation of this method inside of extended class is required
+				if (isRequiredFlag && !autoImplementation)
+					xtendClass.
+						addError('''Trait class "«traitClass.qualifiedName»" requires method "«traitClassMethod.getMethodAsString(false, context)»"«IF (methodRedirected)» (redirected to "«traitClassMethodRedirected.simpleName»")«ENDIF» to be implemented in the extended class''')
 
 			}
 
+		}
+
+		// check if apply rule processing is active for priority envelope methods
+		if (traitClassMethod.isPriorityEnvelopeMethod && !annotatedClass.hasAnnotation(ApplyRules)) {
+
+			xtendClass.
+				addError('''Must use @ApplyRules annotation if priority envelope methods are used within applied trait class''')
+
+		}
+
+		// no processing for priority envelope methods (is performed within rule processing)
+		if (traitClassMethod.isPriorityEnvelopeMethod) {
+			return
 		}
 
 		// if method is required and public in trait class,
 		// no need to specify anything (method is part of mirror interface),
 		// at least if there is no method is base class with lower visibility
-		if (traitClassMethod.isRequiredMethod && traitClassMethod.visibility == Visibility.PUBLIC &&
-			(existingMethod === null || existingMethod.visibility == Visibility.PUBLIC))
-			return
+		if (traitClassMethodRedirected.isRequiredMethod &&
+			traitClassMethodRedirected.visibility == Visibility::PUBLIC &&
+			(existingMethod === null || existingMethod.visibility == Visibility::PUBLIC))
+			return;
 
 		// determine if trait method must be called from existing method
-		val existingMethodNoExtensionCall = existingMethod !== null && !existingMethod.abstract &&
-			(traitClassMethod.isRequiredMethod ||
-				(processor !== null && ENABLE_PROCESSOR_SHORTCUT && processor.qualifiedName == EPDefault.canonicalName)
+		val existingMethodNoExtensionCall = hasExistingImplementation && (traitClassMethodRedirected.isRequiredMethod ||
+			(processor !== null && ENABLE_PROCESSOR_SHORTCUT && processor.qualifiedName == EPDefault.canonicalName)
 				)
 
 		// store meta information which must be considered as original
@@ -1070,11 +1211,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		// calculate final state
 		val targetFinal = originalFinal || setFinal
 
-		// calculate visibility
+		// calculate visibility 
 		var targetVisibility = if (originalVisibility === null)
 				traitClassMethodRedirected.visibility
 			else
-				getMaximalVisibility(traitClassMethodRedirected.visibility, originalVisibility)
+				getMaximalVisibility(#[traitClassMethodRedirected.visibility, originalVisibility])
 
 		// determine where to get parameter info
 		val executableDeclarationWithParameterInfo = if (existingMethod !== null)
@@ -1083,73 +1224,69 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 				traitClassMethodRedirected
 
 		// create parameter name list
-		val paramNameList = executableDeclarationWithParameterInfo.parametersNames
 		val paramTypeNameListJavadoc = executableDeclarationWithParameterInfo.getParametersTypeNames(
 			TypeErasureMethod.REMOVE_CONCRETE_TYPE_PARAMTERS, true, context)
 
 		if (!methodRedirected) {
 
-			// calculate visibility: adjust to public, if found within an interface
-			if (targetVisibility != Visibility.PUBLIC) {
-				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).filter [
+			// calculate visibility: adjust to public if found within an interface
+			if (targetVisibility != Visibility::PUBLIC) {
+				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, false, context).filter [
 					it.declaringType instanceof InterfaceDeclaration
-				].getMatchingMethod(traitClassMethodRedirected,
-					TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD, TypeMatchingStrategy.MATCH_INHERITANCE,
-					false, typeMap, context) !== null)
-					targetVisibility = Visibility.PUBLIC
+				].getMatchingMethod(traitClassMethodRedirected, TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+					TypeMatchingStrategy.MATCH_INHERITED, false, typeMap, context) !== null)
+					targetVisibility = Visibility::PUBLIC
 			}
 
 		} else {
 
-			// calculate visibility: adjust to public, if found within an interface
+			// calculate visibility: adjust to public if found within an interface
 			//
-			// special implementation in case of redirection, because the original method is usually not considered 
+			// special implementation in case of redirection because the original method is usually not considered 
 			val traitClassMethodInListTemp = new ArrayList<MethodDeclaration>
 			traitClassMethodInListTemp.add(traitClassMethod)
 			var MethodDeclaration existingMethodOriginal = methodClosureCache.
-				getExistingMethodForExtension(annotatedClass, traitClassMethodInListTemp, false, typeMap, context)
-			if (existingMethodOriginal.visibility != Visibility.PUBLIC)
-				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).filter [
+				getExistingMethodForTraitMethod(annotatedClass, traitClassMethodInListTemp, false, typeMap, context)
+			if (existingMethodOriginal.visibility != Visibility::PUBLIC)
+				if (annotatedClass.getMethodClosure(null, null, true, false, false, false, false, context).filter [
 					it.declaringType instanceof InterfaceDeclaration
-				].getMatchingMethod(existingMethodOriginal, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
-					TypeMatchingStrategy.MATCH_INHERITANCE, false, typeMap, context) !== null) {
+				].getMatchingMethod(existingMethodOriginal, TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+					TypeMatchingStrategy.MATCH_INHERITED, false, typeMap, context) !== null) {
 
-					// copy original method (without redirection
+					// copy original method (without redirection)
 					val originalMethodWrapper = annotatedClass.copyMethod(existingMethodOriginal, true, false, true,
 						false, false, false, typeMap, context)
-					originalMethodWrapper.visibility = Visibility.PUBLIC
+					originalMethodWrapper.visibility = Visibility::PUBLIC
 
 					// just call functionality of superclass
 					bodySetter.setBody(
-						originalMethodWrapper, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«traitClassMethod.simpleName»(«paramNameList.join(", ")»);''',
+						originalMethodWrapper, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«traitClassMethod.simpleName»(«originalMethodWrapper.parameterNames.join(", ")»);''',
 						context)
 
 				}
 
 		}
 
-		// calculate target return type (covariance is considered and applied, programmer must take care)
-		val targetReturnType = if (existingMethod === null) {
-				traitClassMethodRedirected.returnType
-			} else {
-				if (traitClassMethodRedirected.returnType.
-					isAssignableFromStripRefConsiderUnprocessed(existingMethod.returnType, context))
-					existingMethod.returnType
-				else
-					traitClassMethodRedirected.returnType
-			}
-
 		// clone type map as it becomes modified locally
-		val typeMapLocal = typeMap.clone
+		var typeMapLocal = typeMap.clone
+
+		// calculate target return type (covariance is considered and applied, programmer must take care)
+		val errors = new ArrayList<String>
+		val targetReturnType = getMostConcreteType(#[existingMethod?.returnType, traitClassMethodRedirected.returnType],
+			errors, typeMapLocal, context)
+		if (xtendClass.reportErrors(errors, context))
+			return;
 
 		// create new method (copy signature of trait method completely), re-use abstract method declaration or decide to exit
-		var MutableMethodDeclaration delegationMethod = if (existingAbstractMethodInCurrentClass ||
-				(existingMethodNoExtensionCall && existingMethodInCurrentClass))
+		var MutableMethodDeclaration delegationMethod = if ((existingMethodInCurrentClassAbstract ||
+				(existingMethodNoExtensionCall && existingMethodInCurrentClassImplemented)))
 				existingMethod as MutableMethodDeclaration
 			else if (existingMethodNoExtensionCall && targetVisibility == originalVisibility &&
 				targetFinal == originalFinal &&
-				targetReturnType.typeReferenceEquals(originalReturnType, null, false, typeMapLocal, null))
+				targetReturnType.typeReferenceEquals(originalReturnType, null, false, typeMapLocal))
 				null
+			else if (existingMethodInCurrentClassImplemented)
+				annotatedClass.copyMethod(existingMethod, true, true, true, false, false, false, typeMapLocal, context)
 			else
 				annotatedClass.copyMethod(traitClassMethodRedirected, true, true, true, false, false, false,
 					typeMapLocal, context)
@@ -1157,21 +1294,18 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (delegationMethod === null)
 			return;
 
-		// determine, if method must be abstract or not
+		// determine if method must be abstract or not
 		if (traitClassMethodRedirected.isRequiredMethod)
 			delegationMethod.abstract = if (existingMethod !== null)
-				existingMethod.abstract
+				!hasExistingImplementation
 			else
 				true
 		else
 			delegationMethod.abstract = false
 
-		// set return type of delegation method as calculated
-		delegationMethod.returnType = targetReturnType.copyTypeReference(typeMapLocal, context)
-
 		// if method exists in current class, or method is in supertype (and an envelope method is needed), create implementation method
-		if (!existingMethodNoExtensionCall && (existingMethodInCurrentClass ||
-			(existingMethodOnlyInSuperClass && traitClassMethodRedirected.isEnvelopeMethod))) {
+		if (!existingMethodNoExtensionCall && (existingMethodInCurrentClassImplemented ||
+			(existingMethodImplementationInSuperClassOnly && traitClassMethodRedirected.isEnvelopeMethod))) {
 
 			// name for implementation method
 			val newName = traitClassMethod.getExtendedMethodImplName(traitClass)
@@ -1184,7 +1318,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			}
 
 			var MutableMethodDeclaration implMethod
-			if (existingMethodInCurrentClass) {
+			if (existingMethodInCurrentClassImplemented) {
 
 				// use delegation method (which is a new method copied from the trait class or which is the abstract method existing before)
 				implMethod = delegationMethod
@@ -1197,9 +1331,9 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			} else {
 
-				// create another method, which can then call the method in the supertype
-				implMethod = annotatedClass.copyMethod(traitClassMethodRedirected, true, false, true, false, false,
-					false, typeMapLocal, context)
+				// create another method that can then call the method in the supertype
+				implMethod = annotatedClass.copyMethod(existingMethod, true, false, true, false, false, false,
+					typeMapLocal, context)
 				implMethod.abstract = false
 
 				// documentation
@@ -1207,74 +1341,73 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 				// just call functionality of superclass
 				bodySetter.setBody(
-					implMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					implMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«implMethod.parameterNames.join(", ")»);''',
 					context)
 
 			}
 
-			// do rename implementation method and make it private
+			// do rename implementation method and make it protected
 			implMethod.simpleName = newName
-			implMethod.visibility = Visibility.PRIVATE
+			implMethod.visibility = Visibility::PROTECTED
 
-			// specific annotations for new method
+			// annotation for original functionality
 			implMethod.addAnnotation(ExtendedMethodImpl.newAnnotationReference)
 
-			// ensure that return type from current class is used (covariance)
-			val typeMapWithMethodTypeParameters = typeMapLocal.clone
-			val typeParameterIteratorExisting = existingMethod.typeParameters.iterator
-			val typeParameterIteratorImpl = implMethod.typeParameters.iterator
-			while (typeParameterIteratorExisting.hasNext) {
-				val typeParameterExisting = typeParameterIteratorExisting.next
-				val typeParameterImpl = typeParameterIteratorImpl.next
-				typeMapWithMethodTypeParameters.putHierarchyRelation(typeParameterExisting,
-					typeParameterImpl.newTypeReference)
-			}
-
-			implMethod.returnType = existingMethod.returnType.copyTypeReference(typeMapWithMethodTypeParameters,
-				context)
+			implMethod.returnType = existingMethod.returnType.copyTypeReference(typeMapLocal, context)
 
 			// use previously existing method as "newly created method" in the following algorithm and the other way around;
 			// this avoids some problems with "override" and warnings
-			if (existingMethodInCurrentClass)
+			if (existingMethodInCurrentClassImplemented) {
 				delegationMethod = existingMethod as MutableMethodDeclaration
+				typeMapLocal = typeMap.clone
+			}
 
 			// implemented method contains previous functionality and is now considered the existing method
 			existingMethod = implMethod
 
 		} else if (existingMethodNoExtensionCall) {
 
-			if (existingMethodOnlyInSuperClass) {
+			if (existingMethodImplementationInSuperClassOnly) {
 
 				delegationMethod.docComment = '''This is a generated method for calling the supertype method {@link «(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«existingMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}.'''
 
 				bodySetter.setBody(
-					delegationMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«paramNameList.join(", ")»);''',
+					delegationMethod, '''«IF !isVoid»return «ENDIF»«annotatedClass.qualifiedName».super.«existingMethod.simpleName»(«delegationMethod.parameterNames.join(", ")»);''',
 					context)
 
 			}
 
 		}
 
+		// set return type of delegation method as calculated (make a copy)
+		delegationMethod.returnType = targetReturnType.copyTypeReference(typeMapLocal, context)
+
 		// set previously calculated modifiers
 		delegationMethod.visibility = targetVisibility
 		delegationMethod.final = targetFinal
+
+		// remember if method has been set final because of trait method
+		if (setFinal)
+			delegationMethod.addAnnotation(ExtendedMethodFinalByTraitMethod.newAnnotationReference)
 
 		// add annotations (in case of having a delegation method)
 		if (!delegationMethod.abstract) {
 
 			if (!delegationMethod.hasAnnotation(Override)) {
-				if (existingMethodOnlyInSuperClass || (existingMethodInCurrentClass && originalOverride))
+
+				if (existingMethodImplementationInSuperClassOnly ||
+					(existingMethodInCurrentClassImplemented && originalOverride)) {
 					delegationMethod.addAnnotation(Override.newAnnotationReference)
-				else {
-					if (annotatedClass.getMethodClosure(null, null, true, false, false, false, context).
-						getMatchingMethod(delegationMethod, TypeMatchingStrategy.MATCH_INHERITANCE_CONSTRUCTOR_METHOD,
-							TypeMatchingStrategy.MATCH_INHERITANCE, false, typeMapLocal, context) !== null)
+				} else {
+					if (annotatedClass.getMethodClosure(null, null, true, false, false, false, false, context).
+						getMatchingMethod(delegationMethod, TypeMatchingStrategy.MATCH_INHERITED_CONSTRUCTOR_METHOD,
+							TypeMatchingStrategy.MATCH_INHERITED, false, typeMapLocal, context) !== null)
 						delegationMethod.addAnnotation(Override.newAnnotationReference)
 				}
 
 			}
-			if (!delegationMethod.hasAnnotation(ExtendedDelegationMethod))
-				delegationMethod.addAnnotation(ExtendedDelegationMethod.newAnnotationReference)
+			if (!delegationMethod.hasAnnotation(DelegationMethodForTraitMethod))
+				delegationMethod.addAnnotation(DelegationMethodForTraitMethod.newAnnotationReference)
 
 		}
 
@@ -1284,8 +1417,8 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// determine generation mode
 		var boolean useProcessor = processor !== null
-		val boolean processorMustCallExtendedMethod = ((existingMethodInCurrentClass ||
-			existingMethodOnlyInSuperClass) || (isRequired && autoImplementation))
+		val boolean processorMustCallExtendedMethod = ((existingMethodInCurrentClassImplemented ||
+			existingMethodImplementationInSuperClassOnly) || (isRequiredFlag && autoImplementation))
 
 		// short-circuit (performance): if method exists in trait class, only use this method and skip the rest
 		var boolean enableProcessorShortcut = ENABLE_PROCESSOR_SHORTCUT
@@ -1296,12 +1429,12 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		if (!useProcessor) {
 
 			// documentation
-			delegationMethod.docComment = traitClassMethod.docComment
+			delegationMethod.docComment = traitClassMethodRedirected.docComment
 
 			// set body (simply call trait class functionality)
 			val delegationMethodFinal = delegationMethod
 			bodySetter.setBody(
-				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«paramNameList.join(", ")»);''',
+				delegationMethod, '''«IF !isVoid»return («delegationMethodFinal.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») «ENDIF»«traitClass.delegateObjectName».«traitClassMethod.getTraitMethodImplName»(«delegationMethod.parameterNames.join(", ")»);''',
 				context)
 
 			return;
@@ -1311,7 +1444,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		var String methodBody = ""
 
 		// prepare list of argument values
-		val paramNameListDelegationMethod = delegationMethod.parametersNames
+		val paramNameListDelegationMethod = delegationMethod.parameterNames
 		if (paramNameListDelegationMethod.size == 0) {
 
 			methodBody = '''java.util.List<Object> internal$arguments = null;'''
@@ -1322,14 +1455,14 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 			for (paramNameDelegationMethod : paramNameListDelegationMethod)
 				methodBody += "\n" + '''internal$arguments.add(«paramNameDelegationMethod»);'''
+
 		}
 
 		// construct parameter passing code
 		val paramCallList = new ArrayList<String>
-		var paramCounter = 0
-		for (paramNameDelegationMethod : paramNameListDelegationMethod) {
+		for (paramCounter : 0 ..< paramNameListDelegationMethod.size) {
 			paramCallList.
-				add('''(«executableDeclarationWithParameterInfo.parameters.get(paramCounter).type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,context)») getArgument(«paramCounter++»)''')
+				add('''(«delegationMethod.parameters.get(paramCounter).type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context)») getArgument(«paramCounter»)''')
 		}
 
 		// lazy evaluation of functionality in trait class
@@ -1341,15 +1474,15 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 					}
 				};'''
 
-		// call super method, if implementation is not in this class
+		// call super method if implementation is not in this class
 		var String existingMethodCall
-		if (existingMethodInCurrentClass) {
+		if (existingMethodInCurrentClassImplemented) {
 
 			existingMethodCall = existingMethod.simpleName
 
 		} else {
 
-			if (existingMethodOnlyInSuperClass)
+			if (existingMethodImplementationInSuperClassOnly)
 				existingMethodCall = annotatedClass.qualifiedName + ".super." + existingMethod.simpleName
 			else
 				existingMethodCall = delegationMethod.getExtendedMethodImplName(traitClass)
@@ -1374,19 +1507,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// check if return conversion (in case of arrays) is required
 		var boolean returnArrayConversionRequired = false
-		if (!isVoid && delegationMethod.returnType.array && traitClassMethod.typeParameters.size ==
+		if (!isVoid && delegationMethod.returnType.array && traitClassMethodRedirected.typeParameters.size ==
 			delegationMethod.typeParameters.size) {
 
-			// map locally specified type parameter declarations
-			val localMethodTypeDeclarationMatch = new HashMap<TypeParameterDeclaration, TypeParameterDeclaration>
-			val typeParam2Iterator = traitClassMethod.typeParameters.iterator
-			for (typeParam1 : delegationMethod.typeParameters) {
-				val typeParam2 = typeParam2Iterator.next
-				localMethodTypeDeclarationMatch.put(typeParam1, typeParam2)
-			}
-
-			if (!traitClassMethod.returnType.typeReferenceEquals(delegationMethod.returnType, null, false, typeMapLocal,
-				localMethodTypeDeclarationMatch))
+			if (!traitClassMethodRedirected.returnType.typeReferenceEquals(delegationMethod.returnType, null, false,
+				typeMapLocal))
 				returnArrayConversionRequired = true
 
 		}
@@ -1394,12 +1519,12 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		// add return to method body
 		if (returnArrayConversionRequired) {
 
-			val traitClassMethodReturnType = traitClassMethod.returnType.getTypeReferenceAsString(true,
+			val delegationMethodReturnType = delegationMethod.returnType.getTypeReferenceAsString(true,
 				TypeErasureMethod.NONE, false, false, context)
 
 			// specific handling of array types (cannot be simply casted in case of covariance)
 			methodBody += "\n" +
-				'''«traitClassMethodReturnType» internal$resultArray = («traitClassMethodReturnType») «processorCall»;'''
+				'''«delegationMethodReturnType» internal$resultArray = («delegationMethodReturnType») «processorCall»;'''
 			methodBody += "\n" +
 				'''return java.util.Arrays.copyOf(internal$resultArray, internal$resultArray.length, «delegationMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false,context)».class);'''
 
@@ -1411,7 +1536,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 		// documentation
 		delegationMethod.docComment = '''<p>This method combines the call of:</p>
-			<ul><li>{@link «IF existingMethodInCurrentClass»#«existingMethod.simpleName»«ELSE»«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«traitClassMethod.simpleName»«ENDIF»(«paramTypeNameListJavadoc.join(", ")»)}</ul>
+			<ul><li>{@link «IF existingMethodInCurrentClassImplemented»#«existingMethod.simpleName»«ELSE»«(annotatedClass.extendedClass.type as ClassDeclaration).qualifiedName»#«traitClassMethod.simpleName»«ENDIF»(«paramTypeNameListJavadoc.join(", ")»)}</ul>
 			<p>and</p>
 			<ul><li>{@link «traitClass.qualifiedName»#«delegationMethod.simpleName»(«paramTypeNameListJavadoc.join(", ")»)}</ul>
 			<p>via processor «processor.getJavaDocLinkTo(context)»</p>'''
@@ -1499,11 +1624,11 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 			if (traitClass.isTraitBaseClass) {
 
 				xtendClass.
-					addError('''Type "«traitClass.qualifiedName»" is a trait base class, i.e. it cannot be used as trait in @ExtendedBy or @ExtendedByAuto''')
+					addError('''Type "«traitClass.qualifiedName»" is a trait base class, i.e., it cannot be used as trait in @ExtendedBy or @ExtendedByAuto''')
 
 			}
 
-			// must be auto adapted, if any trait class is
+			// must be auto adapted if any trait class is
 			if (traitClass.hasAnnotation(ApplyRules) && !xtendClass.hasAnnotation(ApplyRules)) {
 
 				xtendClass.
@@ -1525,7 +1650,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 }
 
 /**
- * Active Annotation Processor for {@link ExtendedByAuto}
+ * <p>Active Annotation Processor for {@link ExtendedByAuto}.</p>
  * 
  * @see ExtendedByAuto
  */

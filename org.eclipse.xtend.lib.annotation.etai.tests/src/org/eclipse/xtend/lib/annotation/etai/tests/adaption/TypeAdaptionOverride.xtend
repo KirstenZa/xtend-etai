@@ -138,7 +138,7 @@ class TypeAdaptionOverrideTests {
 	@Test
 	def void testNoReimplementation() {
 		
-		// check that no method is re-implemented, if there is no type change
+		// check that no method is re-implemented if there is no type change
 		assertEquals(0, TypeAdaptionOverride.declaredMethods.filter[name == "method1" && synthetic == false].size)
 		assertEquals(0, TypeAdaptionOverride.declaredMethods.filter[name == "method2" && synthetic == false].size)
 		assertEquals(0, TypeAdaptionOverride.declaredMethods.filter[name == "method3" && synthetic == false].size)

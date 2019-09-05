@@ -41,31 +41,31 @@ Animal <|-down- AnimalDog
 Animal <|-down- AnimalLion
 Animal <|--down-- AnimalZebra
 
-note right of Animal::Animal
+note right of Animal::Animal()
   this.sound = sound;
 end note
 
-note right of Animal::getSound
+note right of Animal::getSound()
   return sound;
 end note
 
-note right of AnimalDog::AnimalDog
+note right of AnimalDog::AnimalDog()
   super(sound);
 end note
 
-note right of AnimalDog::getSound
+note right of AnimalDog::getSound()
   return (SoundDog) super.getSound();
 end note
 
-note left of AnimalLion::AnimalLion
+note left of AnimalLion::AnimalLion()
   super(sound);
 end note
 
-note left of AnimalLion::getSound
+note left of AnimalLion::getSound()
   return (SoundLion) super.getSound();
 end note
 
-note left of AnimalZebra::AnimalZebra
+note left of AnimalZebra::AnimalZebra()
   super(sound);
 end note
 

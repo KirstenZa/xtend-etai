@@ -81,7 +81,7 @@ annotation GetterRule {
 	/**
 	 * <p>Determines the visibility of the generated method.</p>
 	 */
-	Visibility visibility = Visibility.PUBLIC
+	Visibility visibility = Visibility::PUBLIC
 
 	/**
 	 * <p>Determines the strategy how a collection (derived from <code>java.util.Collection</code> or
@@ -97,8 +97,8 @@ annotation GetterRule {
  * <p>This annotation can mark a (private) field. For this field, a setter method will be generated (applying the
  * Java Bean naming convention).</p>
  * 
- * <p>The generated method will return <code>true</code>, if the value or reference (<code>equals</code> is not used)
- * has actually been changed, and <code>false</code>, if not.</p>
+ * <p>The generated method will return <code>true</code> if the value or reference (<code>equals</code> is not used)
+ * has actually been changed, and <code>false</code> if not.</p>
  * 
  * <p>It can be combined with annotations like {@link TypeAdaptionRule} or {@link NotNullRule}.</p>
  * 
@@ -113,16 +113,16 @@ annotation SetterRule {
 	/**
 	 * <p>Determines the visibility of the generated method.</p>
 	 */
-	Visibility visibility = Visibility.PUBLIC
+	Visibility visibility = Visibility::PUBLIC
 
 	/**
-	 * <p>It is possible to call a method, if the field's value is going to be changed. 
+	 * <p>It is possible to call a method if the field's value is going to be changed. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the change.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>before</em> the change
@@ -140,7 +140,7 @@ annotation SetterRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's type
 	 * <li><code>fieldName</code> contains the name of the changed field
 	 * <li><code>oldValue</code> contains the previous (= current) value of the field
 	 * <li><code>newValue</code> contains the (potentially) new value of the field
@@ -156,13 +156,13 @@ annotation SetterRule {
 	String beforeChange = ""
 
 	/**
-	 * <p>It is possible to call a method, if the field's value has been changed. 
+	 * <p>It is possible to call a method if the field's value has been changed. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the change.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>after</em> the change
@@ -180,7 +180,7 @@ annotation SetterRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's type
 	 * <li><code>fieldName</code> contains the name of the changed field
 	 * <li><code>oldValue</code> contains the previous value of the field
 	 * <li><code>newValue</code> contains the new value of the field
@@ -195,7 +195,7 @@ annotation SetterRule {
 /**
  * <p>This annotation can mark a (private) field, whose type is derived from <code>java.util.Collection</code> or
  * <code>java.util.Map</code>. For this field, methods for adding items to the collection
- * (resp. putting items to the map) will be generated.</p>
+ * (or rather putting items to the map) will be generated.</p>
  * 
  * <p>Depending on the configuration, the following methods will be generated.</p>
  * <ul>
@@ -208,8 +208,8 @@ annotation SetterRule {
  * </ul>
  * 
  * <p>Thereby <code>X</code> is the name of the field. A description of the individual generated (mostly wrapper) methods and
- * their return values can be taken from <code>java.util.Collection</code>, <code>java.util.List</code> resp.
- * <code>java.util.Map</code>. In general, all <code>boolean</code> return values will report, if there has been a change in the
+ * their return values can be taken from <code>java.util.Collection</code>, <code>java.util.List</code> or
+ * <code>java.util.Map</code>. In general, all <code>boolean</code> return values will report if there has been a change in the
  * collection (not available for maps).</p>
  * 
  * <p>The annotation can be combined with annotations like {@link NotNullRule}.</p>
@@ -238,16 +238,16 @@ annotation AdderRule {
 	/**
 	 * <p>Determines the visibility of the generated method.</p>
 	 */
-	Visibility visibility = Visibility.PUBLIC
+	Visibility visibility = Visibility::PUBLIC
 
 	/**
-	 * <p>It is possible to call a method, if an element is going to be added. 
+	 * <p>It is possible to call a method if an element is going to be added. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the addition.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>before</em> the element will be
@@ -270,7 +270,7 @@ annotation AdderRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>addedElement</code> contains the (potentially) added element
 	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
@@ -282,7 +282,7 @@ annotation AdderRule {
 	 * return <code>false</code> in order to prevent adding the given element. If
 	 * <code>true</code> is returned, the element will be added as expected.</p>
 	 * 
-	 * <p>This feature is only supported by collections. It is not supported, if a map is annotated.</p>
+	 * <p>This feature is only supported by collections. It is not supported if a map is annotated.</p>
 	 * 
 	 * @see AdderRule#afterElementAdd
 	 * @see AdderRule#beforeAdd
@@ -290,13 +290,13 @@ annotation AdderRule {
 	String beforeElementAdd = ""
 
 	/**
-	 * <p>It is possible to call a method, if an element has been added. 
+	 * <p>It is possible to call a method if an element has been added. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the addition.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>after</em> the element
@@ -318,7 +318,7 @@ annotation AdderRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>addedElement</code> contains the added element
 	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
@@ -416,8 +416,8 @@ annotation AdderRule {
  * </ul>
  * 
  * <p>Thereby <code>X</code> is the name of the field. A description of the individual generated methods can be taken from
- * <code>java.util.Collection</code>, <code>java.util.List</code> resp. <code>java.util.Map</code>. In general, all
- * <code>boolean</code> return values will report, if there has been a change in the collection (not available for maps).</p>
+ * <code>java.util.Collection</code>, <code>java.util.List</code> or <code>java.util.Map</code>. In general, all
+ * <code>boolean</code> return values will report if there has been a change in the collection (not available for maps).</p>
  * 
  * @see AdderRule
  */
@@ -442,20 +442,20 @@ annotation RemoverRule {
 	/**
 	 * <p>Determines the visibility of the generated method.</p>
 	 */
-	Visibility visibility = Visibility.PUBLIC
+	Visibility visibility = Visibility::PUBLIC
 
 	/**
-	 * <p>It is possible to call a method, if an element is going to be removed. 
+	 * <p>It is possible to call a method if an element is going to be removed. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the addition.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>before</em> the element will be
-	 * removed. Thereby, it is ensured that there is an element, which can be removed.</p>
+	 * removed. Thereby, it is ensured that there is an element that can be removed.</p>
 	 * 
 	 * <p>The searched method can have different signatures depending on the data needed. However,
 	 * there should not be multiple methods used at the same time. Possible signatures are:</p>
@@ -473,7 +473,7 @@ annotation RemoverRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>removedElement</code> contains the (potentially) removed element
 	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
@@ -485,7 +485,7 @@ annotation RemoverRule {
 	 * return <code>false</code> in order to prevent removing the given element. If
 	 * <code>true</code> is returned, the element will be removed as expected.</p>
 	 * 
-	 * <p>This feature is only supported by collections. It is not supported, if a map is annotated.</p>
+	 * <p>This feature is only supported by collections. It is not supported if a map is annotated.</p>
 	 * 
 	 * @see RemoverRule#afterElementRemove
 	 * @see RemoverRule#beforeRemove
@@ -493,13 +493,13 @@ annotation RemoverRule {
 	String beforeElementRemove = ""
 
 	/**
-	 * <p>It is possible to call a method, if an element has been removed. 
+	 * <p>It is possible to call a method if an element has been removed. 
 	 * For this, a method with the specified name in the current class will be searched during
 	 * code generation. If an appropriate method is found, it will be called with information
 	 * about the addition.</p>
 	 * 
 	 * <p>The specified name can contain a <code>%</code> symbol. This symbol will be replaced
-	 * by the name of the attached field (whereas the first letter will be upper case, if the symbol
+	 * by the name of the attached field (whereas the first letter will be upper case if the symbol
 	 * is not at the first position).</p>
 	 * 
 	 * <p>The method specified by this attribute, is called <em>after</em> the element
@@ -521,7 +521,7 @@ annotation RemoverRule {
 	 * 
 	 * Further details:
 	 * <ul>
-	 * <li><code>T</code> is an arbitrary type, which should be compatible with the field's collection type
+	 * <li><code>T</code> is an arbitrary type that should be compatible with the field's collection type
 	 * <li><code>fieldName</code> contains the name of the field/collection
 	 * <li><code>removedElement</code> contains the removed element
 	 * <li><code>oldElements</code> contains all elements in the collection before the change (read-only)
@@ -615,7 +615,7 @@ annotation RemoverRule {
  * at least not via setter/adder. It is ensured the same way, that such a value can also not be retrieved via
  * getter.</p>
  * 
- * <p>Please note, that this annotation should not be used together with {@link BidirectionalRule}, because used
+ * <p>Please note, that this annotation should not be used together with {@link BidirectionalRule} because used
  * algorithms require to temporarily disconnect bidirectional connections. This means, that <code>null</code> must
  * be set.</p>
  * 
@@ -633,14 +633,14 @@ annotation NotNullRule {
 	boolean notNullSelf = true
 
 	/**
-	 * <p>This flag is only relevant, if the annotation is used together with {@link AdderRule}.</p>
+	 * <p>This flag is only relevant if the annotation is used together with {@link AdderRule}.</p>
 	 * 
 	 * <p>Determines if <code>null</code> is allowed as element of a collection (<code>java.util.Collection</code>) or as the key of a key/value pair (<code>java.util.Map</code>).</p>
 	 */
 	boolean notNullKeyOrElement = false
 
 	/**
-	 * <p>This flag is only relevant, if the annotation is used together with {@link AdderRule}.</p>
+	 * <p>This flag is only relevant if the annotation is used together with {@link AdderRule}.</p>
 	 * 
 	 * <p>Determines if <code>null</code> is allowed as value of a key/value pair (<code>java.util.Map</code>).</p>
 	 */
@@ -649,7 +649,7 @@ annotation NotNullRule {
 }
 
 /**
- * <p>This attribute can be set, if the field has applied a setter or adder/remover rule. In addition,
+ * <p>This attribute can be set if the field has applied a setter or adder/remover rule. In addition,
  * the field's type must be a simple type reference or a set of type references.</p>
  * 
  * <p>With this rule 1:0..1, 1:n or n:m relations between types can be realized.</p>
@@ -666,8 +666,8 @@ annotation NotNullRule {
  * <code>a</code> of <code>b1</code> will also be changed to <code>a1</code>. For this, the according
  * (generated) setter will be called. </p>
  * 
- * <p>This schema works in a similar way for 1:n or m:n relationships, i.e. there are fields of type
- * <code>java.util.Set</code>, which must be parameterized in order to find the "opposite field".
+ * <p>This schema works in a similar way for 1:n or m:n relationships, i.e., there are fields of type
+ * <code>java.util.Set</code> that must be parameterized in order to find the "opposite field".
  * The major difference is that adders/removers must be called for sets.</p>
  * 
  * <p>Of course, the called mechanisms also ensure that previous bidirectional connections are disconnected,
@@ -678,8 +678,8 @@ annotation NotNullRule {
  * "opposite class", the rule should be used with generated setter/adders/removers. Of course, the rule
  * should also be annotated on both sides in a correlating way.</p>
  * 
- * <p>If this annotation is used, it should be avoided to throw exceptions within change methods, which are
- * called before the actual change, e.g. set via <code>beforeSet</code> in {@link SetterRule}. 
+ * <p>If this annotation is used, it should be avoided to throw exceptions within change methods that are
+ * called before the actual change, e.g., set via <code>beforeSet</code> in {@link SetterRule}. 
  * When executing them, there might be inconsistent connection states. If throwing an exception, this
  * state would remain.</p>
  */
@@ -697,12 +697,12 @@ annotation BidirectionalRule {
 /**
  * <p>This attribute can be set in order to synchronize getter/setter/adder/remover operations
  * for a field. With the attribute a named for the lock must be specified. This lock name is considered in a global
- * namespace, i.e. different fields can share the same lock by using the same name. This can
+ * namespace, i.e., different fields can share the same lock by using the same name. This can
  * be important in context of setter/adder/remover operations which have to create/remove bidirectional
- * connections. In this case, both sides (fields) should use the same lock name, if
+ * connections. In this case, both sides (fields) should use the same lock name if
  * thread-safe behavior is required.</p>
  * 
- * <p>Internally, fair reentrant read/write locks are used, i.e. multiple getter methods can run in parallel.</p>
+ * <p>Internally, fair reentrant read/write locks are used, i.e., multiple getter methods can run in parallel.</p>
  * 
  * @see BidirectionalRule
  */
@@ -711,7 +711,7 @@ annotation BidirectionalRule {
 annotation SynchronizationRule {
 
 	/**
-	 * <p>This attribute specifies the name of the lock, which shall be used (global namespace).</p>
+	 * <p>This attribute specifies the name of the lock that shall be used (global namespace).</p>
 	 */
 	String value = ""
 
@@ -727,16 +727,16 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/** 
-	 * Helper class for storing information about rule.
+	 * <p>Helper class for storing information about rule.</p>
 	 */
 	static abstract class GetterSetterRuleInfo {
 
-		public Visibility visibility = Visibility.PUBLIC
+		public Visibility visibility = Visibility::PUBLIC
 
 	}
 
 	/** 
-	 * This helper class considers a parameter declaration for a virtual method 
+	 * <p>This helper class considers a parameter declaration for a virtual method.</p>
 	 */
 	static class ParameterDeclarationForVirtualMethod implements ParameterDeclaration {
 
@@ -771,7 +771,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/** 
-	 * This helper class considers a method declaration on basis of a field (annotated by getter/setter rule) 
+	 * <p>This helper class considers a method declaration on basis of a field (annotated by getter/setter rule).</p>
 	 */
 	static abstract class MethodDeclarationFromGetterSetter<T extends TypeLookup & TypeReferenceProvider> implements MethodDeclaration {
 
@@ -811,7 +811,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 
 		override getModifiers() { return null }
 
-		override getVisibility() { if(supportsBidirectional) return visibility else return Visibility.PRIVATE }
+		override getVisibility() { return visibility }
 
 		override isDeprecated() { return false }
 
@@ -822,18 +822,11 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 		override getCompilationUnit() { return fieldDeclaration.compilationUnit }
 
 		/**
-		 * This method returns, if the method represented by this class will take care about bidirectional settings.
-		 */
-		def boolean supportsBidirectional() {
-			return true
-		}
-
-		/**
-		 * This method returns the basic implementation of the method represented by this class.
+		 * <p>This method returns the basic implementation of the method represented by this class.</p>
 		 */
 		abstract def String getBasicImplementation()
 
-		/** Returns the not null rule information from the annotated field. */
+		/** <p>Returns the not null rule information from the annotated field.</p> */
 		def NotNullRuleInfo getNotNullRuleInfo() {
 
 			if (fieldDeclaration.hasAnnotation(NotNullRule))
@@ -845,7 +838,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Retrieves information from annotation.
+	 * <p>Retrieves information from annotation.</p>
 	 */
 	static def void fillInfoFromAnnotationBase(AnnotationReference annotationGetterSetterRule,
 		GetterSetterRuleInfo getterSetterRuleInfo, extension TypeLookup context) {
@@ -860,13 +853,13 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Retrieves info from annotation (non-static)
+	 * <p>Retrieves info from annotation (non-static)</p>
 	 */
 	abstract def GetterSetterRuleInfo getInfo(FieldDeclaration annotatedField, extension TypeLookup context)
 
 	/**
-	 * Replaces the placeholder symbol "%" in a given method name string with the field's name, whereas
-	 * the first letter will be upper case, if "%" is NOT at the first place.
+	 * <p>Replaces the placeholder symbol "%" in a given method name string with the field's name, whereas
+	 * the first letter will be upper case if "%" is NOT at the first place.</p>
 	 */
 	static def String insertFieldName(FieldDeclaration fieldDeclaration, String methodNameWithPlaceholder) {
 
@@ -882,7 +875,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Returns the name of the opposite field or <code>null</code>, if not specified.
+	 * <p>Returns the name of the opposite field or <code>null</code> if not specified.</p>
 	 */
 	static def String getOppositeFieldName(FieldDeclaration fieldDeclaration, extension TypeLookup context) {
 
@@ -894,7 +887,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Returns the synchronization lock name for this field or <code>null</code>, if not specified.
+	 * <p>Returns the synchronization lock name for this field or <code>null</code> if not specified.</p>
 	 */
 	static def String getSynchronizationLockName(FieldDeclaration fieldDeclaration, extension TypeLookup context) {
 
@@ -906,7 +899,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Returns the code which shall be used to refer to "this" (is "$extendedThis()" within trait classes)
+	 * <p>Returns the code which shall be used to refer to "this" (is "$extendedThis()" within trait classes).</p>
 	 */
 	static def String getThisCode(FieldDeclaration fieldDeclaration) {
 
@@ -919,12 +912,12 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 	}
 
 	/**
-	 * Retrieves a method, which shall be called on a specific event (e.g. changing the value of a field,
-	 * adding an element to the field's collection etc.).
+	 * <p>Retrieves a method that shall be called on a specific event (e.g. changing the value of a field,
+	 * adding an element to the field's collection etc.).</p>
 	 * 
-	 * The method can be specified by a name (supporting wildcards) and the given parameter filter.
+	 * <p>The method can be specified by a name (supporting wildcards) and the given parameter filter.</p>
 	 * 
-	 * If matching method can be found, <code>null</code> is returned.
+	 * <p>If matching method can be found, <code>null</code> is returned.</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> MethodDeclaration getMethodCallX(
 		FieldDeclaration annotatedField,
@@ -952,19 +945,19 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 		val classDeclaration = annotatedField.declaringType as ClassDeclaration
 
 		// retrieve all methods which could be called
-		val allMethods = classDeclaration.getMethodClosure(null, null, true, true, true, true, context)
+		val allMethods = classDeclaration.getMethodClosure(null, null, true, true, true, true, false, context)
 
 		// filter for methods with name matching to specified one (considering placeholders for the field's name)
 		// and unify (no need for type matching)
 		val methodNameToSearch = insertFieldName(annotatedField, methodName)
 		val methodsWithMatchingNameAndTypes = allMethods.filter [
 			simpleName == methodNameToSearch
-		].filter[methodParamFilter.curry(parameters).apply].unifyMethodDeclarations(TypeMatchingStrategy.MATCH_ALL,
+		].filter[methodParamFilter.curry(parameters).apply].unifyMethodDeclarations(TypeMatchingStrategy.MATCH_ALL_CONSTRUCTOR_METHOD,
 			TypeMatchingStrategy.MATCH_ALL, null, false, null, context)
 
 		if (methodsWithMatchingNameAndTypes.size == 0) {
 			errors?.
-				add('''Cannot find method "«methodNameToSearch»", which shall be called on event "«eventDescription»" for field "«annotatedField.simpleName»"''')
+				add('''Cannot find method "«methodNameToSearch»" that shall be called on event "«eventDescription»" for field "«annotatedField.simpleName»"''')
 			return null
 		}
 
@@ -1003,13 +996,13 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 				addError('''@«getProcessedAnnotationType().simpleName» does not support fields with inferred type''')
 
 		// check that field is not public
-		if (xtendField.visibility == Visibility.PUBLIC)
+		if (xtendField.visibility == Visibility::PUBLIC)
 			xtendField.
 				addError('''A field with @«getProcessedAnnotationType().simpleName» must not be declared public''')
 
 		// check for abstract modifier
-		if (getterSetterRuleInfo.visibility != Visibility.PUBLIC &&
-			getterSetterRuleInfo.visibility != Visibility.PROTECTED)
+		if (getterSetterRuleInfo.visibility != Visibility::PUBLIC &&
+			getterSetterRuleInfo.visibility != Visibility::PROTECTED)
 			xtendField.addError('''Only public and protected methods can be generated''')
 
 	}
@@ -1017,7 +1010,7 @@ abstract class GetterSetterRuleProcessor extends RuleProcessor<FieldDeclaration,
 }
 
 /**
- * Active Annotation Processor for {@link GetterRule}
+ * <p>Active Annotation Processor for {@link GetterRule}.</p>
  * 
  * @see GetterRule
  */
@@ -1030,7 +1023,7 @@ class GetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of getX / isX method virtually. 
+	 * <p>Specifies characteristics of getX / isX method virtually.</p> 
 	 */
 	static class MethodDeclarationFromGetter<T extends TypeLookup & TypeReferenceProvider> extends MethodDeclarationFromGetterSetter<T> {
 
@@ -1087,7 +1080,7 @@ class GetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Retrieves information from annotation (@GetterRule).
+	 * <p>Retrieves information from annotation (@GetterRule).</p>
 	 */
 	static def GetterRuleInfo getGetterInfo(FieldDeclaration annotatedField, extension TypeLookup context) {
 
@@ -1111,7 +1104,7 @@ class GetterRuleProcessor extends GetterSetterRuleProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link SetterRule}
+ * <p>Active Annotation Processor for {@link SetterRule}.</p>
  * 
  * @see SetterRule
  */
@@ -1125,7 +1118,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of setX method virtually. 
+	 * <p>Specifies characteristics of setX method virtually.</p>
 	 */
 	static class MethodDeclarationFromSetter<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromGetterSetter<T> {
 
@@ -1176,7 +1169,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 					"«fieldDeclaration.simpleName»",
 					«IF fieldDeclaration.isStatic»null«ELSE»«getThisCode(fieldDeclaration)»«ENDIF»,
 					«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullSelf»«ELSE»false«ENDIF»,
-					«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
+					«IF !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
 					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
 
 		}
@@ -1188,7 +1181,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Retrieves information from annotation (@GetterRule).
+	 * <p>Retrieves information from annotation (@GetterRule).</p>
 	 */
 	static def SetterRuleInfo getSetterInfo(FieldDeclaration annotatedField, extension TypeLookup context) {
 
@@ -1209,14 +1202,15 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * This method embeds a method call for setter events (code) in the appropriate object. 
+	 * <p>This method embeds a method call for setter events (code) in the appropriate object.</p>
 	 */
 	static def String getSetterMethodCallEmbedded(MethodDeclaration methodDeclaration, Class<?> interfaceType,
 		boolean isBoolean, FieldDeclaration fieldDeclaration, String parameters,
 		extension TypeReferenceProvider context) {
 
 		val methodDeclarationBoolean = (context.primitiveBoolean == methodDeclaration.returnType)
-		val objectTypeString = fieldDeclaration.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true, context)
+		val objectTypeString = fieldDeclaration.type.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true,
+			context)
 		return '''new org.eclipse.xtend.lib.annotation.etai.utils.GetterSetterUtils.«interfaceType.simpleName»<«objectTypeString»>() {
 				@Override
 				public «IF isBoolean»boolean«ELSE»void«ENDIF» call(«objectTypeString» oldValue, «objectTypeString» newValue) {
@@ -1228,7 +1222,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "before change"
+	 * <p>Get method for event "before change".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -1254,7 +1248,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before change"
+	 * <p>Gets the call (string) of the method for event "before change".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeChange(
 		FieldDeclaration annotatedField, extension T context) {
@@ -1279,7 +1273,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "after change"
+	 * <p>Get method for event "after change".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -1305,7 +1299,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "after change"
+	 * <p>Gets the call (string) of the method for event "after change".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallAfterChange(
 		FieldDeclaration annotatedField, extension T context) {
@@ -1350,7 +1344,7 @@ class SetterRuleProcessor extends GetterSetterRuleProcessor {
 }
 
 /**
- * Base class for adder/remover annotation processors.
+ * <p>Base class for adder/remover annotation processors.</p>
  */
 abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 
@@ -1362,7 +1356,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/** 
-	 * This helper class considers a method declaration on basis of a field (annotated by adder/remover rule) 
+	 * <p>This helper class considers a method declaration on basis of a field (annotated by adder/remover rule).</p>
 	 */
 	static abstract class MethodDeclarationFromAdderRemover<T extends TypeLookup & TypeReferenceProvider> extends MethodDeclarationFromGetterSetter<T> {
 
@@ -1371,7 +1365,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 		}
 
 		/**
-		 * Returns a string for casting the given collection type to a compatible one.
+		 * <p>Returns a string for casting the given collection type to a compatible one.</p>
 		 */
 		protected def String getCastedCollectionTypeStringForChanging(Class<?> collectionType) {
 
@@ -1402,8 +1396,8 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 					fieldDeclaration.type.actualTypeArguments.get(0).upperBound !== null)
 					return "(" +
 						context.newTypeReference(collectionType,
-							fieldDeclaration.type.actualTypeArguments.get(0).upperBound).
-							getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, false, context) + ")"
+							fieldDeclaration.type.actualTypeArguments.get(0).upperBound).getTypeReferenceAsString(true,
+							TypeErasureMethod.NONE, false, false, context) + ")"
 
 			}
 
@@ -1422,8 +1416,8 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Retrieves the type arguments of the field's collection/map type. Thereby, it considers wild cards and
-	 * boundaries. If no information is available, <code>java.lang.Object</code> as type reference is returned.
+	 * <p>Retrieves the type arguments of the field's collection/map type. Thereby, it considers wild cards and
+	 * boundaries. If no information is available, <code>java.lang.Object</code> as type reference is returned.</p>
 	 */
 	static def TypeReference getCollectionTypeArgument(FieldDeclaration fieldDeclaration, int index,
 		TypeReferenceProvider context) {
@@ -1442,20 +1436,20 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 	}
 
 	/**
-	 * Retrieves the type arguments of the field's collection/map type as a string.
+	 * <p>Retrieves the type arguments of the field's collection/map type as a string.</p>
 	 * 
 	 * @see #getCollectionTypeArgument
 	 */
 	static def String getCollectionTypeArgumentAsString(FieldDeclaration fieldDeclaration, int index,
 		TypeReferenceProvider context) {
 
-		return getCollectionTypeArgument(fieldDeclaration, index, context).getTypeReferenceAsString(true, TypeErasureMethod.NONE, false,
-			false, context)
+		return getCollectionTypeArgument(fieldDeclaration, index, context).getTypeReferenceAsString(true,
+			TypeErasureMethod.NONE, false, false, context)
 
 	}
 
 	/**
-	 * This method embeds a method call for collection events (code) in the appropriate object. 
+	 * <p>This method embeds a method call for collection events (code) in the appropriate object.</p>
 	 */
 	static def String getCollectionMethodCallEmbedded(MethodDeclaration methodDeclaration, Class<?> interfaceType,
 		boolean isBoolean, boolean multiple, FieldDeclaration fieldDeclaration, String parameters,
@@ -1512,7 +1506,7 @@ abstract class AdderRemoverRuleProcessor extends GetterSetterRuleProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link AdderRule}
+ * <p>Active Annotation Processor for {@link AdderRule}.</p>
  * 
  * @see AdderRule
  */
@@ -1534,7 +1528,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * This helper class considers a method declaration on basis of a field (annotated by adder rule) 
+	 * <p>This helper class considers a method declaration on basis of a field (annotated by adder rule).</p> 
 	 */
 	static abstract class MethodDeclarationFromAdder<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdderRemover<T> {
 
@@ -1570,7 +1564,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 						"«fieldDeclaration.simpleName»",
 						«IF fieldDeclaration.isStatic»null«ELSE»«getThisCode(fieldDeclaration)»«ENDIF»,
 						«IF notNullRuleInfo !== null»«notNullRuleInfo.notNullKeyOrElement»«ELSE»false«ENDIF»,
-						«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
+						«IF !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
 						«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
 
 		}
@@ -1578,7 +1572,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of addToX method virtually. 
+	 * <p>Specifies characteristics of addToX method virtually.</p>
 	 */
 	static class MethodDeclarationFromAdder_AddTo<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder<T> {
 
@@ -1614,7 +1608,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of addToX (indexed) method virtually. 
+	 * <p>Specifies characteristics of addToX (indexed) method virtually.</p>
 	 */
 	static class MethodDeclarationFromAdder_AddToIndexed<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder_AddTo<T> {
 
@@ -1645,7 +1639,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of putToX method virtually. 
+	 * <p>Specifies characteristics of putToX method virtually.</p>
 	 */
 	static class MethodDeclarationFromAdder_PutTo<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder<T> {
 
@@ -1680,7 +1674,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of addAllToX method virtually. 
+	 * <p>Specifies characteristics of addAllToX method virtually.</p>
 	 */
 	static class MethodDeclarationFromAdder_AddAllTo<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder_AddTo<T> {
 
@@ -1716,7 +1710,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of addAllToX (indexed) method virtually. 
+	 * <p>Specifies characteristics of addAllToX (indexed) method virtually.</p> 
 	 */
 	static class MethodDeclarationFromAdder_AddAllToIndexed<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder_AddAllTo<T> {
 
@@ -1744,7 +1738,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of putAllToX method virtually. 
+	 * <p>Specifies characteristics of putAllToX method virtually.</p>
 	 */
 	static class MethodDeclarationFromAdder_PutAllTo<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdder<T> {
 
@@ -1781,7 +1775,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Retrieves information from annotation (@AdderRule).
+	 * <p>Retrieves information from annotation (@AdderRule).</p>
 	 */
 	static def AdderRuleInfo getAdderInfo(FieldDeclaration annotatedField, extension TypeLookup context) {
 
@@ -1800,7 +1794,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "before add"
+	 * <p>Get method for event "before add".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -1853,7 +1847,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before add"
+	 * <p>Gets the call (string) of the method for event "before add".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeAdd(
 		FieldDeclaration annotatedField, extension T context) {
@@ -1894,7 +1888,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "after add"
+	 * <p>Get method for event "after add".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -1951,7 +1945,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "after add"
+	 * <p>Gets the call (string) of the method for event "after add".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallAfterAdd(
 		FieldDeclaration annotatedField, extension T context) {
@@ -1989,7 +1983,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "before element add"
+	 * <p>Get method for event "before element add".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2034,7 +2028,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before element add"
+	 * <p>Gets the call (string) of the method for event "before element add".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeElementAdd(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2073,7 +2067,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "after element add"
+	 * <p>Get method for event "after element add".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2122,7 +2116,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "after element add"
+	 * <p>Gets the call (string) of the method for event "after element add".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallAfterElementAdd(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2180,7 +2174,7 @@ class AdderRuleProcessor extends AdderRemoverRuleProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link RemoverRule}
+ * <p>Active Annotation Processor for {@link RemoverRule}.</p>
  * 
  * @see RemoverRule
  */
@@ -2202,7 +2196,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/** 
-	 * This helper class considers a method declaration on basis of a field (annotated by remover rule) 
+	 * <p>This helper class considers a method declaration on basis of a field (annotated by remover rule).</p>
 	 */
 	static abstract class MethodDeclarationFromRemover<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromAdderRemover<T> {
 
@@ -2225,7 +2219,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 					«getMethodCallAfterRemove(fieldDeclaration, context)»,
 					"«fieldDeclaration.simpleName»",
 					«IF fieldDeclaration.isStatic»null«ELSE»«getThisCode(fieldDeclaration)»«ENDIF»,
-					«IF supportsBidirectional && !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
+					«IF !oppositeFieldName.isNullOrEmpty»"«oppositeFieldName»"«ELSE»null«ENDIF»,
 					«IF !synchronizationLockName.isNullOrEmpty»"«synchronizationLockName»"«ELSE»null«ENDIF»);'''
 
 		}
@@ -2233,7 +2227,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of removeFromX method virtually. 
+	 * <p>Specifies characteristics of removeFromX method virtually.</p>
 	 */
 	static class MethodDeclarationFromRemover_RemoveFrom<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromRemover<T> {
 
@@ -2310,7 +2304,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of removeFromX (indexed) method virtually. 
+	 * <p>Specifies characteristics of removeFromX (indexed) method virtually.</p>
 	 */
 	static class MethodDeclarationFromRemover_RemoveFromIndexed<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromRemover_RemoveFrom<T> {
 
@@ -2348,7 +2342,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of removeFromX (indexed) method virtually. 
+	 * <p>Specifies characteristics of removeFromX (indexed) method virtually.</p>
 	 */
 	static class MethodDeclarationFromRemover_RemoveAllFrom<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromRemover_RemoveFrom<T> {
 
@@ -2384,7 +2378,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Specifies characteristics of clearX method virtually. 
+	 * <p>Specifies characteristics of clearX method virtually.</p>
 	 */
 	static class MethodDeclarationFromRemover_Clear<T extends TypeLookup & FileLocations & TypeReferenceProvider> extends MethodDeclarationFromRemover_RemoveFrom<T> {
 
@@ -2431,7 +2425,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Retrieves information from annotation (@RemoverRule).
+	 * <p>Retrieves information from annotation (@RemoverRule).</p>
 	 */
 	static def RemoverRuleInfo getRemoverInfo(FieldDeclaration annotatedField, extension TypeLookup context) {
 
@@ -2450,7 +2444,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "before remove"
+	 * <p>Get method for event "before remove".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2503,7 +2497,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before remove"
+	 * <p>Gets the call (string) of the method for event "before remove".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeRemove(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2544,7 +2538,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "after remove"
+	 * <p>Get method for event "after remove".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2601,7 +2595,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "after remove"
+	 * <p>Gets the call (string) of the method for event "after remove".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallAfterRemove(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2639,7 +2633,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "before element remove"
+	 * <p>Get method for event "before element remove".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2684,7 +2678,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before element remove"
+	 * <p>Gets the call (string) of the method for event "before element remove".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallBeforeElementRemove(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2723,7 +2717,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Get method for event "after element remove"
+	 * <p>Get method for event "after element remove".</p>
 	 * 
 	 * @see GetterSetterRuleProcessor#getMethodCallX
 	 */
@@ -2772,7 +2766,7 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 	}
 
 	/**
-	 * Gets the call (string) of the method for event "before element remove"
+	 * <p>Gets the call (string) of the method for event "before element remove".</p>
 	 */
 	static def <T extends TypeLookup & FileLocations & TypeReferenceProvider> String getMethodCallAfterElementRemove(
 		FieldDeclaration annotatedField, extension T context) {
@@ -2830,16 +2824,16 @@ class RemoverRuleProcessor extends AdderRemoverRuleProcessor {
 }
 
 /**
- * Active Annotation Processor for {@link NotNullRule}
+ * <p>Active Annotation Processor for {@link NotNullRule}.</p>
  * 
  * @see SetterRule
  */
 class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldDeclaration> {
 
 	final static public String VALUE_NULL_SETTER_ERROR = "Value of field \"%s\" cannot been set to null"
-	final static public String VALUE_NULL_GETTER_ERROR = "Value of field \"%s\" cannot be retrieved, because it has been set to null, which is not allowed"
-	final static public String VALUE_NULL_GETTER_KEY_ERROR = "Value of field \"%s\" cannot be retrieved, because a contained element/key has been set to null, which is not allowed"
-	final static public String VALUE_NULL_GETTER_VALUE_ERROR = "Value of field \"%s\" cannot be retrieved, because a contained value has been set to null, which is not allowed"
+	final static public String VALUE_NULL_GETTER_ERROR = "Value of field \"%s\" cannot be retrieved because it has been set to null, which is not allowed"
+	final static public String VALUE_NULL_GETTER_KEY_ERROR = "Value of field \"%s\" cannot be retrieved because a contained element/key has been set to null, which is not allowed"
+	final static public String VALUE_NULL_GETTER_VALUE_ERROR = "Value of field \"%s\" cannot be retrieved because a contained value has been set to null, which is not allowed"
 	final static public String VALUE_NULL_ADDER_ERROR = "Cannot add null to \"%s\""
 	final static public String VALUE_NULL_ADDER_PUT_KEY_ERROR = "Cannot add null to \"%s\" (key)"
 	final static public String VALUE_NULL_ADDER_PUT_VALUE_ERROR = "Cannot add null to \"%s\" (value)"
@@ -2861,7 +2855,7 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 	}
 
 	/**
-	 * Retrieves information from annotation (@NotNullRule).
+	 * <p>Retrieves information from annotation (@NotNullRule).</p>
 	 */
 	static def NotNullRuleInfo getNotNullInfo(FieldDeclaration annotatedField, extension TypeLookup context) {
 
@@ -2895,13 +2889,13 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 		if (notNullRuleInfo.notNullSelf && !xtendField.hasAnnotation(SetterRule) &&
 			!xtendField.hasAnnotation(GetterRule))
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @GetterRule or @SetterRule, if notNullSelf is set''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @GetterRule or @SetterRule if notNullSelf is set''')
 
 		// check if in context of adder rules
 		if ((notNullRuleInfo.notNullKeyOrElement || notNullRuleInfo.notNullValue) &&
 			!xtendField.hasAnnotation(AdderRule))
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @AdderRule, if notNullKeyOrElement or notNullValue is set''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must be used together with @AdderRule if notNullKeyOrElement or notNullValue is set''')
 
 		// check for concrete types
 		if (notNullRuleInfo.notNullKeyOrElement &&
@@ -2923,7 +2917,7 @@ class NotNullRuleProcessor extends RuleProcessor<FieldDeclaration, MutableFieldD
 }
 
 /**
- * Active Annotation Processor for {@link BidirectionalRule}
+ * <p>Active Annotation Processor for {@link BidirectionalRule}.</p>
  * 
  * @see SetterRule
  * @see AdderRule
@@ -2946,7 +2940,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 	}
 
 	/**
-	 * Retrieves information from annotation (@BidirectionalRule).
+	 * <p>Retrieves information from annotation (@BidirectionalRule).</p>
 	 */
 	static def BidirectionalRuleInfo getBidirectionalRuleInfo(FieldDeclaration annotatedField,
 		extension TypeLookup context) {
@@ -2972,7 +2966,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 		if (!xtendField.hasAnnotation(SetterRule) &&
 			!(xtendField.hasAnnotation(AdderRule) && xtendField.hasAnnotation(RemoverRule))) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if also @SetterRule or @AdderRule together with @RemoverRule are used''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must only be used if also @SetterRule or @AdderRule together with @RemoverRule are used''')
 			return
 		}
 
@@ -2992,7 +2986,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 			// sets must specify type argument
 			if (xtendField.type.actualTypeArguments.size == 0) {
 				xtendField.
-					addError('''Annotation @«processedAnnotationType.simpleName» must only be used for sets, if also a type argument is applied (i.e. the type of the opposite type must be known)''')
+					addError('''Annotation @«processedAnnotationType.simpleName» must only be used for sets if also a type argument is applied (i.e. the type of the opposite type must be known)''')
 				return
 			}
 
@@ -3014,23 +3008,24 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 			!(oppositeType.type instanceof ClassDeclaration || oppositeType.type instanceof InterfaceDeclaration)) {
 
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if opposite interface/class type is specified''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must only be used if opposite interface/class type is specified''')
 			return
 
 		}
 
 		// ensure that no trait class is referenced (directly)
-		if (oppositeType.type instanceof ClassDeclaration && (oppositeType.type as ClassDeclaration).hasAnnotation(TraitClass)) {
+		if (oppositeType.type instanceof ClassDeclaration &&
+			(oppositeType.type as ClassDeclaration).hasAnnotation(TraitClass)) {
 
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must not be used, if opposite type is a trait class (in spite of that its interface can be used)''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must not be used if opposite type is a trait class (in spite of that its interface can be used)''')
 			return
 
 		}
 
 		val oppositeTypeDeclaration = oppositeType.type as TypeDeclaration
 
-		// check if opposite field (resp. setter/adder/remover) exist
+		// check if opposite field (or rather setter/adder/remover for that field) exist
 		var List<MethodDeclaration> oppositeMethods
 		if (oppositeType.type instanceof ClassDeclaration)
 			oppositeMethods = (oppositeTypeDeclaration as ClassDeclaration).getMethodClosure(
@@ -3040,6 +3035,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 				true,
 				true,
 				true,
+				false,
 				context
 			)
 		else
@@ -3075,7 +3071,7 @@ class BidirectionalRuleProcessor extends RuleProcessor<FieldDeclaration, Mutable
 }
 
 /**
- * Active Annotation Processor for {@link SynchronizationRule}
+ * <p>Active Annotation Processor for {@link SynchronizationRule}.</p>
  * 
  * @see GetterRule 
  * @see SetterRule
@@ -3099,7 +3095,7 @@ class SynchronizationRuleProcessor extends RuleProcessor<FieldDeclaration, Mutab
 	}
 
 	/**
-	 * Retrieves information from annotation (@SynchronizationRule).
+	 * <p>Retrieves information from annotation (@SynchronizationRule).</p>
 	 */
 	static def SynchronizationRuleInfo getSynchronizationRuleInfo(FieldDeclaration annotatedField,
 		extension TypeLookup context) {
@@ -3131,7 +3127,7 @@ class SynchronizationRuleProcessor extends RuleProcessor<FieldDeclaration, Mutab
 		if (!xtendField.hasAnnotation(SetterRule) && !xtendField.hasAnnotation(GetterRule) &&
 			!xtendField.hasAnnotation(AdderRule) && !xtendField.hasAnnotation(RemoverRule)) {
 			xtendField.
-				addError('''Annotation @«processedAnnotationType.simpleName» must only be used, if also @GetterRule, @SetterRule, @AdderRule or @RemoverRule are used''')
+				addError('''Annotation @«processedAnnotationType.simpleName» must only be used if also @GetterRule, @SetterRule, @AdderRule or @RemoverRule are used''')
 			return
 		}
 

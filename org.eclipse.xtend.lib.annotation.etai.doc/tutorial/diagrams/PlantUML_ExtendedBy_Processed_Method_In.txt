@@ -30,32 +30,32 @@ class Lion {
 
 note "implements\nextracted\ninterface" as ImplementExtracted
 
-note right of XHunter::getHuntingMethods
+note right of XHunter::getHuntingMethods()
   return "pursue";
 end note
 
-note right of XHunter::getHunters
+note right of XHunter::getHunters()
   return "individuals";
 end note
 
-note right of XHunter::canHunt
+note right of XHunter::canHunt()
   return isAdult();
 end note
 
-note right of XHunter::hunt
+note right of XHunter::hunt(prey:String)
   <u>Output (prey: "Antelope"):</u>
     Hunting Antelope...
 end note
 
-note left of Lion::getHunters
+note left of Lion::getHunters()
   return "pack,lioness";
 end note
 
-note left of Lion::canHunt
+note left of Lion::canHunt()
   return !isMale();
 end note
 
-note left of Lion::hunt
+note left of Lion::hunt(prey:String)
   <u>Output (prey: "Antelope"):</u>
     Roar!
 end note

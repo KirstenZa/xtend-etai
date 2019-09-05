@@ -24,36 +24,36 @@ package class AdaptionFunctions {
 	final static public String RULE_FUNC_ALTERNATIVE = "alternative"
 
 	/**
-	 * Interface for classes which implement type adaption functions
+	 * <p>Interface for classes which implement type adaption functions.</p>
 	 */
 	static protected interface IAdaptionFunction {
 
 		/**
-		 * This method is called in order to apply the type adaption function to the type in
+		 * <p>This method is called in order to apply the type adaption function to the type in
 		 * <code>baseString</code> (a string). The application can be supported by the application
-		 * context and a variable mapping.
+		 * context and a variable mapping.</p>
 		 */
 		def String apply(String baseString, Declaration typeContext, Map<String, String> variableMap)
 
 		/**
-		 * Prints the function as string (serialization).
+		 * <p>Prints the function as string (serialization).</p>
 		 * 
-		 * If <code>onlyParameters</code> is set to <code>true</code>, only the parameters of the
-		 * function are printed.
+		 * <p>If <code>onlyParameters</code> is set to <code>true</code>, only the parameters of the
+		 * function are printed.</p>
 		 */
 		def String print(boolean onlyParameters)
 
 	}
 
 	/**
-	 * Class implementing type adaption function: apply
+	 * <p>Class implementing type adaption function: apply.</p>
 	 */
 	static class Apply implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def Apply create(String parameter) {
 			val newInstance = new Apply
@@ -72,14 +72,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: append
+	 * <p>Class implementing type adaption function: append.</p>
 	 */
 	static class Append implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def Append create(String parameter) {
 			val newInstance = new Append
@@ -98,14 +98,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: prepend
+	 * <p>Class implementing type adaption function: prepend.</p>
 	 */
 	static class Prepend implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def Prepend create(String parameter) {
 			val newInstance = new Prepend
@@ -124,14 +124,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: applyVariable
+	 * <p>Class implementing type adaption function: applyVariable.</p>
 	 */
 	static class ApplyVariable implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def ApplyVariable create(String parameter) {
 			val newInstance = new ApplyVariable
@@ -153,14 +153,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: appendVariable
+	 * <p>Class implementing type adaption function: appendVariable.</p>
 	 */
 	static class AppendVariable implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def AppendVariable create(String parameter) {
 			val newInstance = new AppendVariable
@@ -182,14 +182,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: prependVariable
+	 * <p>Class implementing type adaption function: prependVariable.</p>
 	 */
 	static class PrependVariable implements IAdaptionFunction {
 
 		String parameter
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def PrependVariable create(String parameter) {
 			val newInstance = new PrependVariable
@@ -211,14 +211,14 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: addTypeParam
+	 * <p>Class implementing type adaption function: addTypeParam.</p>
 	 */
 	static abstract protected class AdaptionFunctionWithNesting implements IAdaptionFunction {
 
 		protected List<IAdaptionFunction> nestedAdaptionFunctions
 
 		/**
-		 * Apply the nested type adaption functions
+		 * <p>Apply the nested type adaption functions.</p>
 		 */
 		protected def String applyNestedAdaptionFunctions(String baseString, Declaration typeContext,
 			Map<String, String> variableMap) {
@@ -237,19 +237,19 @@ package class AdaptionFunctions {
 		}
 
 		/**
-		 * Returns the name of the adaption function
+		 * <p>Returns the name of the adaption function.</p>
 		 */
 		abstract def String getAdaptionFunctionName()
 
 	}
 
 	/**
-	 * Class implementing type adaption function: addTypeParam
+	 * <p>Class implementing type adaption function: addTypeParam.</p>
 	 */
 	static class AddTypeParam extends AdaptionFunctionWithNesting {
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def AddTypeParam create(List<IAdaptionFunction> nestedAdaptionFunctions) {
 			val newInstance = new AddTypeParam
@@ -258,7 +258,7 @@ package class AdaptionFunctions {
 		}
 
 		/**
-		 * This internal function returns the type calculated inside of the "addTypeParamX" rule.
+		 * <p>This internal function returns the type calculated inside of the "addTypeParamX" rule.</p>
 		 */
 		protected def String getTypeString(String baseString, Declaration typeContext,
 			Map<String, String> variableMap) {
@@ -278,7 +278,7 @@ package class AdaptionFunctions {
 			// retrieve type
 			val newTypeParam = getTypeString(baseString, typeContext, variableMap)
 
-			// continue, if type could be retrieved
+			// continue if type could be retrieved
 			if (!newTypeParam.nullOrEmpty) {
 
 				// ensure that comma is used to separate types
@@ -309,12 +309,12 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: addTypeParamWildcardExtends
+	 * <p>Class implementing type adaption function: addTypeParamWildcardExtends.</p>
 	 */
 	static class AddTypeParamWildcardExtends extends AddTypeParam {
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def AddTypeParamWildcardExtends create(List<IAdaptionFunction> nestedAdaptionFunctions) {
 			val newInstance = new AddTypeParamWildcardExtends
@@ -333,12 +333,12 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: addTypeParamWildcardSuper
+	 * <p>Class implementing type adaption function: addTypeParamWildcardSuper.</p>
 	 */
 	static class AddTypeParamWildcardSuper extends AddTypeParam {
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def AddTypeParamWildcardSuper create(List<IAdaptionFunction> nestedAdaptionFunctions) {
 			val newInstance = new AddTypeParamWildcardSuper
@@ -357,7 +357,7 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: replace
+	 * <p>Class implementing type adaption function: replace.</p>
 	 */
 	static class Replace implements IAdaptionFunction {
 
@@ -365,7 +365,7 @@ package class AdaptionFunctions {
 		String replacement
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def Replace create(String target, String replacement) {
 			val newInstance = new Replace
@@ -385,7 +385,7 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: replaceAll
+	 * <p>Class implementing type adaption function: replaceAll.</p>
 	 */
 	static class ReplaceAll implements IAdaptionFunction {
 
@@ -393,7 +393,7 @@ package class AdaptionFunctions {
 		String replacement
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def ReplaceAll create(String target, String replacement) {
 			val newInstance = new ReplaceAll
@@ -413,7 +413,7 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: replaceFirst
+	 * <p>Class implementing type adaption function: replaceFirst.</p>
 	 */
 	static class ReplaceFirst implements IAdaptionFunction {
 
@@ -421,7 +421,7 @@ package class AdaptionFunctions {
 		String replacement
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def ReplaceFirst create(String target, String replacement) {
 			val newInstance = new ReplaceFirst
@@ -441,12 +441,12 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Class implementing type adaption function: alternative
+	 * <p>Class implementing type adaption function: alternative.</p>
 	 */
 	static class Alternative extends AdaptionFunctionWithNesting {
 
 		/**
-		 * This is the constructor method for this type adaption function.
+		 * <p>This is the constructor method for this type adaption function.</p>
 		 */
 		static protected def Alternative create(List<IAdaptionFunction> nestedAdaptionFunctions) {
 			val newInstance = new Alternative
@@ -467,8 +467,8 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Created the type adaption function with the given name and arguments. If there is an error,
-	 * the (optionally) passed error list will be extended.
+	 * <p>Created the type adaption function with the given name and arguments. If there is an error,
+	 * the (optionally) passed error list will be extended.</p>
 	 */
 	static protected def IAdaptionFunction createFunction(String functionName, List<String> parameters,
 		List<String> errors) {
@@ -512,8 +512,8 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * This method can be used in order to apply multiple type adaption functions. It returns multiple (alternative)
-	 * type strings, which can be checked one after another for an existing type.
+	 * <p>This method can be used in order to apply multiple type adaption functions. It returns multiple (alternative)
+	 * type strings, which can then be checked one after another for an existing type.</p>
 	 * 
 	 * @see IAdaptionFunction#apply
 	 */
@@ -539,9 +539,9 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * The method takes a complete type adaption rule (as string) and returns a list of created
+	 * <p>The method takes a complete type adaption rule (as string) and returns a list of created
 	 * type adaption functions (deserialization). If there is an error, the (optionally) passed error
-	 * list will be extended .
+	 * list will be extended.</p>
 	 */
 	static def List<IAdaptionFunction> createFunctions(String completeRule, List<String> errors) {
 
@@ -550,7 +550,7 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * The method prints the given functions again in rule string format (serialization).
+	 * <p>The method prints the given functions again in rule string format (serialization).</p>
 	 */
 	static def String printFunctions(List<IAdaptionFunction> functions) {
 
@@ -559,7 +559,7 @@ package class AdaptionFunctions {
 	}
 
 	/**
-	 * Internal method for creating adaption function.
+	 * <p>Internal method for creating adaption function.</p>
 	 */
 	private static def List<IAdaptionFunction> createFunctionsInternal(String completeRule, List<String> errors,
 		boolean isTopLevel) {

@@ -1,15 +1,18 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.traits
 
+import java.lang.reflect.Modifier
+import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
+import org.eclipse.xtend.lib.annotation.etai.ApplyRules
+import org.eclipse.xtend.lib.annotation.etai.EnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.ExclusiveMethod
 import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.PriorityEnvelopeMethod
 import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
+import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
+import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassRequiredImplemented
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassRequiredMethod
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassRequiredMethodDerived
 import org.eclipse.xtend.lib.annotation.etai.tests.traits.intf.ITraitClassRequiredMethodIntermediate
-import java.lang.reflect.Modifier
-import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
-import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MethodDeclaration
 import org.eclipse.xtend.lib.macro.services.Problem.Severity
 import org.junit.Test
@@ -25,6 +28,9 @@ abstract class TraitClassRequiredMethod {
 	@RequiredMethod
 	abstract protected def void method2()
 
+	@RequiredMethod
+	abstract protected def void method3()
+
 }
 
 @TraitClassAutoUsing
@@ -36,12 +42,37 @@ abstract class TraitClassRequiredMethodDerived extends TraitClassRequiredMethodI
 
 	@ExclusiveMethod
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "4"
+		TraitTestsBase::TEST_BUFFER += "4"
 	}
 
 	@ExclusiveMethod
 	override void method2() {
-		TraitTestsBase.TEST_BUFFER += "8"
+		TraitTestsBase::TEST_BUFFER += "8"
+	}
+
+	@ExclusiveMethod
+	override void method3() {
+		TraitTestsBase::TEST_BUFFER += "2"
+	}
+
+}
+
+@TraitClassAutoUsing
+abstract class TraitClassRequiredImplemented {
+
+	@ExclusiveMethod
+	override void method1() {
+		TraitTestsBase::TEST_BUFFER += "X"
+	}
+
+	@EnvelopeMethod(required=false)
+	override void method2() {
+		TraitTestsBase::TEST_BUFFER += "Y"
+	}
+
+	@PriorityEnvelopeMethod(value=90, required=false)
+	override void method3() {
+		TraitTestsBase::TEST_BUFFER += "Z"
 	}
 
 }
@@ -50,24 +81,42 @@ abstract class TraitClassRequiredMethodDerived extends TraitClassRequiredMethodI
 class ExtendedRequiredMethod implements ITraitClassRequiredMethod {
 
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 	protected def void method2() {
-		TraitTestsBase.TEST_BUFFER += "9"
+		TraitTestsBase::TEST_BUFFER += "9"
 	}
 
+	protected def void method3() {
+		TraitTestsBase::TEST_BUFFER += "7"
+	}
+
+}
+
+@ExtendedByAuto
+@ApplyRules
+class ExtendedRequiredMethodImplementedAfter implements ITraitClassRequiredMethod, ITraitClassRequiredImplemented {
+}
+
+@ExtendedByAuto
+@ApplyRules
+class ExtendedRequiredMethodImplementedBefore implements ITraitClassRequiredImplemented, ITraitClassRequiredMethod {
 }
 
 @ExtendedByAuto
 class ExtendedRequiredMethodIntermediate implements ITraitClassRequiredMethodIntermediate {
 
 	override void method1() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 	protected def void method2() {
-		TraitTestsBase.TEST_BUFFER += "9"
+		TraitTestsBase::TEST_BUFFER += "9"
+	}
+
+	protected def void method3() {
+		TraitTestsBase::TEST_BUFFER += "7"
 	}
 
 }
@@ -83,11 +132,15 @@ abstract class ExtendedRequiredMethodAbstractIntermediate implements ITraitClass
 class ExtendedRequiredMethodFromBase {
 
 	protected def void method1() {
-		TraitTestsBase.TEST_BUFFER += "3"
+		TraitTestsBase::TEST_BUFFER += "3"
 	}
 
 	protected def void method2() {
-		TraitTestsBase.TEST_BUFFER += "9"
+		TraitTestsBase::TEST_BUFFER += "9"
+	}
+
+	protected def void method3() {
+		TraitTestsBase::TEST_BUFFER += "7"
 	}
 
 }
@@ -141,7 +194,46 @@ class RequiredMethodTests extends TraitTestsBase {
 		val obj = new ExtendedRequiredMethod
 		obj.method1
 		obj.method2
-		assertEquals("39", TEST_BUFFER);
+		obj.method3
+		assertEquals("397", TEST_BUFFER);
+
+	}
+
+	@Test
+	def void testRequiredMethodImplementedBeforeAndAfter() {
+
+		{
+
+			assertTrue(
+				Modifier.isPublic(ExtendedRequiredMethodImplementedBefore.getDeclaredMethod("method1").modifiers))
+			assertTrue(
+				Modifier.isPublic(ExtendedRequiredMethodImplementedBefore.getDeclaredMethod("method1").modifiers))
+			assertTrue(
+				Modifier.isPublic(ExtendedRequiredMethodImplementedBefore.getDeclaredMethod("method1").modifiers))
+
+			val obj = new ExtendedRequiredMethodImplementedBefore
+			TEST_BUFFER = "";
+			obj.method1
+			obj.method2
+			obj.method3
+			assertEquals("XYZ", TEST_BUFFER);
+
+		}
+
+		{
+
+			assertTrue(Modifier.isPublic(ExtendedRequiredMethodImplementedAfter.getDeclaredMethod("method1").modifiers))
+			assertTrue(Modifier.isPublic(ExtendedRequiredMethodImplementedAfter.getDeclaredMethod("method1").modifiers))
+			assertTrue(Modifier.isPublic(ExtendedRequiredMethodImplementedAfter.getDeclaredMethod("method1").modifiers))
+
+			val obj = new ExtendedRequiredMethodImplementedAfter
+			TEST_BUFFER = "";
+			obj.method1
+			obj.method2
+			obj.method3
+			assertEquals("XYZ", TEST_BUFFER);
+
+		}
 
 	}
 
@@ -151,7 +243,8 @@ class RequiredMethodTests extends TraitTestsBase {
 		val obj = new ExtendedRequiredMethodIntermediate
 		obj.method1
 		obj.method2
-		assertEquals("39", TEST_BUFFER);
+		obj.method3
+		assertEquals("397", TEST_BUFFER);
 
 	}
 
@@ -159,6 +252,7 @@ class RequiredMethodTests extends TraitTestsBase {
 	def void testRequiredMethodAbstract() {
 
 		assertTrue(Modifier.isAbstract(ExtendedRequiredMethodAbstract.getDeclaredMethod("method2").modifiers));
+		assertTrue(Modifier.isAbstract(ExtendedRequiredMethodAbstract.getDeclaredMethod("method3").modifiers));
 
 	}
 
@@ -167,6 +261,8 @@ class RequiredMethodTests extends TraitTestsBase {
 
 		assertTrue(
 			Modifier.isAbstract(ExtendedRequiredMethodAbstractIntermediate.getDeclaredMethod("method2").modifiers));
+		assertTrue(
+			Modifier.isAbstract(ExtendedRequiredMethodAbstractIntermediate.getDeclaredMethod("method3").modifiers));
 
 	}
 
@@ -176,15 +272,17 @@ class RequiredMethodTests extends TraitTestsBase {
 		val obj = new ExtendedRequiredMethodDerived
 		obj.method1
 		obj.method2
-		assertEquals("48", TEST_BUFFER);
+		obj.method3
+		assertEquals("482", TEST_BUFFER);
 
 	}
 
 	@Test
 	def void testRequiredMethodNoUnnecessaryAbstractDeclaration() {
 
-		assertEquals(0,
-			ExtendedRequiredMethodAbstract.declaredMethods.filter[name.equals("method1") && synthetic == false].size)
+		assertEquals(0, ExtendedRequiredMethodAbstract.declaredMethods.filter [
+			name.equals("method1") && synthetic == false
+		].size)
 
 	}
 
@@ -219,54 +317,6 @@ abstract class TraitClassWithRequiredMethods {
 			assertTrue(problemsMethod.get(0).message.contains("abstract"))
 
 			assertEquals(1, allProblems.size)
-
-		]
-
-	}
-
-	@Test
-	def void testRequiredMethodMustExistsInNonAbstract() {
-		'''
-
-package virtual
-
-import org.eclipse.xtend.lib.annotation.etai.ExtendedByAuto
-import org.eclipse.xtend.lib.annotation.etai.TraitClassAutoUsing
-import org.eclipse.xtend.lib.annotation.etai.RequiredMethod
-
-import virtual.intf.ITraitClassRequiring
-
-@TraitClassAutoUsing
-abstract class TraitClassRequiring {
-
-	@RequiredMethod
-	override void method1()
-
-	@RequiredMethod
-	protected def void method2()
-
-}
-
-@ExtendedByAuto
-class ExtendedClassNotFulfillingRequirement implements ITraitClassRequiring {
-}
-
-		'''.compile [
-
-			val extension ctx = transformationContext
-
-			val clazz = findClass("virtual.ExtendedClassNotFulfillingRequirement")
-
-			val problemsClass = (clazz.primarySourceElement as ClassDeclaration).problems
-
-			// do assertions
-			assertEquals(2, problemsClass.size)
-			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
-			assertTrue(problemsClass.get(0).message.contains("requires method"))
-			assertEquals(Severity.ERROR, problemsClass.get(0).severity)
-			assertTrue(problemsClass.get(0).message.contains("requires method"))
-
-			assertEquals(2, allProblems.size)
 
 		]
 
