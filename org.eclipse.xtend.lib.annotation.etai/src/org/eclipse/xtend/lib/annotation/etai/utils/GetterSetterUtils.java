@@ -1,6 +1,7 @@
 package org.eclipse.xtend.lib.annotation.etai.utils;
 
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,7 +24,9 @@ import org.eclipse.xtend.lib.annotation.etai.utils.CollectionUtils.StraightIndex
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 /**
- * <p>Utility class for implementing getters/setters/adders/removers.</p>
+ * <p>
+ * Utility class for implementing getters/setters/adders/removers.
+ * </p>
  */
 public class GetterSetterUtils {
 
@@ -64,91 +67,175 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>Interface for calling a method: no return type.</p>
+	 * <p>
+	 * Interface for calling a method: no return type.
+	 * </p>
 	 */
 	public static interface MethodCallVoid {
 		void call();
 	}
 
 	/**
-	 * <p>Interface for calling a method: return type <code>boolean</code>.</p>
+	 * <p>
+	 * Interface for calling a method: return type <code>boolean</code>.
+	 * </p>
 	 */
 	public static interface MethodCallBoolean {
 		boolean call();
 	}
 
 	/**
-	 * <p>Interface for calling value/reference change method: return type
-	 * <code>void</code>.</p>
+	 * <p>
+	 * Interface for calling value/reference change method: return type
+	 * <code>void</code>.
+	 * </p>
 	 */
 	public static interface MethodCallValueChangeVoid<E> {
 		void call(E oldValue, E newValue);
 	}
 
 	/**
-	 * <p>Interface for calling value/reference change method: return type
-	 * <code>boolean</code>.</p>
+	 * <p>
+	 * Interface for calling value/reference change method: return type
+	 * <code>boolean</code>.
+	 * </p>
 	 */
 	public static interface MethodCallValueChangeBoolean<E> {
 		boolean call(E oldValue, E newValue);
 	}
 
 	/**
-	 * <p>Interface for calling collection change method: multiple elements, indices
-	 * and return type <code>boolean</code>.</p>
+	 * <p>
+	 * Interface for calling collection change method: multiple elements, indices
+	 * and return type <code>boolean</code>.
+	 * </p>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexBoolean<E> {
 		boolean call(List<E> elements, List<Integer> indices, List<E> oldElements);
 	}
 
 	/**
-	 * <p>Interface for calling collection change method: single element, index and
-	 * return type <code>boolean</code>.</p>
+	 * <p>
+	 * Interface for calling collection change method: single element, index and
+	 * return type <code>boolean</code>.
+	 * </p>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexBoolean<E> {
 		boolean call(E element, int index, List<E> oldElements);
 	}
 
 	/**
-	 * <p>Interface for calling collection change method: multiple elements, indices
-	 * and return type <code>void</code>.</p>
+	 * <p>
+	 * Interface for calling collection change method: multiple elements, indices
+	 * and return type <code>void</code>.
+	 * </p>
 	 */
 	public static interface MethodCallCollectionNameMultipleIndexVoid<E> {
 		void call(List<E> elements, List<Integer> indices, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
-	 * <p>Interface for calling collection change method: single element, index and
-	 * return type <code>void</code>.</p>
+	 * <p>
+	 * Interface for calling collection change method: single element, index and
+	 * return type <code>void</code>.
+	 * </p>
 	 */
 	public static interface MethodCallCollectionNameSingleIndexVoid<E> {
 		void call(E element, int index, List<E> oldElements, List<E> newElements);
 	}
 
 	/**
-	 * <p>Interface for calling bidirectional set/add method.</p>
+	 * <p>
+	 * Interface for calling map change method: multiple elements and return type
+	 * <code>boolean</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameMultipleBoolean<K, V> {
+		boolean call(Map<K, V> elements);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling map change method: single element and return type
+	 * <code>boolean</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameSingleBoolean<K, V> {
+		boolean call(Map.Entry<K, V> element);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling map change method: single element (also replaced one)
+	 * and return type <code>boolean</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameSingleBooleanWithReplaced<K, V> {
+		boolean call(Map.Entry<K, V> element, Map.Entry<K, V> replacedElement);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling map change method: multiple elements and return type
+	 * <code>void</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameMultipleVoid<K, V> {
+		void call(Map<K, V> elements);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling map change method: single element and return type
+	 * <code>void</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameSingleVoid<K, V> {
+		void call(Map.Entry<K, V> element);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling map change method: single element (also replaced one)
+	 * and return type <code>void</code>.
+	 * </p>
+	 */
+	public static interface MethodCallMapNameSingleVoidWithReplaced<K, V> {
+		void call(Map.Entry<K, V> element, Map.Entry<K, V> replacedElement);
+	}
+
+	/**
+	 * <p>
+	 * Interface for calling bidirectional set/add method.
+	 * </p>
 	 */
 	public static interface MethodCallBidirectional<E, F> {
 		void call(E obj, F value);
 	}
 
 	/**
-	 * <p>This class allows the tracking of fields (in context of an object and the
+	 * <p>
+	 * This class allows the tracking of fields (in context of an object and the
 	 * current thread) which are currently modified. This way, it is possible to
-	 * avoid the concurrent modification of a field (in the same thread).</p>
+	 * avoid the concurrent modification of a field (in the same thread).
+	 * </p>
 	 */
 	static class ConcurrentModificationLock {
 
 		private Map<Thread, Map<String, Map<Object, Integer>>> locks = new HashMap<Thread, Map<String, Map<Object, Integer>>>();
 
 		/**
-		 * <p>After calling this method, given field of the given object will not be
+		 * <p>
+		 * After calling this method, given field of the given object will not be
 		 * changed by calling generated setter/adder/remover methods any more until the
 		 * unlock method has been called. If such generated methods are called, they
-		 * will return <code>false</code>.</p>
+		 * will return <code>false</code>.
+		 * </p>
 		 * 
-		 * <p>The method can be called multiple times, i.e., also the unlock field must be
-		 * called the same amount of times in order to unlock.</p>
+		 * <p>
+		 * The method can be called multiple times, i.e., also the unlock field must be
+		 * called the same amount of times in order to unlock.
+		 * </p>
 		 * 
 		 * @see #unlockField
 		 */
@@ -176,8 +263,10 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>After calling this method, given field of the given object can be changed
-		 * again (if called as often as the lock method).</p>
+		 * <p>
+		 * After calling this method, given field of the given object can be changed
+		 * again (if called as often as the lock method).
+		 * </p>
 		 * 
 		 * @see #lockField
 		 */
@@ -203,7 +292,9 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>Returns if the given field of the given object is currently locked.</p>
+		 * <p>
+		 * Returns if the given field of the given object is currently locked.
+		 * </p>
 		 */
 		synchronized public boolean isFieldLocked(Object obj, String fieldName) {
 
@@ -227,15 +318,19 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This class allows to lock the getter/setter/adder/remover operations based on
-	 * a given name.</p>
+	 * <p>
+	 * This class allows to lock the getter/setter/adder/remover operations based on
+	 * a given name.
+	 * </p>
 	 */
 	static class NamedSynchronizationLock {
 
 		private Map<String, ReentrantReadWriteLock> locks = new HashMap<String, ReentrantReadWriteLock>();
 
 		/**
-		 * <p>Retrieves the lock with the given name.</p>
+		 * <p>
+		 * Retrieves the lock with the given name.
+		 * </p>
 		 */
 		synchronized protected ReentrantReadWriteLock getLock(String lockName) {
 
@@ -251,9 +346,13 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>Locks the given name until unlocked (write).</p>
+		 * <p>
+		 * Locks the given name until unlocked (write).
+		 * </p>
 		 * 
-		 * <p>Internally, a fair reentrant read/write lock is used.</p>
+		 * <p>
+		 * Internally, a fair reentrant read/write lock is used.
+		 * </p>
 		 * 
 		 * @see #writeUnlockField
 		 */
@@ -268,9 +367,13 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>Locks the given name until unlocked (read).</p>
+		 * <p>
+		 * Locks the given name until unlocked (read).
+		 * </p>
 		 * 
-		 * <p>Internally, a fair reentrant read/write lock is used.</p>
+		 * <p>
+		 * Internally, a fair reentrant read/write lock is used.
+		 * </p>
 		 * 
 		 * @see #readUnlockField
 		 */
@@ -285,7 +388,9 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>Unlocks the given name until unlocked (write).</p>
+		 * <p>
+		 * Unlocks the given name until unlocked (write).
+		 * </p>
 		 * 
 		 * @see #writeLockField
 		 */
@@ -300,7 +405,9 @@ public class GetterSetterUtils {
 		}
 
 		/**
-		 * <p>Unlocks the given name until unlocked (read).</p>
+		 * <p>
+		 * Unlocks the given name until unlocked (read).
+		 * </p>
 		 * 
 		 * @see #readLockField
 		 */
@@ -317,10 +424,14 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of getter methods.</p>
+	 * <p>
+	 * This method can be used for the implementation of getter methods.
+	 * </p>
 	 * 
-	 * <p>It will return the value/reference of the given field considering all given
-	 * features (e.g. "not null", collection policy etc.).</p>
+	 * <p>
+	 * It will return the value/reference of the given field considering all given
+	 * features (e.g. "not null", collection policy etc.).
+	 * </p>
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static <E> E getValue(E value, CollectionGetterPolicy collectionGetterPolicy, String fieldName,
@@ -396,11 +507,15 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of setter methods.</p>
+	 * <p>
+	 * This method can be used for the implementation of setter methods.
+	 * </p>
 	 * 
-	 * <p>It will change the value/reference of the given field considering all given
+	 * <p>
+	 * It will change the value/reference of the given field considering all given
 	 * features (e.g. "not null", calling methods on changes etc.). It will return,
-	 * if there has been a change.</p>
+	 * if there has been a change.
+	 * </p>
 	 */
 	public static <E> boolean setValue(E oldValue, E newValue, MethodCallBoolean compareValues, MethodCallVoid doSet,
 			MethodCallValueChangeBoolean<E> beforeChange, MethodCallValueChangeVoid<E> afterChange, String fieldName,
@@ -459,9 +574,7 @@ public class GetterSetterUtils {
 
 			}
 
-		} finally
-
-		{
+		} finally {
 
 			// unlock this operation
 			NAMED_SYNCHRONIZATION_LOCK.writeUnlockField(synchronizationLock);
@@ -471,8 +584,10 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of adder methods for lists
-	 * (adding to its end).</p>
+	 * <p>
+	 * This method can be used for the implementation of adder methods for lists
+	 * (adding to its end).
+	 * </p>
 	 * 
 	 * @see #addToCollection
 	 */
@@ -501,12 +616,16 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of adder methods for
-	 * collections.</p>
+	 * <p>
+	 * This method can be used for the implementation of adder methods for
+	 * collections.
+	 * </p>
 	 * 
-	 * <p>It will add the given list of elements to the given collection considering
+	 * <p>
+	 * It will add the given list of elements to the given collection considering
 	 * all given features (e.g. "not null", calling methods on changes etc.). It
-	 * will return if there has been a change.</p>
+	 * will return if there has been a change.
+	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> boolean addToCollection(Collection<? extends E> collection, Collection<? extends E> elements,
@@ -545,7 +664,7 @@ public class GetterSetterUtils {
 				// exist in destination set
 				if (collection instanceof Set<?>) {
 
-					java.util.Set<E> newElements = new java.util.HashSet<E>();
+					java.util.Set<E> newElements = new java.util.HashSet<E>(elements.size());
 
 					for (E obj : elements)
 						if (!collection.contains(obj))
@@ -559,7 +678,7 @@ public class GetterSetterUtils {
 				// will be added
 				if (beforeElementAdd != null) {
 
-					objsToBeAdded = new ArrayList<E>();
+					objsToBeAdded = new ArrayList<E>(elements.size());
 					int currentIndex = startIndex;
 					for (E element : elements) {
 						if (beforeElementAdd.call(element, currentIndex, oldElements)) {
@@ -593,7 +712,7 @@ public class GetterSetterUtils {
 				if (oppositeFieldName != null && !oppositeFieldName.isEmpty()) {
 
 					// set new bidirectional connection
-					objsAdded = new ArrayList<E>();
+					objsAdded = new ArrayList<E>(objsToBeAdded.size());
 
 					// add each element individually and try to set new bidirectional connection
 					for (E obj : objsToBeAdded) {
@@ -655,9 +774,8 @@ public class GetterSetterUtils {
 				}
 
 				// call "after add" method for whole change package which has been added
-				if (afterAdd != null) {
+				if (afterAdd != null)
 					afterAdd.call(objsAdded, indicesToBeAdded, oldElements, newElements);
-				}
 
 				return true;
 
@@ -678,18 +796,22 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of remover methods for
-	 * collections.</p>
+	 * <p>
+	 * This method can be used for the implementation of remover methods for
+	 * collections.
+	 * </p>
 	 * 
-	 * <p>Either it will remove the given list of elements from the given collection
+	 * <p>
+	 * Either it will remove the given list of elements from the given collection
 	 * (<code>elements != null</code>), or it will remove the element with the given
 	 * index from the given list (<code>index != null</code>) considering all given
 	 * features (e.g. "not null", calling methods on changes etc.). It will return,
-	 * if there has been a change.</p>
+	 * if there has been a change.
+	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> boolean removeFromCollection(Collection<? extends E> collection, Collection<? extends E> elements,
-			Integer index, boolean removeAll, MethodCallCollectionNameSingleIndexBoolean<E> beforeElementRemove,
+			Integer index, boolean removeDuplicates, MethodCallCollectionNameSingleIndexBoolean<E> beforeElementRemove,
 			MethodCallCollectionNameMultipleIndexBoolean<E> beforeRemove,
 			MethodCallCollectionNameSingleIndexVoid<E> afterElementRemove,
 			MethodCallCollectionNameMultipleIndexVoid<E> afterRemove, String fieldName, Object currentObject,
@@ -721,13 +843,13 @@ public class GetterSetterUtils {
 				// reduce elements to elements which are really in the collection
 				if (elements != null) {
 
-					java.util.List<E> newElements = new java.util.ArrayList<E>();
+					List<E> removeElements = new ArrayList<E>(elements.size());
 
 					for (E obj : elements)
-						if (collection.contains(obj) && !newElements.contains(obj))
-							newElements.add(obj);
+						if (collection.contains(obj) && !removeElements.contains(obj))
+							removeElements.add(obj);
 
-					elements = newElements;
+					elements = removeElements;
 
 				}
 
@@ -748,7 +870,7 @@ public class GetterSetterUtils {
 
 					if (collection instanceof List<?>) {
 
-						indicesToBeRemoved = new ArrayList<Integer>();
+						indicesToBeRemoved = new ArrayList<Integer>(elements.size());
 
 						for (E element : elements) {
 
@@ -762,7 +884,7 @@ public class GetterSetterUtils {
 										objsToBeRemoved.add(element);
 										indicesToBeRemoved.add(i);
 									}
-									if (!removeAll)
+									if (!removeDuplicates)
 										break;
 								}
 
@@ -800,7 +922,7 @@ public class GetterSetterUtils {
 				if (oppositeFieldName != null && !oppositeFieldName.isEmpty()) {
 
 					// try to reset bidirectional connections
-					objsRemoved = new ArrayList<E>();
+					objsRemoved = new ArrayList<E>(objsToBeRemoved.size());
 
 					// remove each element individually and try to remove bidirectional connection
 					for (int i = 0; i < objsToBeRemoved.size(); i++) {
@@ -842,14 +964,13 @@ public class GetterSetterUtils {
 
 					} else {
 
-						if (removeAll) {
+						if (removeDuplicates) {
 							if (!collection.removeAll(objsToBeRemoved))
 								return false;
 						} else {
 							assert objsToBeRemoved.size() == 1;
 							if (!collection.remove(objsToBeRemoved.get(0)))
 								return false;
-
 						}
 
 						// expectation on operation is that ALL elements have actually been removed
@@ -882,9 +1003,8 @@ public class GetterSetterUtils {
 				}
 
 				// call "after remove" method for whole change package which has been removed
-				if (afterRemove != null) {
+				if (afterRemove != null)
 					afterRemove.call(objsRemoved, indicesToBeRemoved, oldElements, newElements);
-				}
 
 				return true;
 
@@ -905,42 +1025,281 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of adder methods for maps.</p>
+	 * <p>
+	 * This method can be used for the implementation of adder methods for maps.
+	 * </p>
 	 * 
-	 * <p>It will put the given key/value entries to the map considering all given
-	 * features (e.g. "not null" etc.).</p>
+	 * <p>
+	 * It will put the given key/value entries to the map considering all given
+	 * features (e.g. "not null" etc.).
+	 * </p>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K, V> V putToMap(Map<? extends K, ? extends V> map, Map<? extends K, ? extends V> elements,
+			MethodCallMapNameSingleBooleanWithReplaced<K, V> beforeElementAdd,
+			MethodCallMapNameMultipleBoolean<K, V> beforeAdd,
+			MethodCallMapNameSingleVoidWithReplaced<K, V> afterElementAdd, MethodCallMapNameMultipleVoid<K, V> afterAdd,
+			String fieldName, Object currentObject, List<Boolean> changeResult, boolean notNullKey,
+			boolean notNullValue, String synchronizationLock) {
+
+		// track, if there has been a change
+		if (changeResult != null && changeResult.size() == 1)
+			changeResult.set(0, false);
+
+		// lock this operation
+		NAMED_SYNCHRONIZATION_LOCK.writeLockField(synchronizationLock);
+
+		try {
+
+			V returnValue = null;
+
+			// no concurrent modifications
+			if (CONCURRENT_MODIFICATION_LOCK.isFieldLocked(currentObject, fieldName))
+				return null;
+
+			// start block which avoids concurrent modifications
+			CONCURRENT_MODIFICATION_LOCK.lockField(currentObject, fieldName);
+
+			try {
+
+				// null checks
+				assert !notNullKey || map == null
+						|| (!CollectionUtils.containsKeyNoThrow((Map<?, ?>) elements, null)) : String.format(
+								org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.VALUE_NULL_ADDER_PUT_KEY_ERROR,
+								fieldName);
+
+				assert !notNullValue || map == null
+						|| (!CollectionUtils.containsValueNoThrow((Map<?, ?>) elements, null)) : String.format(
+								org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.VALUE_NULL_ADDER_PUT_VALUE_ERROR,
+								fieldName);
+
+				// replace elements from given elements which already
+				// exist in destination map (same key/value pair)
+				Map<K, V> entriesToBeAdded = new HashMap<K, V>(elements.size());
+				Map<K, V> entriesToBeReplaced = new HashMap<K, V>(elements.size());
+				for (Map.Entry<? extends K, ? extends V> entry : elements.entrySet())
+					if (map.containsKey(entry.getKey())) {
+						if (map.get(entry.getKey()) != entry.getValue()) {
+							entriesToBeReplaced.put(entry.getKey(), map.get(entry.getKey()));
+							entriesToBeAdded.put(entry.getKey(), entry.getValue());
+						}
+					} else {
+						entriesToBeAdded.put(entry.getKey(), entry.getValue());
+					}
+
+				// go through each element, call "before element add" method and check if it
+				// will be added
+				if (beforeElementAdd != null) {
+
+					Map<K, V> entriesToBeAddedNew = new HashMap<K, V>(entriesToBeAdded.size());
+					for (Map.Entry<? extends K, ? extends V> entry : entriesToBeAdded.entrySet()) {
+
+						// scan for replaced pair
+						Map.Entry<K, V> replacedElement = null;
+						if (entriesToBeReplaced.containsKey(entry.getKey()))
+							replacedElement = new AbstractMap.SimpleImmutableEntry<K, V>(entry.getKey(),
+									entriesToBeReplaced.get(entry.getKey()));
+
+						if (beforeElementAdd.call(new AbstractMap.SimpleImmutableEntry<K, V>(entry), replacedElement))
+							entriesToBeAddedNew.put(entry.getKey(), entry.getValue());
+
+					}
+					entriesToBeAdded = Collections.unmodifiableMap(entriesToBeAddedNew);
+
+				} else {
+
+					entriesToBeAdded = Collections.unmodifiableMap(entriesToBeAdded);
+
+				}
+
+				// return if nothing will be changed
+				if (entriesToBeAdded.size() == 0)
+					return null;
+
+				// call "before add" method for whole change package and check if it will be
+				// added
+				if (beforeAdd != null) {
+					if (!beforeAdd.call(entriesToBeAdded))
+						return null;
+				}
+
+				// something will be changed
+				if (changeResult != null)
+					changeResult.set(0, true);
+
+				// put elements to map
+				if (elements.size() == 1 && entriesToBeAdded.size() == 1) {
+					Map.Entry<? extends K, ? extends V> entry = entriesToBeAdded.entrySet().iterator().next();
+					returnValue = ((Map<K, V>) map).put(entry.getKey(), entry.getValue());
+				} else {
+					((Map<K, V>) map).putAll(entriesToBeAdded);
+				}
+
+				// go through each element which has been added, and call "after element add"
+				// method
+				if (afterElementAdd != null)
+					for (Map.Entry<? extends K, ? extends V> entry : entriesToBeAdded.entrySet()) {
+
+						// scan for replaced pair
+						Map.Entry<K, V> replacedElement = null;
+						if (entriesToBeReplaced.containsKey(entry.getKey()))
+							replacedElement = new AbstractMap.SimpleImmutableEntry<K, V>(entry.getKey(),
+									entriesToBeReplaced.get(entry.getKey()));
+
+						afterElementAdd.call(new AbstractMap.SimpleImmutableEntry<K, V>(entry), replacedElement);
+
+					}
+
+				// call "after add" method for whole change package which has been added
+				if (afterAdd != null)
+					afterAdd.call(entriesToBeAdded);
+
+				return returnValue;
+
+			} finally {
+
+				// stop block which avoids concurrent modifications
+				CONCURRENT_MODIFICATION_LOCK.unlockField(currentObject, fieldName);
+
+			}
+
+		} finally {
+
+			// unlock this operation
+			NAMED_SYNCHRONIZATION_LOCK.writeUnlockField(synchronizationLock);
+
+		}
+
+	}
+
+	/**
+	 * <p>
+	 * This method can be used for the implementation of adder methods for maps.
+	 * </p>
+	 * 
+	 * <p>
+	 * It will use method <code>putToMap</code>. However, it will return if there
+	 * has been a change in the map.
+	 * </p>
+	 * 
+	 * @see #putToMap
+	 */
+	public static <K, V> boolean putAllToMap(Map<? extends K, ? extends V> map, Map<? extends K, ? extends V> elements,
+			MethodCallMapNameSingleBooleanWithReplaced<K, V> beforeElementAdd,
+			MethodCallMapNameMultipleBoolean<K, V> beforeAdd,
+			MethodCallMapNameSingleVoidWithReplaced<K, V> afterElementAdd, MethodCallMapNameMultipleVoid<K, V> afterAdd,
 			String fieldName, Object currentObject, boolean notNullKey, boolean notNullValue,
 			String synchronizationLock) {
 
+		List<Boolean> changeResult = new ArrayList<Boolean>();
+		changeResult.add(false);
+
+		putToMap(map, elements, beforeElementAdd, beforeAdd, afterElementAdd, afterAdd, fieldName, currentObject,
+				changeResult, notNullKey, notNullValue, synchronizationLock);
+
+		return changeResult.get(0);
+
+	}
+
+	/**
+	 * <p>
+	 * This method can be used for the implementation of remover methods for maps.
+	 * </p>
+	 * 
+	 * <p>
+	 * It will remove the given key from the given map. It will return the
+	 * associated value (or null if there was no entry).
+	 * </p>
+	 */
+	public static <K, V> V removeFromMap(Map<? extends K, ? extends V> map, Set<? extends K> keys,
+			MethodCallMapNameSingleBoolean<K, V> beforeElementRemove,
+			MethodCallMapNameMultipleBoolean<K, V> beforeRemove, MethodCallMapNameSingleVoid<K, V> afterElementRemove,
+			MethodCallMapNameMultipleVoid<K, V> afterRemove, String fieldName, Object currentObject,
+			List<Boolean> changeResult, String synchronizationLock) {
+
+		// track, if there has been a change
+		if (changeResult != null && changeResult.size() == 1)
+			changeResult.set(0, false);
+
 		// lock this operation
 		NAMED_SYNCHRONIZATION_LOCK.writeLockField(synchronizationLock);
 
 		try {
 
-			// null checks
-			assert !notNullKey || map == null
-					|| (!CollectionUtils.containsKeyNoThrow((Map<?, ?>) elements, null)) : String.format(
-							org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.VALUE_NULL_ADDER_PUT_KEY_ERROR,
-							fieldName);
+			V returnValue = null;
 
-			assert !notNullValue || map == null
-					|| (!CollectionUtils.containsValueNoThrow((Map<?, ?>) elements, null)) : String.format(
-							org.eclipse.xtend.lib.annotation.etai.NotNullRuleProcessor.VALUE_NULL_ADDER_PUT_VALUE_ERROR,
-							fieldName);
+			// no concurrent modifications
+			if (CONCURRENT_MODIFICATION_LOCK.isFieldLocked(currentObject, fieldName))
+				return null;
 
-			// put elements to map
-			if (elements.size() == 1) {
-				Map.Entry<? extends K, ? extends V> entry = elements.entrySet().iterator().next();
-				return ((Map<K, V>) map).put(entry.getKey(), entry.getValue());
-			} else {
-				((Map<K, V>) map).putAll(elements);
+			// start block which avoids concurrent modifications
+			CONCURRENT_MODIFICATION_LOCK.lockField(currentObject, fieldName);
+
+			try {
+
+				// reduce elements to elements which are really in the map
+				Map<K, V> entriesToBeRemoved = new HashMap<K, V>(keys.size());
+				for (K key : keys)
+					if (map.containsKey(key))
+						entriesToBeRemoved.put(key, map.get(key));
+
+				// go through each element, call "before element remove" method and check,
+				// if it will be removed
+				if (beforeElementRemove != null) {
+
+					Map<K, V> entriesToBeRemovedNew = new HashMap<K, V>(entriesToBeRemoved.size());
+					for (Map.Entry<? extends K, ? extends V> entry : entriesToBeRemoved.entrySet())
+						if (beforeElementRemove.call(new AbstractMap.SimpleImmutableEntry<K, V>(entry)))
+							entriesToBeRemovedNew.put(entry.getKey(), entry.getValue());
+					entriesToBeRemoved = Collections.unmodifiableMap(entriesToBeRemovedNew);
+
+				} else {
+
+					entriesToBeRemoved = Collections.unmodifiableMap(entriesToBeRemoved);
+
+				}
+
+				// return if nothing will be changed
+				if (entriesToBeRemoved.size() == 0)
+					return null;
+
+				// call "before remove" method for whole change package and check,
+				// if it will be removed
+				if (beforeRemove != null) {
+					if (!beforeRemove.call(entriesToBeRemoved))
+						return null;
+				}
+
+				// something will be changed
+				if (changeResult != null)
+					changeResult.set(0, true);
+
+				// remove via key
+				if (keys.size() == 1 && entriesToBeRemoved.size() == 1)
+					returnValue = map.remove(keys.iterator().next());
+				else
+					for (K key : entriesToBeRemoved.keySet())
+						map.remove(key);
+
+				// go through each element which has been removed,
+				// and call "after element remove" method
+				if (afterElementRemove != null)
+					for (Map.Entry<? extends K, ? extends V> entry : entriesToBeRemoved.entrySet())
+						afterElementRemove.call(new AbstractMap.SimpleImmutableEntry<K, V>(entry));
+
+				// call "after remove" method for whole change package which has been removed
+				if (afterRemove != null)
+					afterRemove.call(entriesToBeRemoved);
+
+				return returnValue;
+
+			} finally {
+
+				// stop block which avoids concurrent modifications
+				CONCURRENT_MODIFICATION_LOCK.unlockField(currentObject, fieldName);
+
 			}
 
-			return null;
-
 		} finally {
 
 			// unlock this operation
@@ -951,22 +1310,36 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of remover methods for maps.</p>
+	 * <p>
+	 * This method can be used for the implementation of remover methods for
+	 * collections (clear).
+	 * </p>
 	 * 
-	 * <p>It will remove the given key from the given map. It will return the
-	 * associated value (or null if there was no entry).</p>
+	 * <p>
+	 * It will remove all elements from the collection. It will return if there has
+	 * been a change.
+	 * </p>
 	 */
-	@SuppressWarnings("unchecked")
-	public static <K, V> V removeFromMap(Map<? extends K, ? extends V> map, K key, String fieldName,
-			Object currentObject, String synchronizationLock) {
+	@SuppressWarnings({ "unchecked" })
+	public static <E> boolean clearCollection(Collection<? extends E> collection,
+			MethodCallCollectionNameSingleIndexBoolean<E> beforeElementRemove,
+			MethodCallCollectionNameMultipleIndexBoolean<E> beforeRemove,
+			MethodCallCollectionNameSingleIndexVoid<E> afterElementRemove,
+			MethodCallCollectionNameMultipleIndexVoid<E> afterRemove, String fieldName, Object currentObject,
+			String oppositeFieldName, String synchronizationLock) {
 
 		// lock this operation
 		NAMED_SYNCHRONIZATION_LOCK.writeLockField(synchronizationLock);
 
 		try {
 
-			// put via key
-			return ((Map<K, V>) map).remove(key);
+			if (collection.size() == 0)
+				return false;
+
+			// clear collection
+			Collection<? extends E> elementsToBeRemoved = (Collection<? extends E>) new ArrayList<Object>(collection);
+			return removeFromCollection(collection, elementsToBeRemoved, null, true, beforeElementRemove, beforeRemove,
+					afterElementRemove, afterRemove, fieldName, currentObject, oppositeFieldName, synchronizationLock);
 
 		} finally {
 
@@ -978,14 +1351,20 @@ public class GetterSetterUtils {
 	}
 
 	/**
-	 * <p>This method can be used for the implementation of remover methods for maps
-	 * (clear).</p>
+	 * <p>
+	 * This method can be used for the implementation of remover methods for maps
+	 * (clear).
+	 * </p>
 	 * 
-	 * <p>It will remove all elements from the map. It will return if there has been a
-	 * change.</p>
+	 * <p>
+	 * It will remove all elements from the map. It will return if there has been a
+	 * change.
+	 * </p>
 	 */
-
-	public static <K, V> boolean clearMap(Map<? extends K, ? extends V> map, String fieldName, Object currentObject,
+	public static <K, V> boolean clearMap(Map<? extends K, ? extends V> map,
+			MethodCallMapNameSingleBoolean<K, V> beforeElementRemove,
+			MethodCallMapNameMultipleBoolean<K, V> beforeRemove, MethodCallMapNameSingleVoid<K, V> afterElementRemove,
+			MethodCallMapNameMultipleVoid<K, V> afterRemove, String fieldName, Object currentObject,
 			String synchronizationLock) {
 
 		// lock this operation
@@ -996,12 +1375,15 @@ public class GetterSetterUtils {
 			if (map.size() == 0)
 				return false;
 
+			List<Boolean> changeResult = new ArrayList<Boolean>();
+			changeResult.add(false);
+
 			// clear map
-			map.clear();
+			Set<K> keysToBeRemoved = new HashSet<K>(map.keySet());
+			removeFromMap(map, keysToBeRemoved, beforeElementRemove, beforeRemove, afterElementRemove, afterRemove,
+					fieldName, currentObject, changeResult, synchronizationLock);
 
-			assert map.size() == 0;
-
-			return true;
+			return changeResult.get(0);
 
 		} finally {
 

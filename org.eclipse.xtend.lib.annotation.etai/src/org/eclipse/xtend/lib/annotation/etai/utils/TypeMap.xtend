@@ -343,6 +343,7 @@ class TypeMap {
 	/**
 	 * <p>Adds the annotation for suppressing "unused" warnings to the given target.</p>
 	 */
+	@SuppressWarnings("unchecked")
 	static def void addSuppressWarningUnused(MutableAnnotationTarget target, extension TransformationContext context) {
 
 		if (!target.hasAnnotation(SuppressWarnings)) {

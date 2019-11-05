@@ -1,5 +1,10 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
+import java.util.ArrayList
+import java.util.Collection
+import java.util.HashMap
+import java.util.List
+import java.util.Map
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.ApplyRules
 import org.eclipse.xtend.lib.annotation.etai.EPBooleanPreAnd
@@ -24,6 +29,28 @@ import org.junit.Test
 import static org.eclipse.xtend.lib.annotation.etai.tests.adaption.ClassWithSetterChangeMultiUse.*
 import static org.eclipse.xtend.lib.annotation.etai.tests.adaption.ClassWithSetterChangeStatic.*
 import static org.junit.Assert.*
+
+class ClassWithSimpleEquals {
+
+	int value
+
+	new(int value) {
+		this.value = value
+	}
+
+	def int getValue() {
+		return value
+	}
+
+	override boolean equals(Object other) {
+		if (this === other)
+			return true
+		if (other instanceof ClassWithSimpleEquals)
+			return this.value == other.value
+		return false
+	}
+
+}
 
 @ApplyRules
 class ClassWithSetterChange {
@@ -103,6 +130,53 @@ class ClassWithSetterChange {
 
 	def void dataWithSetter6Changed() {
 		calledAfter++
+	}
+
+	@SetterRule(afterChange="%Changed")
+	@GetterRule
+	ClassWithSimpleEquals dataWithSetterSimpleEquals = null
+
+	def void dataWithSetterSimpleEqualsChanged() {
+		calledAfter++
+	}
+
+}
+
+@ApplyRules
+class ClassWithSetterChangeCollectionMap {
+
+	public int calledAfter = 0
+
+	@SetterRule(beforeChange="%BeforeChange", afterChange="%Changed")
+	@GetterRule
+	List<Integer> collectionWithSetter = new ArrayList<Integer>
+
+	protected static def boolean collectionWithSetterBeforeChange(List<Integer> newValue) {
+		return newValue !== null && newValue.size > 0 && newValue.get(0) > 10
+	}
+
+	protected def void collectionWithSetterChanged(Collection<Integer> oldValue, List<Integer> newValue) {
+		calledAfter++
+		assertNotNull(oldValue)
+		assertNotNull(newValue)
+		assertTrue(oldValue !== newValue)
+		assertTrue(newValue.get(0) > 10)
+	}
+
+	@SetterRule(beforeChange="%BeforeChange", afterChange="%Changed")
+	@GetterRule
+	Map<String, Double> mapWithSetter = new HashMap<String, Double>
+
+	protected static def boolean mapWithSetterBeforeChange(Map<String, Double> newValue) {
+		return newValue !== null && newValue.size >= 2 && newValue.containsKey("test") && newValue.get("test") > 5.0
+	}
+
+	protected def void mapWithSetterChanged(Map<String, Double> oldValue, Map<String, Double> newValue) {
+		calledAfter++
+		assertNotNull(oldValue)
+		assertNotNull(newValue)
+		assertTrue(oldValue !== newValue)
+		assertTrue(newValue.get("test") > 5.0)
 	}
 
 }
@@ -453,6 +527,71 @@ class GetterSetterChangeTests {
 
 		assertEquals(6, obj.calledBefore)
 		assertEquals(5, obj.calledAfter)
+
+		assertTrue(obj.dataWithSetterSimpleEquals = new ClassWithSimpleEquals(20))
+		assertEquals(20, obj.dataWithSetterSimpleEquals.value)
+		assertEquals(6, obj.calledAfter)
+
+		assertTrue(obj.dataWithSetterSimpleEquals = new ClassWithSimpleEquals(30))
+		assertEquals(30, obj.dataWithSetterSimpleEquals.value)
+		assertEquals(7, obj.calledAfter)
+
+		val newValue = new ClassWithSimpleEquals(30)
+
+		assertTrue(obj.dataWithSetterSimpleEquals = newValue)
+		assertEquals(30, obj.dataWithSetterSimpleEquals.value)
+		assertEquals(8, obj.calledAfter)
+
+		assertFalse(obj.dataWithSetterSimpleEquals = newValue)
+		assertEquals(30, obj.dataWithSetterSimpleEquals.value)
+		assertEquals(8, obj.calledAfter)
+
+	}
+
+	@Test
+	def void testChangeCollectionMap() {
+
+		{
+
+			val obj = new ClassWithSetterChangeCollectionMap
+
+			assertFalse(obj.collectionWithSetter = new ArrayList<Integer>())
+			assertEquals(0, obj.collectionWithSetter.size)
+			assertFalse(obj.collectionWithSetter = #[0])
+			assertEquals(0, obj.collectionWithSetter.size)
+			assertTrue(obj.collectionWithSetter = #[21])
+			assertEquals(1, obj.collectionWithSetter.size)
+			assertEquals(21, obj.collectionWithSetter.get(0))
+			assertEquals(1, obj.calledAfter)
+
+		}
+
+		{
+
+			val obj = new ClassWithSetterChangeCollectionMap
+
+			val newMap = new HashMap<String, Double>()
+
+			assertFalse(obj.mapWithSetter = new HashMap<String, Double>())
+			assertEquals(0, obj.mapWithSetter.size)
+			assertFalse(obj.mapWithSetter = newMap)
+			assertEquals(0, obj.mapWithSetter.size)
+
+			newMap.put("test", 3.0)
+			newMap.put("x", 10.0)
+
+			assertFalse(obj.mapWithSetter = newMap)
+			assertEquals(0, obj.mapWithSetter.size)
+
+			newMap.put("test", 10.0)
+
+			assertTrue(obj.mapWithSetter = newMap)
+			assertEquals(2, obj.mapWithSetter.size)
+			assertEquals(10.0, obj.mapWithSetter.get("x"), 0.1)
+			assertEquals(10.0, obj.mapWithSetter.get("test"), 0.1)
+			assertEquals(1, obj.calledAfter)
+
+		}
 
 	}
 

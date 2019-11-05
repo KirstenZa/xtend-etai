@@ -1139,6 +1139,7 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 	/**
 	 * <p>Internal method for retrieving adaption variables.</p>
 	 */
+	@SuppressWarnings("unchecked")
 	static private def void getAdaptionVariablesInternal(
 		TypeDeclaration typeDeclaration,
 		Map<String, String> result,
@@ -2520,8 +2521,8 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 
 					// ... otherwise use default value provider if return value is needed
 					methodBody += '''try {
-							return («priorityEnvelopeCallerMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true, context)») $defaultValueProvider.newInstance().getDefaultValue();
-						} catch (java.lang.InstantiationException | java.lang.IllegalAccessException $exception) {
+							return («priorityEnvelopeCallerMethod.returnType.getTypeReferenceAsString(true, TypeErasureMethod.NONE, false, true, context)») $defaultValueProvider.getConstructor().newInstance().getDefaultValue();
+						} catch (java.lang.InstantiationException | java.lang.IllegalAccessException | java.lang.IllegalArgumentException | java.lang.reflect.InvocationTargetException | java.lang.NoSuchMethodException | java.lang.SecurityException $exception) {
 							throw org.eclipse.xtext.xbase.lib.Exceptions.sneakyThrow($exception);
 						}
 						'''

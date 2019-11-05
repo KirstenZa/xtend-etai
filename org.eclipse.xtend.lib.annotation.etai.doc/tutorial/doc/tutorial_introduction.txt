@@ -4,7 +4,7 @@ The ETAI library contains several [Active Annotations for Xtend](https://eclipse
 
 ### Usage
 
-The easiest way to build the ETAI library is to use [Gradle](https://gradle.org/). Necessary build files are already included in the repository. However, no wrapper is provided, so Gradle should but installed on your system.
+The easiest way to build the ETAI library is to use [Gradle](https://gradle.org/). Necessary build files are already included in the repository. However, no wrapper is provided, so Gradle should be installed on your system.
 
 The following sections will explain how to use Gradle in order to use the ETAI library.
 

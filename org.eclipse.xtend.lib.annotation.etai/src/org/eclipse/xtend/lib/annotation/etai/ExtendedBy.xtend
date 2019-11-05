@@ -902,7 +902,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 		val typeMap = new TypeMap
 		fillTypeMapFromTypeHierarchy(annotatedClass, typeMap, context)
 
-		// stop tracking (hierarchy will be completed in thithe followings step, so do not influence algorithms any more)
+		// stop tracking (hierarchy will be completed in the followings step, so do not influence algorithms any more)
 		EXTENDED_CLASS_TO_BE_PROCESSED.remove(annotatedClass.qualifiedName)
 
 		doTransformQueuedExtended(phase, annotatedClass, typeMap, bodySetter, context)
@@ -1546,6 +1546,7 @@ class ExtendedByProcessor extends AbstractClassProcessor implements QueuedTransf
 
 	}
 
+	@SuppressWarnings("unchecked")
 	override void doValidate(ClassDeclaration annotatedClass, extension ValidationContext context) {
 
 		super.doValidate(annotatedClass, context)

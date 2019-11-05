@@ -81,6 +81,7 @@ class BodySetter {
 	 * <p>Move body of specified source method to given destination method considering
 	 * the internal cache.</p>
 	 */
+	@SuppressWarnings("unchecked")
 	def moveBody(MutableExecutableDeclaration dest, MethodDeclaration src, TypeReferenceProvider context) {
 
 		if (cachedBodies.containsKey(src)) {

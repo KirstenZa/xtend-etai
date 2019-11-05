@@ -108,6 +108,12 @@ class ClassWithAdderRemover {
 	@SetterRule
 	static Map<Integer, String> dataWithAdderRemoverMapStatic = new HashMap<Integer, String>
 
+	@AdderRule(multiple=true, single=true)
+	@RemoverRule(multiple=true, single=true)
+	@GetterRule
+	@SetterRule
+	Map<String, ClassWithSimpleEquals> dataWithSimpleEquals = new HashMap<String, ClassWithSimpleEquals>
+
 }
 
 @ApplyRules
@@ -449,6 +455,22 @@ class AdderRemoverTests {
 		assertTrue(obj.clearDataWithAdderRemoverMap)
 		assertTrue(obj.getDataWithAdderRemoverMap().empty)
 		assertFalse(obj.clearDataWithAdderRemoverMap)
+		
+		assertNull(obj.putToDataWithAdderRemoverMap(10, null))
+		assertNull(obj.putToDataWithAdderRemoverMap(10, null))
+		assertEquals(new HashSet(#[10]), obj.getDataWithAdderRemoverMap().keySet)
+		assertNull(obj.getDataWithAdderRemoverMap().values.iterator.next)
+		assertEquals(1, obj.getDataWithAdderRemoverMap().size)
+		assertNull(obj.removeFromDataWithAdderRemoverMap(10))
+		assertEquals(0, obj.getDataWithAdderRemoverMap().size)
+		assertNull(obj.removeFromDataWithAdderRemoverMap(10))
+		
+		assertNull(obj.putToDataWithAdderRemoverMap(null, null))
+		assertNull(obj.putToDataWithAdderRemoverMap(null, 2.0))
+		assertEquals(2.0, obj.putToDataWithAdderRemoverMap(null, 3.0), 0.1)
+		assertEquals(3.0, obj.removeFromDataWithAdderRemoverMap(null), 0.1)
+		assertEquals(0, obj.getDataWithAdderRemoverMap().size)
+		assertNull(obj.removeFromDataWithAdderRemoverMap(null))
 
 		assertEquals(0, obj.class.declaredMethods.filter [
 			synthetic == false && name == "addToDataWithAdderRemoverMap"
@@ -491,6 +513,26 @@ class AdderRemoverTests {
 		assertEquals(0, obj.class.declaredMethods.filter [
 			synthetic == false && name == "removeAllFromDataWithAdderRemoverSortedMap"
 		].size)
+
+		// test: map (no change and return values)
+		assertNull(obj.putToDataWithSimpleEquals("test", new ClassWithSimpleEquals(20)))
+		val tempClassWithSimpleEquals = new ClassWithSimpleEquals(20)
+		assertEquals(20, obj.putToDataWithSimpleEquals("test", tempClassWithSimpleEquals).value)
+		assertNull(obj.putToDataWithSimpleEquals("test", tempClassWithSimpleEquals))
+		val newValueMap = new HashMap<String, ClassWithSimpleEquals>()
+		newValueMap.put("test", tempClassWithSimpleEquals)
+		assertFalse(obj.putAllToDataWithSimpleEquals(newValueMap))
+		newValueMap.put("test2", new ClassWithSimpleEquals(20))
+		assertTrue(obj.putAllToDataWithSimpleEquals(newValueMap))
+		assertFalse(obj.putAllToDataWithSimpleEquals(newValueMap))
+		
+		assertSame(tempClassWithSimpleEquals, obj.dataWithSimpleEquals.get("test"))
+		assertEquals(20, obj.dataWithSimpleEquals.get("test2").value)
+		
+		assertEquals(20, obj.removeFromDataWithSimpleEquals("test").value)
+		assertEquals(20, obj.removeFromDataWithSimpleEquals("test2").value)
+		
+		assertEquals(0, obj.dataWithSimpleEquals.size)
 
 	}
 
@@ -1010,7 +1052,7 @@ class AdderRemoverTests {
 
 		obj.putAllToDataMapAdderKeyNotNull(tempMapStringString)
 		assertNull(obj.putToDataMapAdderKeyNotNull("1", null))
-		assertNull("10", obj.putToDataMapAdderKeyNotNull("1", "10"))
+		assertNull(obj.putToDataMapAdderKeyNotNull("1", "10"))
 
 		exceptionThrown = false
 		try {

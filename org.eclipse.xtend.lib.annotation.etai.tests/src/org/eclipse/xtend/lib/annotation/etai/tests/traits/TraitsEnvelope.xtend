@@ -392,6 +392,7 @@ class TraitsEnvelopeTests extends TraitTestsBase {
 
 	}
 
+	@Test
 	def void testEnvelopeDoesNotApplyPrivateInBase() {
 
 		val obj1 = new ExtendedClassEnvelopePrivateDerived1

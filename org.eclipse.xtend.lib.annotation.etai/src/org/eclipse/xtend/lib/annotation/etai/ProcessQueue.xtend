@@ -268,6 +268,7 @@ class ProcessQueue {
 	 * <p>This method will queue a transformation for a later point in time. Queued transformations
 	 * will be called automatically as soon as all previously scheduled transformation are stopped.</p>
 	 */
+	@SuppressWarnings("unchecked")
 	static protected def void queueTransformation(int phase, QueuedTransformationParticipant<?> processor,
 		MutableAnnotationTarget annotatedElement, String registeredName, TransformationContext context) {
 

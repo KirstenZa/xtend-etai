@@ -1516,6 +1516,7 @@ class ProcessUtils {
 	 * 
 	 * @bug This is currently not supported by xtend.
 	 */
+	@SuppressWarnings("unchecked")
 	static def moveParameter(MutableExecutableDeclaration executable, int targetIndex, int sourceIndex) {
 
 		val listParameter = ReflectUtils.getPrivateFieldValue(executable.parameters, "fromList") as List<Object>
@@ -1532,6 +1533,7 @@ class ProcessUtils {
 	 * 
 	 * @bug This is currently not supported by xtend.
 	 */
+	@SuppressWarnings("unchecked")
 	static def removeParameter(MutableExecutableDeclaration executable, int index) {
 
 		val listParameter = ReflectUtils.getPrivateFieldValue(executable.parameters, "fromList") as List<Object>

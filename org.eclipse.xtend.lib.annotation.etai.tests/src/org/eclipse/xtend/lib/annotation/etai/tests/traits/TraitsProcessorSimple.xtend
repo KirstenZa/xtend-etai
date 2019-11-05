@@ -73,6 +73,7 @@ class TraitsProcessorSimpleTests extends TraitTestsBase {
 
 	}
 
+	@Test
 	def void testProcessorDoesNotApplyPrivateInBase() {
 
 		val obj = new ExtendedClassProcessorPrivateDerived

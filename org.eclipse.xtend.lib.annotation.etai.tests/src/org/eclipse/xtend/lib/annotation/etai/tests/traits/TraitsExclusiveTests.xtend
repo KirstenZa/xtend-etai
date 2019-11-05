@@ -30,7 +30,7 @@ abstract class TraitClassExclusive {
 	 */
 	@ExclusiveMethod
 	override void method() {
-		TraitTestsBase::TEST_BUFFER += "NOT_USE"
+		TraitTestsBase::TEST_BUFFER += "USE"
 	}
 
 }
@@ -88,6 +88,7 @@ class TraitsExclusiveTests extends TraitTestsBase  {
 
 	extension XtendCompilerTester compilerTester = XtendCompilerTester.newXtendCompilerTester(Extension.classLoader)
 
+	@Test
 	def void testExclusiveDoesNotApplyPrivateInBase() {
 		
 		val obj = new ExtendedClassExclusivePrivateDerived

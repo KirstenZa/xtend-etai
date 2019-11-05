@@ -1,8 +1,10 @@
 package org.eclipse.xtend.lib.annotation.etai.tests.adaption
 
 import java.util.ArrayList
+import java.util.HashMap
 import java.util.HashSet
 import java.util.List
+import java.util.Map
 import java.util.Set
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.eclipse.xtend.lib.annotation.etai.AdderRule
@@ -220,6 +222,61 @@ class ClassWithAdderRemoverChangeBasic {
 
 }
 
+@ApplyRules
+class ClassWithAdderRemoverChangeClear {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@GetterRule
+	List<Integer> listData = new ArrayList<Integer>
+
+	def void listDataBeforeAdd() {
+		beforeAdd++
+	}
+
+	def void listDataBeforeElementAdd(Integer element) {
+		beforeElementAdd++
+		assertEquals(20, element)
+	}
+
+	def void listDataAdded() {
+		afterAdd++
+	}
+
+	def void listDataElementAdded(Integer element) {
+		afterElementAdd++
+		assertEquals(20, element)
+	}
+
+	def void listDataBeforeRemove() {
+		beforeRemove++
+	}
+
+	def void listDataBeforeElementRemove(Integer element) {
+		beforeElementRemove++
+		assertEquals(20, element)
+	}
+
+	def void listDataRemoved() {
+		afterRemove++
+	}
+
+	def void listDataElementRemoved(Integer element) {
+		afterElementRemove++
+		assertEquals(20, element)
+	}
+
+}
+
 // This is and shall be a modified copy of ClassWithAdderRemoverChange in which
 // each event method is called with field name in addition
 @ApplyRules
@@ -425,6 +482,291 @@ class ClassWithAdderRemoverChangeWithName {
 
 	// this method should not cause a problem
 	def void setDataParamRemoved(String fieldName, Set<Integer> addedValues) {
+	}
+
+}
+
+@ApplyRules
+class ClassWithAdderRemoverChangeMap {
+
+	public int beforeElementAdd = 0
+	public int afterElementAdd = 0
+	public int beforeAdd = 0
+	public int afterAdd = 0
+	public int beforeElementRemove = 0
+	public int afterElementRemove = 0
+	public int beforeRemove = 0
+	public int afterRemove = 0
+
+	def void assertReadonly(Map.Entry<?, ?> mapEntry) {
+
+		if (mapEntry === null)
+			return
+
+		var boolean exceptionThrown
+
+		exceptionThrown = false
+		try {
+			mapEntry.value = null
+		} catch (UnsupportedOperationException ex) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+	}
+
+	def void assertReadonly(Map<?, ?> map) {
+
+		if (map === null)
+			return
+
+		var boolean exceptionThrown
+
+		exceptionThrown = false
+		try {
+			map.put(null, null)
+		} catch (UnsupportedOperationException ex) {
+			exceptionThrown = true
+		}
+		assertTrue(exceptionThrown)
+
+	}
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%AfterAdd", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%AfterRemove", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%AfterElementRemove")
+	@GetterRule
+	Map<String, Double> mapData = new HashMap<String, Double>
+
+	def void mapDataBeforeAdd() {
+		beforeAdd++
+	}
+
+	def void mapDataAfterAdd() {
+		afterAdd++
+	}
+
+	def void mapDataBeforeRemove() {
+		beforeRemove++
+	}
+
+	def void mapDataAfterRemove() {
+		afterRemove++
+	}
+
+	def void mapDataBeforeElementAdd(Map.Entry<String, Double> element) {
+		beforeElementAdd++
+	}
+
+	def void mapDataAfterElementAdd(Map.Entry<String, Double> element) {
+		afterElementAdd++
+	}
+
+	def void mapDataBeforeElementRemove(Map.Entry<String, Double> element) {
+		beforeElementRemove++
+	}
+
+	def void mapDataAfterElementRemove(Map.Entry<String, Double> element) {
+		afterElementRemove++
+	}
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%AfterAdd", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%AfterRemove", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%AfterElementRemove")
+	@GetterRule
+	Map<String, Double> mapDataWithElementsAndTest = new HashMap<String, Double>
+
+	def boolean mapDataWithElementsAndTestBeforeAdd(Map<String, Double> elements) {
+		assertReadonly(elements)
+		beforeAdd++
+		return elements.size > 1
+	}
+
+	def void mapDataWithElementsAndTestAfterAdd(Map<String, Double> elements) {
+		assertReadonly(elements)
+		afterAdd++
+	}
+
+	def boolean mapDataWithElementsAndTestBeforeRemove(Map<String, Double> elements) {
+		assertReadonly(elements)
+		beforeRemove++
+		return elements.size > 1
+	}
+
+	def void mapDataWithElementsAndTestAfterRemove(Map<String, Double> elements) {
+		assertReadonly(elements)
+		afterRemove++
+	}
+
+	def boolean mapDataWithElementsAndTestBeforeElementAdd(Map.Entry<String, Double> element) {
+		assertReadonly(element)
+		beforeElementAdd++
+		return element.key.startsWith("test") || element.key.startsWith("b")
+	}
+
+	def void mapDataWithElementsAndTestAfterElementAdd(Map.Entry<String, Double> element) {
+		assertReadonly(element)
+		afterElementAdd++
+	}
+
+	def boolean mapDataWithElementsAndTestBeforeElementRemove(Map.Entry<String, Double> element) {
+		assertReadonly(element)
+		beforeElementRemove++
+		return element.key.startsWith("test") || element.key.startsWith("b")
+	}
+
+	def void mapDataWithElementsAndTestAfterElementRemove(Map.Entry<String, Double> element) {
+		assertReadonly(element)
+		afterElementRemove++
+	}
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%AfterAdd", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%AfterRemove", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%AfterElementRemove")
+	@GetterRule
+	Map<String, Double> mapDataWithFieldname = new HashMap<String, Double>
+
+	def void mapDataWithFieldnameBeforeAdd(String fieldname, Map<String, Double> elements) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		beforeAdd++
+	}
+
+	def void mapDataWithFieldnameAfterAdd(String fieldname, Map<String, Double> elements) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		afterAdd++
+	}
+
+	def void mapDataWithFieldnameBeforeRemove(String fieldname, Map<String, Double> elements) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		beforeRemove++
+	}
+
+	def void mapDataWithFieldnameAfterRemove(String fieldname, Map<String, Double> elements) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		afterRemove++
+	}
+
+	def void mapDataWithFieldnameBeforeElementAdd(String fieldname, Map.Entry<String, Double> element) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		beforeElementAdd++
+	}
+
+	def void mapDataWithFieldnameAfterElementAdd(String fieldname, Map.Entry<String, Double> element) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		afterElementAdd++
+	}
+
+	def void mapDataWithFieldnameBeforeElementRemove(String fieldname, Map.Entry<String, Double> element) {
+		if (fieldname == "mapDataWithFieldname" && element.key == "test")
+			return;
+		beforeElementRemove++
+	}
+
+	def void mapDataWithFieldnameAfterElementRemove(String fieldname, Map.Entry<String, Double> element) {
+		if (fieldname != "mapDataWithFieldname")
+			return;
+		afterElementRemove++
+	}
+
+	@AdderRule(multiple=true, beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@GetterRule
+	Map<String, String> mapDataReplacedValue = new HashMap<String, String>
+
+	def void mapDataReplacedValueBeforeElementAdd(Map.Entry<String, String> replacedElement,
+		Map.Entry<String, String> element) {
+
+		assertReadonly(replacedElement)
+
+		if (replacedElement !== null && replacedElement.key == "no_before")
+			return;
+
+		beforeElementAdd++
+
+	}
+
+	def void mapDataReplacedValueAfterElementAdd(Map.Entry<String, String> replacedElement,
+		Map.Entry<String, String> element) {
+
+		assertReadonly(replacedElement)
+
+		if (replacedElement !== null && replacedElement.key == "no_after")
+			return;
+
+		afterElementAdd++
+
+	}
+
+	@AdderRule(multiple=true, beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@GetterRule
+	Map<String, String> mapDataReplacedValueWithFieldname = new HashMap<String, String>
+
+	def boolean mapDataReplacedValueWithFieldnameBeforeElementAdd(String fieldname,
+		Map.Entry<String, String> replacedElement, Map.Entry<String, String> element) {
+
+		if (fieldname != "mapDataReplacedValueWithFieldname")
+			return false
+
+		if (replacedElement !== null && replacedElement.value == "not_changeable")
+			return false
+
+		beforeElementAdd++
+
+		return true
+
+	}
+
+	def void mapDataReplacedValueWithFieldnameAfterElementAdd(String fieldname,
+		Map.Entry<String, String> replacedElement, Map.Entry<String, String> element) {
+
+		if (fieldname != "mapDataReplacedValueWithFieldname")
+			return;
+
+		if (replacedElement !== null && replacedElement.key == "no_after")
+			return;
+
+		afterElementAdd++
+
+	}
+
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%AfterAdd", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@GetterRule
+	Map<String, ClassWithSimpleEquals> mapDataSimpleEquals = new HashMap<String, ClassWithSimpleEquals>
+
+	def void mapDataSimpleEqualsBeforeAdd() {
+		beforeAdd++
+	}
+
+	def void mapDataSimpleEqualsAfterAdd() {
+		afterAdd++
+	}
+
+	def void mapDataSimpleEqualsBeforeElementAdd(Map.Entry<String, ClassWithSimpleEquals> element) {
+		beforeElementAdd++
+	}
+
+	def void mapDataSimpleEqualsAfterElementAdd(Map.Entry<String, ClassWithSimpleEquals> element) {
+		afterElementAdd++
+	}
+
+	@AdderRule
+	@RemoverRule(multiple=true, beforeElementRemove="%BeforeElementRemove")
+	@GetterRule
+	Map<String, Integer> mapDataTestNotRemoveable = new HashMap<String, Integer>
+
+	def boolean mapDataTestNotRemoveableBeforeElementRemove(Map.Entry<String, Integer> element) {
+		return (element.key != "test")
+	}
+
+	@AdderRule
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove")
+	@GetterRule
+	Map<String, Integer> mapDataNotRemoveable = new HashMap<String, Integer>
+
+	def boolean mapDataNotRemoveableBeforeRemove() {
+		return false
 	}
 
 }
@@ -1080,6 +1422,29 @@ class AdderRemoverChangeTests {
 	}
 
 	@Test
+	def void testListChangeClear() {
+
+		val obj = new ClassWithAdderRemoverChangeClear
+
+		assertTrue(obj.addAllToListData(#[20, 20]))
+		assertArrayEquals(#[20, 20], obj.listData)
+
+		assertEquals(2, obj.beforeElementAdd)
+		assertEquals(1, obj.beforeAdd)
+		assertEquals(2, obj.afterElementAdd)
+		assertEquals(1, obj.afterAdd)
+
+		assertTrue(obj.clearListData())
+		assertEquals(0, obj.listData.size)
+
+		assertEquals(2, obj.beforeElementRemove)
+		assertEquals(1, obj.beforeRemove)
+		assertEquals(2, obj.afterElementRemove)
+		assertEquals(1, obj.afterRemove)
+
+	}
+
+	@Test
 	def void testListChangeParamsAndIndex() {
 
 		val obj = new ClassWithAdderRemoverChangeBasic
@@ -1167,6 +1532,502 @@ class AdderRemoverChangeTests {
 		assertEquals(4, obj.beforeRemove)
 		assertEquals(5, obj.afterElementRemove)
 		assertEquals(4, obj.afterRemove)
+
+	}
+
+	@Test
+	def void testMapChange() {
+
+		val newMapData = new HashMap<String, Double>
+		newMapData.put("a", 99.0)
+		newMapData.put("test", 100.0)
+		newMapData.put("b", 101.0)
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapData("test", 10.0)
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.putToMapData("test", 20.0)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(2, obj.afterAdd)
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.putAllToMapData(newMapData)
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(3, obj.mapData.size)
+
+			obj.removeFromMapData("test")
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(1, obj.beforeElementRemove)
+			assertEquals(1, obj.afterElementRemove)
+
+			obj.clearMapData
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(2, obj.beforeRemove)
+			assertEquals(2, obj.afterRemove)
+			assertEquals(3, obj.beforeElementRemove)
+			assertEquals(3, obj.afterElementRemove)
+
+			assertEquals(0, obj.mapData.size)
+
+		}
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataWithElementsAndTest("test", 10.0)
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(0, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(0, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(0, obj.mapDataWithElementsAndTest.size)
+
+			obj.putAllToMapDataWithElementsAndTest(newMapData)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(4, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(2, obj.mapDataWithElementsAndTest.size)
+
+			obj.removeFromMapDataWithElementsAndTest("test")
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(4, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(1, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.clearMapDataWithElementsAndTest
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(4, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(2, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(3, obj.beforeElementRemove)
+			assertEquals(2, obj.afterElementRemove)
+
+			assertEquals(0, obj.mapDataWithElementsAndTest.size)
+
+		}
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataWithFieldname("test", 10.0)
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.putToMapDataWithFieldname("test", 20.0)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(2, obj.afterAdd)
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.putAllToMapDataWithFieldname(newMapData)
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(3, obj.mapDataWithFieldname.size)
+
+			obj.putAllToMapDataWithFieldname(newMapData)
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(3, obj.mapDataWithFieldname.size)
+
+			obj.removeFromMapDataWithFieldname("test")
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(1, obj.afterElementRemove)
+
+			obj.removeFromMapDataWithFieldname("test")
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(1, obj.afterElementRemove)
+
+			obj.clearMapDataWithFieldname
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(2, obj.beforeRemove)
+			assertEquals(2, obj.afterRemove)
+			assertEquals(2, obj.beforeElementRemove)
+			assertEquals(3, obj.afterElementRemove)
+
+			assertEquals(0, obj.mapDataWithFieldname.size)
+		}
+
+		{
+
+			val newMapDataForReplacedValue = new HashMap<String, String>
+			newMapDataForReplacedValue.put("a", "b")
+			newMapDataForReplacedValue.put("no_after", "s")
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataReplacedValue("test", "x")
+
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValue("no_before", "y")
+
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValue("no_before", "z")
+
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(3, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValue("no_after", "r")
+
+			assertEquals(3, obj.beforeElementAdd)
+			assertEquals(4, obj.afterElementAdd)
+
+			obj.putAllToMapDataReplacedValue(newMapDataForReplacedValue)
+
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(4, obj.mapDataReplacedValue.size)
+
+		}
+
+		{
+
+			val newMapDataForReplacedValueWithFieldname = new HashMap<String, String>
+			newMapDataForReplacedValueWithFieldname.put("a", "b")
+			newMapDataForReplacedValueWithFieldname.put("test", "nothing")
+			newMapDataForReplacedValueWithFieldname.put("g", "h")
+			newMapDataForReplacedValueWithFieldname.put("x", "y")
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataReplacedValueWithFieldname("test", "x")
+
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValueWithFieldname("test", "not_changeable")
+
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValueWithFieldname("test", "z")
+
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			obj.putToMapDataReplacedValueWithFieldname("x", "y")
+
+			assertEquals(3, obj.beforeElementAdd)
+			assertEquals(3, obj.afterElementAdd)
+
+			obj.putAllToMapDataReplacedValueWithFieldname(newMapDataForReplacedValueWithFieldname)
+
+			assertEquals(5, obj.beforeElementAdd)
+			assertEquals(5, obj.afterElementAdd)
+
+			assertEquals(4, obj.mapDataReplacedValueWithFieldname.size)
+			assertEquals("not_changeable", obj.mapDataReplacedValueWithFieldname.get("test"))
+
+		}
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataSimpleEquals("test", new ClassWithSimpleEquals(20))
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			val newValue = new ClassWithSimpleEquals(20)
+
+			obj.putToMapDataSimpleEquals("test", newValue)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(2, obj.afterAdd)
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			obj.putToMapDataSimpleEquals("test", newValue)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(2, obj.afterAdd)
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			val newValueMap = new HashMap<String, ClassWithSimpleEquals>()
+			newValueMap.put("test", newValue)
+			newValueMap.put("test2", newValue)
+			obj.putAllToMapDataSimpleEquals(newValueMap)
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(3, obj.beforeElementAdd)
+			assertEquals(3, obj.afterElementAdd)
+
+			assertEquals(2, obj.mapDataSimpleEquals.size)
+
+		}
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataNotRemoveable("test", 100)
+			obj.putToMapDataNotRemoveable("a", 200)
+
+			assertNull(obj.removeFromMapDataNotRemoveable("test"))
+			assertNull(obj.removeFromMapDataNotRemoveable("test2"))
+			assertEquals(2, obj.mapDataNotRemoveable.size)
+			assertFalse(obj.clearMapDataNotRemoveable)
+			assertEquals(2, obj.mapDataNotRemoveable.size)
+
+		}
+
+		{
+
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapDataTestNotRemoveable("test", 100)
+			obj.putToMapDataTestNotRemoveable("a", 200)
+			obj.putToMapDataTestNotRemoveable("b", 300)
+
+			assertNull(obj.removeFromMapDataTestNotRemoveable("test"))
+			assertNull(obj.removeFromMapDataTestNotRemoveable("test2"))
+			assertEquals(300, obj.removeFromMapDataTestNotRemoveable("b"))
+			assertEquals(2, obj.mapDataTestNotRemoveable.size)
+			assertTrue(obj.clearMapDataTestNotRemoveable)
+			assertEquals(1, obj.mapDataTestNotRemoveable.size)
+			assertFalse(obj.clearMapDataTestNotRemoveable)
+			assertEquals(1, obj.mapDataTestNotRemoveable.size)
+
+		}
+		
+		{
+			
+			val obj = new ClassWithAdderRemoverChangeMap
+
+			obj.putToMapData("test", null)
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			obj.putToMapData("test", null)
+
+			assertEquals(1, obj.beforeAdd)
+			assertEquals(1, obj.afterAdd)
+			assertEquals(1, obj.beforeElementAdd)
+			assertEquals(1, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+			
+			obj.putToMapData(null, null)
+
+			assertEquals(2, obj.beforeAdd)
+			assertEquals(2, obj.afterAdd)
+			assertEquals(2, obj.beforeElementAdd)
+			assertEquals(2, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+			
+			obj.putToMapData(null, 10.0)
+
+			assertEquals(3, obj.beforeAdd)
+			assertEquals(3, obj.afterAdd)
+			assertEquals(3, obj.beforeElementAdd)
+			assertEquals(3, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+			
+			val newMapDataWithNull = new HashMap<String, Double>()
+			newMapDataWithNull.put(null, null)
+			obj.putAllToMapData(newMapDataWithNull)
+
+			assertEquals(4, obj.beforeAdd)
+			assertEquals(4, obj.afterAdd)
+			assertEquals(4, obj.beforeElementAdd)
+			assertEquals(4, obj.afterElementAdd)
+
+			assertEquals(0, obj.beforeRemove)
+			assertEquals(0, obj.afterRemove)
+			assertEquals(0, obj.beforeElementRemove)
+			assertEquals(0, obj.afterElementRemove)
+
+			assertEquals(2, obj.mapData.size)
+
+			obj.clearMapData
+
+			assertEquals(4, obj.beforeAdd)
+			assertEquals(4, obj.afterAdd)
+			assertEquals(4, obj.beforeElementAdd)
+			assertEquals(4, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(2, obj.beforeElementRemove)
+			assertEquals(2, obj.afterElementRemove)
+			
+			newMapDataWithNull.put("test2", 60.0)
+			obj.putAllToMapData(newMapDataWithNull)
+
+			assertEquals(5, obj.beforeAdd)
+			assertEquals(5, obj.afterAdd)
+			assertEquals(6, obj.beforeElementAdd)
+			assertEquals(6, obj.afterElementAdd)
+
+			assertEquals(1, obj.beforeRemove)
+			assertEquals(1, obj.afterRemove)
+			assertEquals(2, obj.beforeElementRemove)
+			assertEquals(2, obj.afterElementRemove)
+
+			obj.removeFromMapData(null)
+
+			assertEquals(5, obj.beforeAdd)
+			assertEquals(5, obj.afterAdd)
+			assertEquals(6, obj.beforeElementAdd)
+			assertEquals(6, obj.afterElementAdd)
+
+			assertEquals(2, obj.beforeRemove)
+			assertEquals(2, obj.afterRemove)
+			assertEquals(3, obj.beforeElementRemove)
+			assertEquals(3, obj.afterElementRemove)
+
+			assertEquals(1, obj.mapData.size)
+			
+		}
 
 	}
 
@@ -2011,6 +2872,7 @@ class ClassWithAdderRemover {
 
 	}
 
+	@Test
 	def void testMultipleMethodCandidatesError() {
 
 		'''
@@ -2024,7 +2886,7 @@ import org.eclipse.xtend.lib.annotation.etai.RemoverRule
 @ApplyRules
 class ClassWithMultipleCandidates {
 
-	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@AdderRule(multiple=true, afterAdd="%Added")
 	java.util.List<Integer> listData1 = new java.util.ArrayList<Integer>
 
 	def void listData1Added(java.util.List<Integer> addedValues) {
@@ -2033,7 +2895,7 @@ class ClassWithMultipleCandidates {
 	protected def void listData1Added() {
 	}
 
-	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd")
 	java.util.List<Integer> listData2 = new java.util.ArrayList<Integer>
 
 	def boolean listData2BeforeAdd(java.util.List<Integer> addedValues) {
@@ -2043,7 +2905,7 @@ class ClassWithMultipleCandidates {
 	def void listData2BeforeAdd() {
 	}
 
-	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@AdderRule(multiple=true, afterElementAdd="%ElementAdded")
 	java.util.List<Integer> listData3 = new java.util.ArrayList<Integer>
 
 	def void listData3ElementAdded(Integer addedValue) {
@@ -2052,7 +2914,7 @@ class ClassWithMultipleCandidates {
 	def void listData3ElementAdded(int index, Integer addedValue) {
 	}
 
-	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%Added", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%ElementAdded")
+	@AdderRule(multiple=true, beforeElementAdd="%BeforeElementAdd")
 	java.util.List<Integer> listData4 = new java.util.ArrayList<Integer>
 
 	def boolean listData4BeforeElementAdd(Integer addedValue) {
@@ -2063,7 +2925,7 @@ class ClassWithMultipleCandidates {
 		return true
 	}
 
-	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@RemoverRule(multiple=true, afterRemove="%Removed")
 	java.util.List<Integer> listData5 = new java.util.ArrayList<Integer>
 
 	def void listData5Removed(java.util.List<Integer> removedValues) {
@@ -2072,7 +2934,7 @@ class ClassWithMultipleCandidates {
 	protected def void listData5Removed(String fieldName, java.util.List<Integer> removedValues) {
 	}
 
-	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove")
 	java.util.Set<Integer> setData6 = new java.util.HashSet<Integer>
 
 	def void setData6BeforeRemove(java.util.List<Integer> removedValues) {
@@ -2081,7 +2943,7 @@ class ClassWithMultipleCandidates {
 	def void setData6BeforeRemove() {
 	}
 
-	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@RemoverRule(multiple=true, afterElementRemove="%ElementRemoved")
 	java.util.List<Integer> listData7 = new java.util.ArrayList<Integer>
 
 	def void listData7ElementRemoved(Integer removedValue) {
@@ -2090,7 +2952,7 @@ class ClassWithMultipleCandidates {
 	protected def void listData7ElementRemoved(int index, Integer removedValue) {
 	}
 
-	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%Removed", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%ElementRemoved")
+	@RemoverRule(multiple=true, beforeElementRemove="%BeforeElementRemove")
 	java.util.Set<Integer> setData8 = new java.util.HashSet<Integer>
 
 	def boolean setData8BeforeElementRemove(Integer removedValue) {
@@ -2098,6 +2960,25 @@ class ClassWithMultipleCandidates {
 	}
 
 	def void setData8BeforeElementRemove(String fieldName, Integer removedValue) {
+	}
+
+
+	@AdderRule(multiple=true, afterAdd="%Added")
+	java.util.Map<String, String> mapData9 = new java.util.HashMap<String, String>
+
+	def void mapData9Added(java.util.Map<String, String> elements) {
+	}
+
+	def void mapData9Added(String fieldName, java.util.Map elements) {
+	}
+
+	@RemoverRule(multiple=false, afterRemove="%Removed")
+	java.util.Map<String, String> mapData10 = new java.util.HashMap<String, String>
+
+	def void mapData10Removed(java.util.Map<String, String> elements) {
+	}
+
+	def void mapData10Removed(String fieldName, java.util.Map elements) {
 	}
 
 }
@@ -2123,6 +3004,10 @@ class ClassWithMultipleCandidates {
 			val problemsListData7 = (clazzWithMultipleCandidates.findDeclaredField("listData7").
 				primarySourceElement as FieldDeclaration).problems
 			val problemsListData8 = (clazzWithMultipleCandidates.findDeclaredField("setData8").
+				primarySourceElement as FieldDeclaration).problems
+			val problemsListData9 = (clazzWithMultipleCandidates.findDeclaredField("mapData9").
+				primarySourceElement as FieldDeclaration).problems
+			val problemsListData10 = (clazzWithMultipleCandidates.findDeclaredField("mapData10").
 				primarySourceElement as FieldDeclaration).problems
 
 			// do assertions
@@ -2158,14 +3043,22 @@ class ClassWithMultipleCandidates {
 			assertEquals(Severity.ERROR, problemsListData8.get(0).severity)
 			assertTrue(problemsListData8.get(0).message.contains("candidates"))
 
-			assertEquals(8, allProblems.size)
+			assertEquals(1, problemsListData9.size)
+			assertEquals(Severity.ERROR, problemsListData9.get(0).severity)
+			assertTrue(problemsListData9.get(0).message.contains("candidates"))
+
+			assertEquals(1, problemsListData10.size)
+			assertEquals(Severity.ERROR, problemsListData10.get(0).severity)
+			assertTrue(problemsListData10.get(0).message.contains("candidates"))
+
+			assertEquals(10, allProblems.size)
 
 		]
 
 	}
 
 	@Test
-	def void testMapNotSupported() {
+	def void testMapChangeWithoutGenerics() {
 
 		'''
 
@@ -2176,49 +3069,27 @@ import org.eclipse.xtend.lib.annotation.etai.AdderRule
 import org.eclipse.xtend.lib.annotation.etai.RemoverRule
 
 @ApplyRules
-class ClassWithAdderRemover {
+class ClassWithAdderRemoverForMapWithoutGenerics {
 
-	@AdderRule(beforeAdd="m1", afterAdd="m2", afterElementAdd="m3", beforeElementAdd="m4")
-	java.util.Map<String, Integer> dataWithAdder = new java.util.HashMap<String, Integer>
+	@AdderRule(multiple=true, beforeAdd="%BeforeAdd", afterAdd="%AfterAdd", beforeElementAdd="%BeforeElementAdd", afterElementAdd="%AfterElementAdd")
+	@RemoverRule(multiple=true, beforeRemove="%BeforeRemove", afterRemove="%AfterRemove", beforeElementRemove="%BeforeElementRemove", afterElementRemove="%AfterElementRemove")
+	java.util.Map<String, Double> mapDataChangeWithoutGenerics = new java.util.HashMap<String, Double>
 
-	@RemoverRule(beforeRemove="n1", afterRemove="n2", afterElementRemove="n3", beforeElementRemove="n4")
-	java.util.Map<String, Integer> dataWithRemover = new java.util.HashMap<String, Integer>
+	def void mapDataChangeWithoutGenericsBeforeAdd(java.util.Map elements) {}
+	def void mapDataChangeWithoutGenericsAfterAdd(java.util.Map elements) {}
+	def void mapDataChangeWithoutGenericsBeforeRemove(java.util.Map elements) {}
+	def void mapDataChangeWithoutGenericsAfterRemove(java.util.Map elements) {}
+	def void mapDataChangeWithoutGenericsBeforeElementAdd(java.util.Map.Entry element) {}
+	def void mapDataChangeWithoutGenericsAfterElementAdd(java.util.Map.Entry element) {}
+	def void mapDataChangeWithoutGenericsBeforeElementRemove(java.util.Map.Entry element) {}
+	def void mapDataChangeWithoutGenericsAfterElementRemove(java.util.Map.Entry element) {}
 
 }
 
 		'''.compile [
 
-			val extension ctx = transformationContext
-
-			val clazz = findClass("virtual.ClassWithAdderRemover")
-
-			val problemsAttributeDataWithAdder = (clazz.findDeclaredField("dataWithAdder").
-				primarySourceElement as FieldDeclaration).problems
-			val problemsAttributeDataWithRemover = (clazz.findDeclaredField("dataWithRemover").
-				primarySourceElement as FieldDeclaration).problems
-
 			// do assertions
-			assertEquals(4, problemsAttributeDataWithAdder.size)
-			assertEquals(Severity.ERROR, problemsAttributeDataWithAdder.get(0).severity)
-			assertTrue(problemsAttributeDataWithAdder.get(0).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithAdder.get(1).severity)
-			assertTrue(problemsAttributeDataWithAdder.get(1).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithAdder.get(2).severity)
-			assertTrue(problemsAttributeDataWithAdder.get(2).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithAdder.get(3).severity)
-			assertTrue(problemsAttributeDataWithAdder.get(3).message.contains("support"))
-
-			assertEquals(4, problemsAttributeDataWithRemover.size)
-			assertEquals(Severity.ERROR, problemsAttributeDataWithRemover.get(0).severity)
-			assertTrue(problemsAttributeDataWithRemover.get(0).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithRemover.get(1).severity)
-			assertTrue(problemsAttributeDataWithRemover.get(1).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithRemover.get(2).severity)
-			assertTrue(problemsAttributeDataWithRemover.get(2).message.contains("support"))
-			assertEquals(Severity.ERROR, problemsAttributeDataWithRemover.get(3).severity)
-			assertTrue(problemsAttributeDataWithRemover.get(3).message.contains("support"))
-
-			assertEquals(8, allProblems.size)
+			assertEquals(0, allProblems.size)
 
 		]
 

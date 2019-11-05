@@ -373,9 +373,9 @@ public class ReflectUtils {
 
 			try {
 
-				return defaultValueProvider.newInstance().getDefaultValue();
+				return defaultValueProvider.getConstructor().newInstance().getDefaultValue();
 
-			} catch (InstantiationException | IllegalAccessException e) {
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
 
 				ReflectUtils.<RuntimeException>sneakyThrow(e);
 

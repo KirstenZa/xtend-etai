@@ -47,11 +47,13 @@ Internally, *getName* and *setName* delegate to the methods implemented in *XNam
 > Historically, the annotation ***@ExtendedBy*** was the only way to apply trait classes. With *@ExtendedBy* such trait classes can explicitly be specified within the annotation itself (*value*). However, it was not possible to enable the usage of Java Generics this way.
 >
 > Therefore, other possibilities have been investigated including the usage of a string. The easiest way, however, was to request the specification of the mirror interfaces of trait classes via *implements* in addition. The annotation *@ExtendedByAuto* does not demand the specification of any trait class, but it scans the listed interfaces for trait classes (or rather their mirror interfaces) and applies all of them automatically.
->
+
+##### Hint
+
 > If there is a mismatch between **visibility** of trait method and an existing method in the extended class, the access modifier with higher visibility will be applied. Similarly, if there is a mismatch with the **return types**, but one type is inherited from the other, the more concrete type is applied (covariance).
->
-> **Java Generics are fully supported** now.
->
+
+##### Hint
+
 > If applying the annotations described in [Generate Accessors and Mutators](#generate-accessors-and-mutators), class *XNamed* can be specified as easy as shown here:
 
 [!include_code code_traits_simple_getter_setter.txt] 
