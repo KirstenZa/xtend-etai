@@ -54,23 +54,23 @@ class ExtendedClassExoticMethodTests extends TraitTestsBase {
 	def void testExoticMethods() {
 
 		assertEquals(true, ExtendedClassExoticMethods.getMethod("method1").returnType.array)
-		assertSame(Object, ExtendedClassExoticMethods.getMethod("method1").returnType.componentType)
+		assertSame(Object, ExtendedClassExoticMethods.getMethod("method1").returnType.getComponentType())
 
 		assertEquals(true, ExtendedClassExoticMethods.getMethod("method2").returnType.array)
-		assertEquals(true, ExtendedClassExoticMethods.getMethod("method2").returnType.componentType.array)
-		assertSame(Object, ExtendedClassExoticMethods.getMethod("method2").returnType.componentType.componentType)
+		assertEquals(true, ExtendedClassExoticMethods.getMethod("method2").returnType.getComponentType().array)
+		assertSame(Object, ExtendedClassExoticMethods.getMethod("method2").returnType.getComponentType().getComponentType())
 
 		assertSame(List, ExtendedClassExoticMethods.getMethod("method3").returnType)
 
 		assertEquals(true, ExtendedClassExoticMethods.getMethod("method4").returnType.array)
-		assertEquals(true, ExtendedClassExoticMethods.getMethod("method4").returnType.componentType.array)
-		assertSame(List, ExtendedClassExoticMethods.getMethod("method4").returnType.componentType.componentType)
+		assertEquals(true, ExtendedClassExoticMethods.getMethod("method4").returnType.getComponentType().array)
+		assertSame(List, ExtendedClassExoticMethods.getMethod("method4").returnType.getComponentType().getComponentType())
 
 		assertSame(List, ExtendedClassExoticMethods.getMethod("method5").returnType)
 
 		assertEquals(true, ExtendedClassExoticMethods.getMethod("method6").returnType.array)
-		assertEquals(true, ExtendedClassExoticMethods.getMethod("method6").returnType.componentType.array)
-		assertSame(List, ExtendedClassExoticMethods.getMethod("method6").returnType.componentType.componentType)
+		assertEquals(true, ExtendedClassExoticMethods.getMethod("method6").returnType.getComponentType().array)
+		assertSame(List, ExtendedClassExoticMethods.getMethod("method6").returnType.getComponentType().getComponentType())
 
 	}
 
