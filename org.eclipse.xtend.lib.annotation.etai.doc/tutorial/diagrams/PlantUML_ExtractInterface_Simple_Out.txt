@@ -13,7 +13,7 @@ package virtual {
 	package intf {
 
 		interface ILion <<Interface>> {
-			+roar()
+			+roar(intensity : int)
 		}
 
 	}

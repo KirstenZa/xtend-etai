@@ -148,7 +148,7 @@ class Lion {
 		"Roar!"
 	}
 	
-	override void roar(intensity : int) {
+	override void roar(int intensity) {
 		for (i : 0 ..< intensity)
 			System.out.println('''«noise()»''');
 	}
