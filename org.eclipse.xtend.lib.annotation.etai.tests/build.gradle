@@ -2,7 +2,7 @@ plugins {
   id 'base'
   id 'java'
   id 'eclipse'
-  id 'org.xtext.xtend' version "2.0.8"
+  id 'org.xtext.xtend' version "4.0.0"
 }
 
 group = 'org.eclipse.xtend.lib.annotation.etai.tests'
@@ -23,7 +23,7 @@ dependencies {
 
 sourceSets {
   main.java.srcDirs = ['src','xtend-gen']
-  main.xtendOutputDir = 'xtend-gen'
+  main.xtend.outputDir = 'xtend-gen'
   test {
     java.srcDir 'xtend-gen'
   }
@@ -31,6 +31,10 @@ sourceSets {
 
 clean {
     delete 'xtend-gen'
+}
+
+compileJava {
+    options.compilerArgs += ["-Xlint:deprecation","-Xlint:unchecked"]
 }
 
 eclipse {

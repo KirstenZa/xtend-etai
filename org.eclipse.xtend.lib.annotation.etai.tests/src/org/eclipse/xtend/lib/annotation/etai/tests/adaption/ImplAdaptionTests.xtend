@@ -100,7 +100,7 @@ abstract class ReturnAdaptionType1 {
 		10
 	}
 
-	@ImplAdaptionRule(value="applyVariable(var.class.qualified);replaceAll(.*([0-9]),$1);prepend(x + );prependVariable(const.bracket.round.open);prepend(return new Double);appendVariable(const.bracket.round.close);append(.toString();)")
+	@ImplAdaptionRule(value="applyVariable(var.class.qualified);replaceAll(.*([0-9]),$1);prepend(x + );prependVariable(const.bracket.round.open);prepend(return Double.valueOf);appendVariable(const.bracket.round.close);append(.toString();)")
 	static def String returnAsString(
 		@TypeAdaptionRule("apply(Double)")
 		Integer x

@@ -181,7 +181,7 @@ public class ReflectUtils {
 	 */
 	public static Object callPrivateMethod(Object obj, Method method, Object[] arguments) {
 
-		boolean previousAccessible = method.isAccessible();
+		boolean previousAccessible = method.canAccess(obj);
 
 		method.setAccessible(true);
 
@@ -275,7 +275,7 @@ public class ReflectUtils {
 	 */
 	public static Object getPrivateFieldValue(Object obj, Field field) {
 
-		boolean previousAccessible = field.isAccessible();
+		boolean previousAccessible = field.canAccess(obj);
 		field.setAccessible(true);
 
 		try {
@@ -316,7 +316,7 @@ public class ReflectUtils {
 	 */
 	public static void setPrivateFieldValue(Object obj, Field field, Object value) {
 
-		boolean previousAccessible = field.isAccessible();
+		boolean previousAccessible = field.canAccess(obj);
 		field.setAccessible(true);
 
 		try {

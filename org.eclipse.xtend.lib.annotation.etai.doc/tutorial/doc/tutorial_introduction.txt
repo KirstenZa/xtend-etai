@@ -24,6 +24,12 @@ org.eclipse.xtend.lib.annotation.etai/build/libs/org.eclipse.xtend.lib.annotatio
 
 This JAR can be added as dependency to an appropriate Xtend project in order to enable the active annotations and all features explained in this tutorial.
 
+The library was tested with:
+
+* Xtend 2.30.0
+* JDK 17.0.7
+* Gradle 8.1.1
+
 #### Test the Library
 
 The ETAI library contains several test sets. All tests can be run via this command from the project's root directory:

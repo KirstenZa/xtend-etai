@@ -2,7 +2,7 @@ plugins {
   id 'base'
   id 'java'
   id 'eclipse'
-  id 'org.xtext.xtend' version "2.0.8"
+  id 'org.xtext.xtend' version "4.0.0"
 }
 
 group = 'org.eclipse.xtend.lib.annotation.etai'
@@ -19,7 +19,7 @@ dependencies {
 
 sourceSets {
   main.java.srcDirs = ['src','xtend-gen']
-  main.xtendOutputDir = 'xtend-gen'
+  main.xtend.outputDir = 'xtend-gen'
 }
 
 clean {
