@@ -8,17 +8,15 @@ plugins {
 group = 'org.eclipse.xtend.lib.annotation.etai.tests'
 version = rootProject.file('VERSION').text.trim()
 
-repositories {
-  jcenter()
-}
+repositories.mavenCentral()
 
 dependencies {
   implementation project(':org.eclipse.xtend.lib.annotation.etai')
-  implementation 'org.eclipse.xtend:org.eclipse.xtend.core:2.+'
-  implementation 'org.eclipse.xtend:org.eclipse.xtend.lib:2.+'
-  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.+'
-  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.testing:2.+'
-  testImplementation 'junit:junit:4.12'
+  implementation 'org.eclipse.xtend:org.eclipse.xtend.core:2.36.0'
+  implementation 'org.eclipse.xtend:org.eclipse.xtend.lib:2.36.0'
+  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.36.0'
+  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.testing:2.36.0'
+  testImplementation 'junit:junit:4.13'
 }
 
 sourceSets {

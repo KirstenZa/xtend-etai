@@ -748,12 +748,12 @@ class ApplyRulesProcessor extends AbstractClassProcessor implements QueuedTransf
 		extension TransformationContext context) {
 
 		// check if an implementation in extended class is required
-		if (!priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.last.
+		if (!priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.lastOrNull.
 			getPriorityEnvelopeMethodInfo(context).required)
 			return null
 
 		// return class in which the "required" is set
-		return priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.last.declaringType as ClassDeclaration
+		return priorityEnvelopeMethodsMapAll.get(priorityEnvelopeMethod).values.lastOrNull.declaringType as ClassDeclaration
 
 	}
 

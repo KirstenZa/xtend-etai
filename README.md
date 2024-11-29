@@ -90,9 +90,9 @@ This JAR can be added as dependency to an appropriate Xtend project in order to 
 
 The library was tested with:
 
-* Xtend 2.30.0
-* JDK 17.0.7
-* Gradle 8.1.1
+* Xtend 2.36.0
+* JDK 21.0.5
+* Gradle 8.11.1
 
 #### Test the Library
 

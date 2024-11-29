@@ -8,13 +8,11 @@ plugins {
 group = 'org.eclipse.xtend.lib.annotation.etai'
 version = rootProject.file('VERSION').text.trim()
 
-repositories {
-  jcenter()
-}
+repositories.mavenCentral()
 
 dependencies {
-  implementation 'org.eclipse.xtend:org.eclipse.xtend.lib:2.+'
-  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.+'
+  implementation 'org.eclipse.xtend:org.eclipse.xtend.lib:2.36.0'
+  implementation 'org.eclipse.xtext:org.eclipse.xtext.xbase.lib:2.36.0'
 }
 
 sourceSets {

@@ -41,7 +41,7 @@ public class LogUtils {
 	protected static String getLoggingPreamble() {
 
 		String result = DATE_FORMATTER.format(new Date()) + " (SID: " + String.format("%1$10s", getSessionID())
-				+ ", TID: " + String.format("%1$10s", Thread.currentThread().getId()) + ") --- ";
+				+ ", TID: " + String.format("%1$10s", Thread.currentThread().threadId()) + ") --- ";
 
 		for (int i = 0; i < getCurrentIndentation(); i++)
 			result += ".";
