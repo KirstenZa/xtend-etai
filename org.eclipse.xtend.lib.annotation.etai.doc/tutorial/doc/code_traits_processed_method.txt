@@ -22,41 +22,41 @@ abstract class Animal {
 @TraitClass
 abstract class XHunter implements IAnimal {
 
-    @ProcessedMethod(processor=EPDefault)
-    override String getHuntingMethods() {
-        "pursue"
-    }
+	@ProcessedMethod(processor=EPDefault)
+	override String getHuntingMethods() {
+		"pursue"
+	}
 
-    @ProcessedMethod(processor=EPDefault)
-    override String getHunters() {
-        "individuals"
-    }
-    
-    @ProcessedMethod(processor=EPBooleanPreAnd)
-    override boolean canHunt() {
-        isAdult
-    }
+	@ProcessedMethod(processor=EPDefault)
+	override String getHunters() {
+		"individuals"
+	}
+	
+	@ProcessedMethod(processor=EPBooleanPreAnd)
+	override boolean canHunt() {
+		isAdult
+	}
 
-    @ProcessedMethod(processor=EPVoidPost)
-    override void hunt(String prey) {
-        System.out.println('''Hunting «prey»...''')
-    }
+	@ProcessedMethod(processor=EPVoidPost)
+	override void hunt(String prey) {
+		System.out.println('''Hunting «prey»...''')
+	}
 
 }
 
 @ExtendedByAuto
 class Lion extends Animal implements IXHunter {
 
-    override String getHunters() {
-        "pack,lioness"
-    }
-    
-    override boolean canHunt() {
-        return !isMale
-    }
+	override String getHunters() {
+		"pack,lioness"
+	}
+	
+	override boolean canHunt() {
+		return !isMale
+	}
 
-    override void hunt(String prey) {
-        System.out.println("Roar!")
-    }
+	override void hunt(String prey) {
+		System.out.println("Roar!")
+	}
 
 }

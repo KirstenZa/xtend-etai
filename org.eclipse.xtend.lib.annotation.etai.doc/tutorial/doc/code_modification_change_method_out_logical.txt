@@ -33,21 +33,21 @@ public class Progress {
 	}
 
 	protected boolean percentageChange(double newPercentage) {
-        if (newPercentage < 0.0 || newPercentage > 100.0)
-            return false;
-        return true;
-    }
+		if (newPercentage < 0.0 || newPercentage > 100.0)
+			return false;
+		return true;
+	}
 
-    protected void percentageChanged() {
-        System.out.println("Percentage changed!");
-    }
-    
-    protected void addedToList(final String fieldname,
-    		final java.util.List<Integer> indices,
-    		final java.util.List<String> elements) {
-        for (int i = 0; (i < indices.size()); i++)
-        	System.out.println("Added \"" + elements.get(i) + "\" to list " +
-                fieldname + " at index " + indices.get(i));
-    }
+	protected void percentageChanged() {
+		System.out.println("Percentage changed!");
+	}
+	
+	protected void addedToList(final String fieldname,
+			final java.util.List<Integer> indices,
+			final java.util.List<String> elements) {
+		for (int i = 0; (i < indices.size()); i++)
+			System.out.println("Added \"" + elements.get(i) + "\" to list " +
+				fieldname + " at index " + indices.get(i));
+	}
 
 }

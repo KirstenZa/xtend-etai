@@ -724,22 +724,22 @@ public class Progress {
 	}
 
 	protected boolean percentageChange(double newPercentage) {
-        if (newPercentage < 0.0 || newPercentage > 100.0)
-            return false;
-        return true;
-    }
+		if (newPercentage < 0.0 || newPercentage > 100.0)
+			return false;
+		return true;
+	}
 
-    protected void percentageChanged() {
-        System.out.println("Percentage changed!");
-    }
-    
-    protected void addedToList(final String fieldname,
-    		final java.util.List<Integer> indices,
-    		final java.util.List<String> elements) {
-        for (int i = 0; (i < indices.size()); i++)
-        	System.out.println("Added \"" + elements.get(i) + "\" to list " +
-                fieldname + " at index " + indices.get(i));
-    }
+	protected void percentageChanged() {
+		System.out.println("Percentage changed!");
+	}
+	
+	protected void addedToList(final String fieldname,
+			final java.util.List<Integer> indices,
+			final java.util.List<String> elements) {
+		for (int i = 0; (i < indices.size()); i++)
+			System.out.println("Added \"" + elements.get(i) + "\" to list " +
+				fieldname + " at index " + indices.get(i));
+	}
 
 }
 ```
@@ -1523,22 +1523,22 @@ import org.eclipse.xtend.lib.annotation.etai.TraitClass
 import virtual.intf.IXNamed
 
 abstract class Animal {
-    int age
-    def int getAge() {age}
-    def void setAge(int age) {this.age = age}
-    abstract def void move()
+	int age
+	def int getAge() {age}
+	def void setAge(int age) {this.age = age}
+	abstract def void move()
 }
 
 @TraitClass
 abstract class XNamed {
 
-    String name
+	String name
 
-    @ExclusiveMethod
-    override String getName() {name}
+	@ExclusiveMethod
+	override String getName() {name}
 
-    @ExclusiveMethod
-    override void setName(String name) {this.name = name}
+	@ExclusiveMethod
+	override void setName(String name) {this.name = name}
 
 }
 
@@ -1583,7 +1583,7 @@ abstract class XNamed {
 	@ExclusiveMethod
 	@GetterRule
 	@SetterRule
-    String name
+	String name
 
 }
 ```
@@ -1725,42 +1725,42 @@ abstract class Animal {
 @TraitClass
 abstract class XHunter implements IAnimal {
 
-    @ProcessedMethod(processor=EPDefault)
-    override String getHuntingMethods() {
-        "pursue"
-    }
+	@ProcessedMethod(processor=EPDefault)
+	override String getHuntingMethods() {
+		"pursue"
+	}
 
-    @ProcessedMethod(processor=EPDefault)
-    override String getHunters() {
-        "individuals"
-    }
-    
-    @ProcessedMethod(processor=EPBooleanPreAnd)
-    override boolean canHunt() {
-        isAdult
-    }
+	@ProcessedMethod(processor=EPDefault)
+	override String getHunters() {
+		"individuals"
+	}
+	
+	@ProcessedMethod(processor=EPBooleanPreAnd)
+	override boolean canHunt() {
+		isAdult
+	}
 
-    @ProcessedMethod(processor=EPVoidPost)
-    override void hunt(String prey) {
-        System.out.println('''Hunting «prey»...''')
-    }
+	@ProcessedMethod(processor=EPVoidPost)
+	override void hunt(String prey) {
+		System.out.println('''Hunting «prey»...''')
+	}
 
 }
 
 @ExtendedByAuto
 class Lion extends Animal implements IXHunter {
 
-    override String getHunters() {
-        "pack,lioness"
-    }
-    
-    override boolean canHunt() {
-        return !isMale
-    }
+	override String getHunters() {
+		"pack,lioness"
+	}
+	
+	override boolean canHunt() {
+		return !isMale
+	}
 
-    override void hunt(String prey) {
-        System.out.println("Roar!")
-    }
+	override void hunt(String prey) {
+		System.out.println("Roar!")
+	}
 
 }
 ```

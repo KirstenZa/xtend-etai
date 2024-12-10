@@ -7,22 +7,22 @@ import org.eclipse.xtend.lib.annotation.etai.TraitClass
 import virtual.intf.IXNamed
 
 abstract class Animal {
-    int age
-    def int getAge() {age}
-    def void setAge(int age) {this.age = age}
-    abstract def void move()
+	int age
+	def int getAge() {age}
+	def void setAge(int age) {this.age = age}
+	abstract def void move()
 }
 
 @TraitClass
 abstract class XNamed {
 
-    String name
+	String name
 
-    @ExclusiveMethod
-    override String getName() {name}
+	@ExclusiveMethod
+	override String getName() {name}
 
-    @ExclusiveMethod
-    override void setName(String name) {this.name = name}
+	@ExclusiveMethod
+	override void setName(String name) {this.name = name}
 
 }
 
